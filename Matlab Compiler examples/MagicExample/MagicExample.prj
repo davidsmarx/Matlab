@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <!--MagicExample.prj-->
+  <MATLABPath>
+    <Directory>C:\tamar\Matlab</Directory>
+    <Directory>C:\tamar\Matlab\uniaxial toolbox</Directory>
+    <Directory>C:\tamar\Matlab\physical optics toolbox</Directory>
+    <Directory>C:\tamar\Matlab\my image toolbox</Directory>
+    <Directory>C:\tamar\Matlab\iiCo toolbox</Directory>
+    <Directory>C:\tamar\Matlab\glass data toolbox</Directory>
+    <Directory>C:\tamar\Matlab\functions toolbox</Directory>
+    <Directory>C:\tamar\Matlab\draw toolbox</Directory>
+    <Directory>C:\tamar\Matlab\coupled wave toolbox</Directory>
+    <Directory>C:\tamar\Matlab\Zemax DDE Toolbox</Directory>
+    <Directory>C:\tamar\Matlab\TFfilter toolbox</Directory>
+    <Directory>C:\tamar\Matlab\Stil toolbox</Directory>
+    <Directory>C:\tamar\Matlab\StellarNet toolbox</Directory>
+    <Directory>C:\tamar\Matlab\Ocean Optics toolbox</Directory>
+    <Directory>C:\tamar\Matlab\OSP Toolbox</Directory>
+    <Directory>C:\tamar\Matlab\Matrox toolbox</Directory>
+    <Directory>C:\tamar\Matlab\MCC DAQ toolbox</Directory>
+    <Directory>C:\tamar\Matlab\IR Tempsoft toolbox</Directory>
+    <Directory>C:\tamar\Matlab\IMS Mdrive toolbox</Directory>
+    <Directory>C:\tamar\Matlab\Geometric Optics toolbox</Directory>
+    <Directory>C:\tamar\Matlab\Excel ActiveX Toolbox</Directory>
+    <Directory>C:\tamar\Matlab\Avantes toolbox</Directory>
+    <Directory>C:\tamar\Matlab\ActiveMIL toolbox</Directory>
+    <Directory>C:\tamar\Matlab\AT6K Controller toolbox</Directory>
+    <Directory>C:\tamar\Matlab\AT motion toolbox</Directory>
+    <Directory>C:\Documents and Settings\dmarx\My Documents\MATLAB</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\general</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\ops</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\lang</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\elmat</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\elfun</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\specfun</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\matfun</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\datafun</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\polyfun</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\funfun</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\sparfun</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\scribe</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\graph2d</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\graph3d</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\specgraph</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\graphics</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\uitools</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\strfun</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\imagesci</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\iofun</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\audiovideo</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\timefun</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\datatypes</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\verctrl</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\codetools</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\helptools</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\winfun</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\demos</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\timeseries</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\hds</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\guide</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\matlab\plottools</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\local</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\shared\controllib</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\exlink</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\symbolic\extended</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\images\images</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\images\imuitools</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\images\imdemos</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\images\iptutils</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\shared\imageslib</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\images\medformats</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\signal\signal</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\signal\sigtools</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\signal\sptoolgui</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\signal\sigdemos</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\shared\spcuilib</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\shared\dastudio</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\symbolic</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\work</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\compiler</Directory>
+    <Directory>C:\Program Files\MATLAB\R2007a\toolbox\dotnetbuilder\dotnetbuilder</Directory>
+  </MATLABPath>
+  <MCCProperties>
+    <output>MagicExample</output>
+    <wrapper>
+      <type>main</type>
+    </wrapper>
+    <intermediate_dir>C:\tamar\Matlab\MagicExample\MagicExample\src</intermediate_dir>
+    <output_dir>C:\tamar\Matlab\MagicExample\MagicExample\distrib</output_dir>
+    <link>exe</link>
+    <MCR_runtime_options/>
+    <generate_code_only>false</generate_code_only>
+    <verbose>true</verbose>
+    <options_file/>
+    <debug>false</debug>
+    <toolboxes_on_path shortcut="all"/>
+    <warning shortcut="default">
+      <warn name="specified_file_mismatch">enable</warn>
+      <warn name="repeated_file">enable</warn>
+      <warn name="switch_ignored">enable</warn>
+      <warn name="missing_lib_sentinel">enable</warn>
+      <warn name="demo_license">enable</warn>
+    </warning>
+  </MCCProperties>
+  <file_info>
+    <category name="Main function">
+      <!--Do not modify the value of the name attribute, unless it is a class name.-->
+      <file>C:\tamar\Matlab\MagicExample\magicsquare.m</file>
+    </category>
+    <category name="Other files">
+      <!--Do not modify the value of the name attribute, unless it is a class name.-->
+    </category>
+    <category name="C/C++ files">
+      <!--Do not modify the value of the name attribute, unless it is a class name.-->
+    </category>
+  </file_info>
+  <packaging>
+    <name>MagicExample_pkg</name>
+    <mcr include="false"/>
+    <additional_files/>
+  </packaging>
+</project>

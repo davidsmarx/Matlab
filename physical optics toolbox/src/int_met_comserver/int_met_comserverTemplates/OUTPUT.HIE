@@ -1,0 +1,43 @@
+@#PER $PROPERTY_PERM
+@$PROPERTY.NAME@ = "@$PROPERTY.VALUE@"
+@#ENDPER
+@#PER CLASS
+CLASS : @CLASS.NAME@
+{
+    @#PER INTERFACE
+    INTERFACE : @INTERFACE.NAME@
+    {
+        @#PER METHOD
+        METHOD : @METHOD.NAME@
+        {
+            @#PER ARGUMENT
+            ARGUMENT : @ARGUMENT.NAME@
+            {
+                @#PER $PROPERTY_PERM
+                @$PROPERTY.NAME@ = "@$PROPERTY.VALUE@"
+                @#ENDPER
+            }
+            @#ENDPER
+            @#PER $PROPERTY_PERM
+            @$PROPERTY.NAME@ = "@$PROPERTY.VALUE@"
+            @#ENDPER
+        }
+        @#ENDPER
+        @#PER $PROPERTY_PERM
+        @$PROPERTY.NAME@ = "@$PROPERTY.VALUE@"
+        @#ENDPER
+    }
+    @#ENDPER
+    @#PER INSTANCETYPE
+    INSTANCETYPE : @INSTANCETYPE.NAME@
+    {
+        @#PER $PROPERTY_PERM
+        @$PROPERTY.NAME@ = "@$PROPERTY.VALUE@"
+        @#ENDPER
+    }
+    @#ENDPER
+    @#PER $PROPERTY_PERM
+    @$PROPERTY.NAME@ = "@$PROPERTY.VALUE@"
+    @#ENDPER
+}
+@#ENDPER

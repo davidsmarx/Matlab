@@ -1,0 +1,5 @@
+!MS$FREEFORM
+! Microsoft Developer Studio generated include file.
+! Used by int_met_comserver.rc
+!
+      integer, parameter :: IDD_DIALOG1                     = 201

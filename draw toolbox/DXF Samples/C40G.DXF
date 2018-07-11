@@ -1,0 +1,6832 @@
+  0
+SECTION
+  2
+HEADER
+  9
+$ACADVER
+  1
+AC1004
+  9
+$EXTMIN
+ 10
+-9.2271
+ 20
+0.0816
+  9
+$EXTMAX
+ 10
+0.4195
+ 20
+5.9319
+  9
+$LIMMIN
+ 10
+-9.2271
+ 20
+0.0816
+  9
+$LIMMAX
+ 10
+0.4195
+ 20
+5.9319
+  9
+$INSBASE
+ 10
+0.0
+ 20
+0.0
+  9
+$VIEWCTR
+ 10
+7.21903
+ 20
+4.5
+  9
+$VIEWSIZE
+ 40
+9.0
+  9
+$SNAPMODE
+ 70
+     0
+  9
+$SNAPUNIT
+ 10
+1.0
+ 20
+1.0
+  9
+$SNAPBASE
+ 10
+0.0
+ 20
+0.0
+  9
+$SNAPANG
+ 50
+0.0
+  9
+$SNAPSTYLE
+ 70
+     0
+  9
+$SNAPISOPAIR
+ 70
+     0
+  9
+$GRIDMODE
+ 70
+     0
+  9
+$GRIDUNIT
+ 10
+0.0
+ 20
+0.0
+  9
+$ORTHOMODE
+ 70
+     0
+  9
+$REGENMODE
+ 70
+     1
+  9
+$FILLMODE
+ 70
+     1
+  9
+$QTEXTMODE
+ 70
+     0
+  9
+$DRAGMODE
+ 70
+     2
+  9
+$LTSCALE
+ 40
+1.0
+  9
+$OSMODE
+ 70
+     0
+  9
+$ATTMODE
+ 70
+     1
+  9
+$TEXTSIZE
+ 40
+0.2
+  9
+$TRACEWID
+ 40
+0.05
+  9
+$TEXTSTYLE
+  7
+STANDARD
+  9
+$CLAYER
+  8
+0
+  9
+$CELTYPE
+  6
+BYLAYER
+  9
+$CECOLOR
+ 62
+   256
+  9
+$DIMSCALE
+ 40
+1.0
+  9
+$DIMASZ
+ 40
+0.18
+  9
+$DIMEXO
+ 40
+0.0625
+  9
+$DIMDLI
+ 40
+0.38
+  9
+$DIMRND
+ 40
+0.0
+  9
+$DIMDLE
+ 40
+0.0
+  9
+$DIMEXE
+ 40
+0.18
+  9
+$DIMTP
+ 40
+0.0
+  9
+$DIMTM
+ 40
+0.0
+  9
+$DIMTXT
+ 40
+0.18
+  9
+$DIMCEN
+ 40
+0.09
+  9
+$DIMTSZ
+ 40
+0.0
+  9
+$DIMTOL
+ 70
+     0
+  9
+$DIMLIM
+ 70
+     0
+  9
+$DIMTIH
+ 70
+     1
+  9
+$DIMTOH
+ 70
+     1
+  9
+$DIMSE1
+ 70
+     0
+  9
+$DIMSE2
+ 70
+     0
+  9
+$DIMTAD
+ 70
+     0
+  9
+$DIMZIN
+ 70
+     0
+  9
+$DIMBLK
+  1
+
+  9
+$DIMASO
+ 70
+     1
+  9
+$DIMSHO
+ 70
+     0
+  9
+$DIMPOST
+  1
+
+  9
+$DIMAPOST
+  1
+
+  9
+$DIMALT
+ 70
+     0
+  9
+$DIMALTD
+ 70
+     2
+  9
+$DIMALTF
+ 40
+25.4
+  9
+$DIMLFAC
+ 40
+1.0
+  9
+$LUNITS
+ 70
+     2
+  9
+$LUPREC
+ 70
+     4
+  9
+$AXISMODE
+ 70
+     0
+  9
+$AXISUNIT
+ 10
+0.0
+ 20
+0.0
+  9
+$SKETCHINC
+ 40
+0.1
+  9
+$FILLETRAD
+ 40
+0.0
+  9
+$AUNITS
+ 70
+     0
+  9
+$AUPREC
+ 70
+     0
+  9
+$MENU
+  1
+acad
+  9
+$ELEVATION
+ 40
+0.0
+  9
+$THICKNESS
+ 40
+0.0
+  9
+$VIEWDIR
+ 10
+0.0
+ 20
+0.0
+ 30
+1.0
+  9
+$LIMCHECK
+ 70
+     0
+  9
+$BLIPMODE
+ 70
+     1
+  9
+$CHAMFERA
+ 40
+0.0
+  9
+$CHAMFERB
+ 40
+0.0
+  9
+$FASTZOOM
+ 70
+     1
+  9
+$SKPOLY
+ 70
+     0
+  9
+$TDCREATE
+ 40
+2447222.5666886573
+  9
+$TDUPDATE
+ 40
+2447222.5666886573
+  9
+$TDINDWG
+ 40
+0.0000000000
+  9
+$TDUSRTIMER
+ 40
+0.0000000000
+  9
+$USRTIMER
+ 70
+     1
+  9
+$ANGBASE
+ 50
+0.0
+  9
+$ANGDIR
+ 70
+     0
+  9
+$PDMODE
+ 70
+     0
+  9
+$PDSIZE
+ 40
+0.0
+  9
+$PLINEWID
+ 40
+0.0
+  9
+$COORDS
+ 70
+     0
+  9
+$SPLFRAME
+ 70
+     0
+  9
+$SPLINESEGS
+ 70
+     8
+  9
+$ATTDIA
+ 70
+     0
+  9
+$ATTREQ
+ 70
+     1
+  9
+$USERI1
+ 70
+     0
+  9
+$USERI2
+ 70
+     0
+  9
+$USERI3
+ 70
+     0
+  9
+$USERI4
+ 70
+     0
+  9
+$USERI5
+ 70
+     0
+  9
+$USERR1
+ 40
+0.0
+  9
+$USERR2
+ 40
+0.0
+  9
+$USERR3
+ 40
+0.0
+  9
+$USERR4
+ 40
+0.0
+  9
+$USERR5
+ 40
+0.0
+  0
+ENDSEC
+  0
+SECTION
+  2
+TABLES
+  0
+TABLE
+  2
+LTYPE
+ 70
+     13
+  0
+LTYPE
+  2
+CONTINUOUS
+ 70
+    64
+  3
+Solid line
+ 72
+    65
+ 73
+     0
+ 40
+0.0
+  0
+LTYPE
+  2
+DASHED
+ 70
+    64
+  3
+__ __ __ __ __ __ __ __ __ __ __ __ __ __ __
+ 72
+    65
+ 73
+     2
+ 40
+0.75
+ 49
+0.5
+ 49
+-0.25
+  0
+LTYPE
+  2
+HIDDEN
+ 70
+    64
+  3
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ 72
+    65
+ 73
+     2
+ 40
+0.375
+ 49
+0.25
+ 49
+-0.125
+  0
+LTYPE
+  2
+CENTER
+ 70
+    64
+  3
+____ _ ____ _ ____ _ ____ _ ____ _ ____ _ ____
+ 72
+    65
+ 73
+     4
+ 40
+2.0
+ 49
+1.25
+ 49
+-0.25
+ 49
+0.25
+ 49
+-0.25
+  0
+LTYPE
+  2
+PHANTOM
+ 70
+    64
+  3
+_____ _ _ _____ _ _ _____ _ _ _____ _ _ ____
+ 72
+    65
+ 73
+     6
+ 40
+2.5
+ 49
+1.25
+ 49
+-0.25
+ 49
+0.25
+ 49
+-0.25
+ 49
+0.25
+ 49
+-0.25
+  0
+LTYPE
+  2
+DOT
+ 70
+    64
+  3
+...............................................
+ 72
+    65
+ 73
+     2
+ 40
+0.25
+ 49
+0.0
+ 49
+-0.25
+  0
+LTYPE
+  2
+DASHDOT
+ 70
+    64
+  3
+__ . __ . __ . __ . __ . __ . __ . __ . __ . __
+ 72
+    65
+ 73
+     4
+ 40
+1.0
+ 49
+0.5
+ 49
+-0.25
+ 49
+0.0
+ 49
+-0.25
+  0
+LTYPE
+  2
+BORDER
+ 70
+    64
+  3
+__ __ . __ __ . __ __ . __ __ . __ __ . __ __
+ 72
+    65
+ 73
+     6
+ 40
+1.75
+ 49
+0.5
+ 49
+-0.25
+ 49
+0.5
+ 49
+-0.25
+ 49
+0.0
+ 49
+-0.25
+  0
+LTYPE
+  2
+DIVIDE
+ 70
+    64
+  3
+__ . . __ . . __ . . __ . . __ . . __ . . __
+ 72
+    65
+ 73
+     6
+ 40
+1.25
+ 49
+0.5
+ 49
+-0.25
+ 49
+0.0
+ 49
+-0.25
+ 49
+0.0
+ 49
+-0.25
+  0
+LTYPE
+  2
+DCTYPE1
+ 70
+    64
+  3
+__ . . __ . . __ . . __ . . __ . . __ . . __
+ 72
+    65
+ 73
+     8
+ 40
+2.5
+ 49
+0.5
+ 49
+-0.25
+ 49
+0.125
+ 49
+-0.25
+ 49
+0.25
+ 49
+-0.25
+ 49
+0.125
+ 49
+-0.25
+  0
+LTYPE
+  2
+DCTYPE2
+ 70
+    64
+  3
+__ . . __ . . __ . . __ . . __ . . __ . . __
+ 72
+    65
+ 73
+     6
+ 40
+2.05
+ 49
+1.0
+ 49
+-0.3
+ 49
+0.15
+ 49
+-0.15
+ 49
+0.15
+ 49
+-0.3
+  0
+LTYPE
+  2
+DCTYPE3
+ 70
+    64
+  3
+__ . . __ . . __ . . __ . . __ . . __ . . __
+ 72
+    65
+ 73
+     6
+ 40
+2.5
+ 49
+0.8
+ 49
+-0.2
+ 49
+0.8
+ 49
+-0.2
+ 49
+0.3
+ 49
+-0.2
+  0
+LTYPE
+  2
+DCTYPE4
+ 70
+    64
+  3
+__ . . __ . . __ . . __ . . __ . . __ . . __
+ 72
+    65
+ 73
+     10
+ 40
+3.97
+ 49
+1.75
+ 49
+-0.3
+ 49
+0.3
+ 49
+-0.3
+ 49
+0.06
+ 49
+-0.3
+ 49
+0.06
+ 49
+-0.3
+ 49
+0.3
+ 49
+-0.3
+  0
+ENDTAB
+  0
+TABLE
+  2
+LAYER
+ 70
+    153
+  0
+LAYER
+  2
+0
+ 70
+ 64
+ 62
+     7
+  6
+CONTINUOUS
+  0
+ENDTAB
+  0
+ENDSEC
+  0
+SECTION
+  2
+BLOCKS
+  0
+ENDSEC
+  0
+SECTION
+  2
+ENTITIES
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.6957
+ 20
+2.5966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.6957
+ 20
+2.5966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.6957
+ 20
+2.5966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.6957
+ 20
+2.5966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.6957
+ 20
+2.5966
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.6956
+ 20
+2.9967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.6956
+ 20
+2.1966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.5706
+ 20
+2.1966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.5706
+ 20
+2.9967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.6956
+ 20
+2.9967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.7956
+ 20
+3.3967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.7956
+ 20
+3.5467
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.2456
+ 20
+3.5467
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.2456
+ 20
+3.3967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.7956
+ 20
+3.3967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.7956
+ 20
+3.5467
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.7956
+ 20
+3.7967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.2956
+ 20
+3.7967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.2956
+ 20
+3.5467
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.7956
+ 20
+3.5467
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.2099
+ 20
+1.7966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.2099
+ 20
+1.6680
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.8241
+ 20
+1.6680
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.8241
+ 20
+1.7966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.2099
+ 20
+1.7966
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.2099
+ 20
+1.6680
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.2099
+ 20
+1.4538
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.7813
+ 20
+1.4538
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.7813
+ 20
+1.6680
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.2099
+ 20
+1.6680
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.5456
+ 20
+2.6966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.5456
+ 20
+2.4466
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.3456
+ 20
+2.4466
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.3456
+ 20
+2.6966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.5456
+ 20
+2.6966
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.3956
+ 20
+3.3967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.3956
+ 20
+1.7966
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.1956
+ 20
+3.3967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.1956
+ 20
+1.7966
+  0
+SEQEND
+  8
+0
+  0
+CIRCLE
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.4002
+ 20
+1.6655
+ 40
+0.8175
+  0
+CIRCLE
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.4002
+ 20
+1.6655
+ 40
+0.1014
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.2602
+ 20
+2.4899
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.2718
+ 20
+2.6415
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.7268
+ 20
+2.6065
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.7151
+ 20
+2.4549
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.2602
+ 20
+2.4899
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.2718
+ 20
+2.6415
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.2913
+ 20
+2.8943
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.7968
+ 20
+2.8554
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.7773
+ 20
+2.6027
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.2718
+ 20
+2.6415
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.5401
+ 20
+0.8411
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.5285
+ 20
+0.6895
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.0735
+ 20
+0.7245
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.0852
+ 20
+0.8761
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.5401
+ 20
+0.8411
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.5285
+ 20
+0.6895
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.5090
+ 20
+0.4367
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.0035
+ 20
+0.4756
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.0230
+ 20
+0.7284
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.5285
+ 20
+0.6895
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4957
+ 20
+3.3966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4957
+ 20
+2.9967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4957
+ 20
+2.4966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4957
+ 20
+1.7966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.6957
+ 20
+1.7966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.6957
+ 20
+3.3966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4957
+ 20
+3.3966
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+2.1966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+2.4966
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6206
+ 20
+2.4966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6207
+ 20
+2.1966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+2.1966
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+2.1966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+2.4966
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+3.4967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+2.9967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+2.4966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+2.3966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.9457
+ 20
+2.3966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.9457
+ 20
+3.4967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+3.4967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+3.3967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+2.2966
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+2.1966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+2.3966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.5956
+ 20
+2.3966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.5956
+ 20
+2.1966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+2.1966
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+2.4966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.8957
+ 20
+2.4966
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.3956
+ 20
+3.3967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.4956
+ 20
+3.3967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.4957
+ 20
+3.1717
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.4957
+ 20
+2.9217
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.5957
+ 20
+2.9217
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.7957
+ 20
+2.9217
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.7957
+ 20
+2.9217
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.7957
+ 20
+3.1717
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.7957
+ 20
+3.1717
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.7957
+ 20
+2.4966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.6957
+ 20
+2.7967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.6957
+ 20
+3.1800
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.4957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.8957
+ 20
+3.5967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.8957
+ 20
+2.4966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.7957
+ 20
+2.4966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.7957
+ 20
+2.7967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.7957
+ 20
+3.2967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.7957
+ 20
+3.5967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.8957
+ 20
+3.5967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.6457
+ 20
+3.2967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.6457
+ 20
+2.7967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.7457
+ 20
+2.7967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.7457
+ 20
+2.7967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.6957
+ 20
+3.2967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.6457
+ 20
+3.2967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.7957
+ 20
+3.5967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.6957
+ 20
+3.2967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.7957
+ 20
+3.5967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.7957
+ 20
+2.4966
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.0957
+ 20
+2.8967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.5957
+ 20
+2.8967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.4957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.4957
+ 20
+2.8967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.3957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.3957
+ 20
+2.8967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.2957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.3957
+ 20
+2.8967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.2957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.2957
+ 20
+2.8967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.1957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.1957
+ 20
+2.8967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.0957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.0957
+ 20
+2.8967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.0957
+ 20
+2.8967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.0957
+ 20
+2.8967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.6957
+ 20
+2.8967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.5957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.0957
+ 20
+2.8967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.1957
+ 20
+2.8967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.0957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.0957
+ 20
+2.8967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9957
+ 20
+2.8967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.8957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.7957
+ 20
+2.8967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.6957
+ 20
+3.1967
+  0
+SEQEND
+  8
+0
+  0
+CIRCLE
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.4458
+ 20
+2.1966
+ 40
+0.3000
+  0
+CIRCLE
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-7.9958
+ 20
+1.2466
+ 40
+0.1000
+  0
+CIRCLE
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.7958
+ 20
+1.2466
+ 40
+0.1000
+  0
+CIRCLE
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.4458
+ 20
+2.1966
+ 40
+0.5500
+  0
+CIRCLE
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.4458
+ 20
+2.1966
+ 40
+0.1250
+  0
+CIRCLE
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-7.8957
+ 20
+1.6466
+ 40
+0.1000
+  0
+CIRCLE
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.8958
+ 20
+1.6466
+ 40
+0.1000
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.3958
+ 20
+1.2466
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-7.6457
+ 20
+1.5966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.1958
+ 20
+2.5967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.6958
+ 20
+2.5967
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-9.0958
+ 20
+1.5466
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-9.0958
+ 20
+1.5466
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.3958
+ 20
+1.2466
+  0
+SEQEND
+  8
+0
+  0
+ARC
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-8.4002
+ 20
+1.6655
+ 40
+0.4056
+ 50
+-138.4731
+ 51
+-32.6626
+  0
+TEXT
+  8
+0
+ 62
+     7
+ 10
+-4.1456
+ 20
+2.8467
+ 40
+0.3000
+  1
+Astro Flight
+ 72
+     5
+ 11
+-2.3956
+ 21
+2.8467
+  0
+TEXT
+  8
+0
+ 62
+     7
+ 10
+-4.1456
+ 20
+2.1466
+ 40
+0.3500
+ 50
+0.0000
+ 51
+0.0000
+  1
+C40Geared
+ 72
+     5
+ 11
+-2.3956
+ 21
+2.1466
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.8456
+ 20
+0.0966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.8456
+ 20
+1.2466
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+0.4045
+ 20
+1.2466
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+0.4045
+ 20
+0.0966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.8456
+ 20
+0.0966
+  0
+SEQEND
+  8
+0
+  0
+TEXT
+  8
+0
+ 62
+     7
+ 10
+-2.7956
+ 20
+0.8966
+ 40
+0.3000
+  1
+Cobalt 40 Geared
+ 72
+     5
+ 11
+0.3545
+ 21
+0.8966
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.7956
+ 20
+0.8466
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+0.4045
+ 20
+0.8466
+  0
+SEQEND
+  8
+0
+  0
+TEXT
+  8
+0
+ 62
+     7
+ 10
+-2.7956
+ 20
+0.5466
+ 40
+0.2500
+  1
+Astro Flight
+ 72
+     5
+ 11
+0.4045
+ 21
+0.5466
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.8456
+ 20
+0.4966
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+0.4045
+ 20
+0.4966
+  0
+SEQEND
+  8
+0
+  0
+TEXT
+  8
+0
+ 62
+     7
+ 10
+-2.7956
+ 20
+0.1466
+ 40
+0.1895
+  1
+Bill Bowne  Dec '92
+ 72
+     5
+ 11
+0.3545
+ 21
+0.1466
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.8397
+ 20
+5.0808
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.8397
+ 20
+5.0808
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.8397
+ 20
+5.0808
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.8397
+ 20
+5.0808
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.8397
+ 20
+5.0808
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.8396
+ 20
+5.4809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.8396
+ 20
+4.6809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.7146
+ 20
+4.6809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.7146
+ 20
+5.4809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.8396
+ 20
+5.4809
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.6896
+ 20
+5.1809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.6896
+ 20
+4.9309
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.4896
+ 20
+4.9309
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.4896
+ 20
+5.1809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.6896
+ 20
+5.1809
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.5396
+ 20
+5.8809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.5396
+ 20
+4.2809
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.3397
+ 20
+5.8809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.3397
+ 20
+4.2809
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+5.8808
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+5.4809
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+4.9809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+4.2808
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.8397
+ 20
+4.2808
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.8397
+ 20
+5.8808
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+5.8808
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+4.6809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+4.9809
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+4.6809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+4.9809
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+5.8809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+4.7809
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.5397
+ 20
+5.8809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+5.8809
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.6345
+ 20
+5.2393
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.6345
+ 20
+4.9893
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.7345
+ 20
+4.9893
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9346
+ 20
+4.9893
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.9346
+ 20
+4.9893
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.9346
+ 20
+5.2393
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9346
+ 20
+5.2393
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9346
+ 20
+4.5643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.8346
+ 20
+4.8643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.8346
+ 20
+5.2476
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.6345
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.0346
+ 20
+5.6643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.0346
+ 20
+4.5643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9346
+ 20
+4.5643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9346
+ 20
+4.8643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9346
+ 20
+5.3643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9346
+ 20
+5.6643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.0346
+ 20
+5.6643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.7845
+ 20
+5.3643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.7846
+ 20
+4.8643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.8846
+ 20
+4.8643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.8846
+ 20
+4.8643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.8346
+ 20
+5.3643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.7845
+ 20
+5.3643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9346
+ 20
+5.6643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.8346
+ 20
+5.3643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9346
+ 20
+5.6643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.9346
+ 20
+4.5643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.2346
+ 20
+4.9643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.1346
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.7346
+ 20
+4.9643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.6346
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.6346
+ 20
+4.9643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.5346
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.5346
+ 20
+4.9643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.4346
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.5346
+ 20
+4.9643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.4346
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.4346
+ 20
+4.9643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.3346
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.3346
+ 20
+4.9643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.2346
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.2346
+ 20
+4.9643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.1346
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.2346
+ 20
+4.9643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.1346
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.2346
+ 20
+4.9643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.1346
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.8346
+ 20
+4.9643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.7346
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.2346
+ 20
+4.9643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.1346
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.3346
+ 20
+4.9643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.2346
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.2346
+ 20
+4.9643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.1346
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.1346
+ 20
+4.9643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.0346
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.9346
+ 20
+4.9643
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-6.8346
+ 20
+5.2643
+  0
+SEQEND
+  8
+0
+  0
+TEXT
+  8
+0
+ 62
+     7
+ 10
+-4.2897
+ 20
+5.3309
+ 40
+0.3000
+  1
+Astro Flight
+ 72
+     5
+ 11
+-2.5396
+ 21
+5.3309
+  0
+TEXT
+  8
+0
+ 62
+     7
+ 10
+-4.2897
+ 20
+4.6309
+ 40
+0.3500
+ 50
+0.0000
+ 51
+0.0000
+  1
+C40Geared
+ 72
+     5
+ 11
+-2.5396
+ 21
+4.6309
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.9396
+ 20
+5.8809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.9396
+ 20
+5.9169
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.3896
+ 20
+5.9169
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.3896
+ 20
+5.8809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.9396
+ 20
+5.8809
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.3539
+ 20
+4.2809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.3539
+ 20
+4.2401
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.9682
+ 20
+4.2401
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-1.9682
+ 20
+4.2809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-2.3539
+ 20
+4.2809
+  0
+SEQEND
+  8
+0
+  0
+TEXT
+  8
+0
+ 62
+     7
+ 10
+-1.9606
+ 20
+4.4664
+ 40
+0.4372
+  1
+Top
+ 72
+     5
+ 11
+-1.9452
+ 21
+5.6906
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6866
+ 20
+4.6809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+4.6809
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+4.9809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+4.8809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6866
+ 20
+4.8809
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+4.6809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+4.8809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6866
+ 20
+4.8809
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6866
+ 20
+4.6809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+4.6809
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+4.9809
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6866
+ 20
+4.9809
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+5.9117
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6397
+ 20
+5.4809
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.0845
+ 20
+4.7236
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.0845
+ 20
+5.4951
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.0572
+ 20
+4.7818
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.0572
+ 20
+5.4295
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.6552
+ 20
+5.4295
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.6552
+ 20
+4.7818
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.0572
+ 20
+4.7818
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.0572
+ 20
+5.7783
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.0572
+ 20
+4.4330
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.0074
+ 20
+5.4794
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.5590
+ 20
+5.4794
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.0572
+ 20
+4.7320
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6088
+ 20
+4.7320
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.0572
+ 20
+4.4330
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6586
+ 20
+4.4330
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6586
+ 20
+4.3832
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.6586
+ 20
+5.7783
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.0572
+ 20
+5.7783
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.0572
+ 20
+4.3832
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.9576
+ 20
+3.4863
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.9576
+ 20
+2.4400
+  0
+SEQEND
+  8
+0
+  0
+POLYLINE
+  8
+0
+ 62
+     7
+ 66
+     1
+  6
+CONTINUOUS
+ 40
+0.0200
+ 41
+0.0200
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.9576
+ 20
+3.3368
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.9576
+ 20
+2.7389
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.5057
+ 20
+2.7389
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-5.5057
+ 20
+3.3368
+  0
+VERTEX
+  8
+0
+ 62
+     7
+  6
+CONTINUOUS
+ 10
+-4.9576
+ 20
+3.3368
+  0
+SEQEND
+  8
+0
+  0
+ENDSEC
+  0
+EOF

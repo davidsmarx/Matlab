@@ -1,0 +1,25 @@
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual C++ Express 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "model3d", "model3d.vcproj", "{91DC96DF-6480-48B7-A6FC-ACFE5964EC70}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "serialize", "serialize\serialize.vcproj", "{7722C22F-E10A-4879-A122-A8DB89856E45}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{91DC96DF-6480-48B7-A6FC-ACFE5964EC70}.Debug|Win32.ActiveCfg = Debug|Win32
+		{91DC96DF-6480-48B7-A6FC-ACFE5964EC70}.Debug|Win32.Build.0 = Debug|Win32
+		{91DC96DF-6480-48B7-A6FC-ACFE5964EC70}.Release|Win32.ActiveCfg = Release|Win32
+		{91DC96DF-6480-48B7-A6FC-ACFE5964EC70}.Release|Win32.Build.0 = Release|Win32
+		{7722C22F-E10A-4879-A122-A8DB89856E45}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7722C22F-E10A-4879-A122-A8DB89856E45}.Debug|Win32.Build.0 = Debug|Win32
+		{7722C22F-E10A-4879-A122-A8DB89856E45}.Release|Win32.ActiveCfg = Release|Win32
+		{7722C22F-E10A-4879-A122-A8DB89856E45}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,150 @@
+% Active X example using Film Star Design
+
+% First open Server
+Design = actxserver('Ftgdesign1.clsBasic');
+
+% list valid properties:
+get(Design)
+
+%   Angle = [ (1 by 1) single array]
+%	ArchiveMode = [ (1 by 1) int16 array]
+%	CieParams = 1931 x,y (2°) Illuminant A
+%	dbRecords = [ (1 by 1) int32 array]
+%	Design = .28075M .45441H .20177L
+%	DesignWave = [ (1 by 1) single array]
+%	EvalWave = [ (1 by 1) single array]
+%	FileDescription = <property unavailable>
+%	FileName = <property unavailable>
+%	FilePath = <property unavailable>
+%	Footer = 
+%	Header = FilmStar Report Generator||Page %d
+%	Layers = .28075M
+%.45441H
+%.20177L
+%
+%	Merit = [ (1 by 1) single array]
+%	NumLayers = [ (1 by 1) int16 array]
+%	PgmCaption = FilmStar DESIGN - FILM Archive Scotts AR coating
+%	PgmExe = Design1_32
+%	PgmPath = C:\Winfilm
+%	PlotAnnotation = 
+%	Pol = R
+%	Review = <property unavailable>
+%	RndNorm = [ (1 by 1) single array]
+%	Spectrum_X = [NaN]
+%	Spectrum_Y = [NaN]
+%	SubThick = [ (1 by 1) single array]
+%	Template = [ (1 by 153) char array]
+%	UserName = FTG Software  Princeton, NJ
+
+% list of valid methods (Design macro commands)
+invoke(Design)
+
+	AxesCopy = Void AxesCopy (Bool)
+	AxesDraw = Void AxesDraw ()
+	AxesPaste = Void AxesPaste ()
+	BandCtr = Void BandCtr (Float, Float, Variant(Pointer), Variant(Pointer), Short)
+	BandMax = Void BandMax (Float, Float, Variant(Pointer), Variant(Pointer))
+	BandWidth = Void BandWidth (Float, Float, Float, Variant(Pointer), Variant(Pointer))
+	BasActivate = Void BasActivate ()
+	BasChain = Void BasChain (String)
+	Busy = Void Busy (Bool)
+	CalcPlot = Void CalcPlot ()
+	CalcPlotDone = Void CalcPlotDone ()
+	CalcPlotStart = Void CalcPlotStart ()
+	CalcRand = Void CalcRand ()
+	Calculate = Void Calculate ()
+	CieActivate = Void CieActivate (Bool)
+	CieCalculate = Void CieCalculate (Bool)
+	CieWindow = Void CieWindow (Short)
+	ConfigOpen = Void ConfigOpen ()
+	DataClear = Void DataClear ()
+	DataConvert = Void DataConvert (Float, Float, Float)
+	DataCopy = Void DataCopy ()
+	DataExport = Void DataExport (String, String)
+	DataImport = Void DataImport (String, String)
+	DataPaste = Void DataPaste ()
+	dbActivate = Bool dbActivate (String)
+	dbClose = Void dbClose ()
+	dbDelete = Void dbDelete ()
+	dbGetText = String dbGetText (Short)
+	dbGetTextField = String dbGetTextField (String)
+	dbListFiles = Void dbListFiles (String)
+	dbNewRecord = Void dbNewRecord ()
+	dbSelectNext = Void dbSelectNext ()
+	dbSetText = Void dbSetText (Short, String)
+	dbSetTextField = Void dbSetTextField (String, String)
+	dbSqlExec = Bool dbSqlExec (String)
+	dbUpdate = Void dbUpdate ()
+	DefaultPath = Void DefaultPath (String, String, String, String)
+	DesignAdjust = Void DesignAdjust (Short, String, Float)
+	DesignConvert = Void DesignConvert (Short, Variant[opt])
+	DesignPaste = Void DesignPaste ()
+	DesignReverse = Void DesignReverse ()
+	DispBox = Void DispBox (String, Short, String)
+	Display = Void Display (String, String, Short, Short, String, Float, Short)
+	FileOpen = Bool FileOpen (String, Short)
+	FileSave = Bool FileSave (String, Short)
+	fMsgBox = Short fMsgBox (String, Short, String)
+	GetCie = Void GetCie (Variant(Pointer), Variant(Pointer), Variant(Pointer))
+	GetCieData = Void GetCieData (Variant(Pointer), Variant(Pointer), Variant(Pointer))
+	GetCieTri = Void GetCieTri (Variant(Pointer), Variant(Pointer), Variant(Pointer))
+	GetCieTriData = Void GetCieTriData (Variant(Pointer), Variant(Pointer), Variant(Pointer))
+	GetIndex = Void GetIndex (Short, Float, Variant(Pointer), Variant(Pointer))
+	GetLayers = [ (1 by 94) char array]
+	GramsOpen = Void GramsOpen ()
+	IndexCoeff = Float IndexCoeff (Variant(Pointer), Variant(Pointer))
+	IndexCopy = Void IndexCopy ()
+	IndexPaste = Bool IndexPaste ()
+	IniString = String IniString (String, String)
+	LineColor = Void LineColor (String)
+	Macro = Bool Macro (Variant(Pointer))
+	MainActivate = Void MainActivate ()
+	MainWindow = Void MainWindow (Short)
+	MonoLight = Void MonoLight (Float, Variant(Pointer), Short)
+	OptiClear = Void OptiClear ()
+	Optimize = Void Optimize (Short)
+	OptiVars = Void OptiVars (String)
+	PadString = String PadString (String, Short, Short)
+	PhaseSmooth = Void PhaseSmooth ()
+	PlotActivate = Void PlotActivate ()
+	PlotAnnotate = Void PlotAnnotate (Bool)
+	PlotClear = Void PlotClear ()
+	PlotClose = Void PlotClose ()
+	PlotConfig = Void PlotConfig (Int, Int, Int)
+	PlotCopy = Void PlotCopy (Short, Short)
+	PlotLegendOn = Void PlotLegendOn (Bool)
+	PlotNext = Void PlotNext ()
+	PlotRun = Void PlotRun (String)
+	PlotSave = Void PlotSave (String)
+	PlotSize = Void PlotSize (Short, Short, Short)
+	PlotWindow = Void PlotWindow (Short)
+	Replot = Void Replot ()
+	ReportPrint = Void ReportPrint ()
+	ReportSave = Void ReportSave (String)
+	ReportShow = Void ReportShow ()
+	SetCieMode = Void SetCieMode (Short, Short, Short)
+	SetIlluminant = Void SetIlluminant (Short, Float)
+	SetIndexCoeff = Void SetIndexCoeff (Short, Short, Float)
+	SetLayers = Void SetLayers (Variant(Pointer), Variant(Pointer))
+	sMsgBox = Void sMsgBox (String, Short, String)
+	SpecTargets = Bool SpecTargets (Bool, String, Float, Float, String)
+	StatusLabel = Void StatusLabel (String)
+	WaitTillReady = Void WaitTillReady ()
+	WbActivate = Void WbActivate ()
+	WbClear = Void WbClear (String)
+	WbCloseAll = Void WbCloseAll ()
+	WbCopy = Void WbCopy (String)
+	WbExit = Void WbExit ()
+	WbGetNum = Variant WbGetNum (String)
+	WbGetText = String WbGetText (String)
+	WbOpen = Bool WbOpen (String)
+	WbOpenHidden = Bool WbOpenHidden (String)
+	WbPaste = Void WbPaste (String)
+	WbRecalc = Void WbRecalc ()
+	WbResetLoop = Void WbResetLoop ()
+	WbSetFormula = Void WbSetFormula (String, String)
+	WbSetNum = Void WbSetNum (String, Variant)
+	WbSetText = Void WbSetText (String, String)
+	WbWindow = Void WbWindow (Variant(Pointer))
+	WriteIniString = Void WriteIniString (Variant(Pointer), Variant(Pointer), Variant(Pointer))

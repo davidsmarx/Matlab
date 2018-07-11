@@ -1,0 +1,14 @@
+﻿Build started 7/7/2014 2:57:05 PM.
+     1>Project "C:\Users\davidmarx\Documents\MATLAB\Zemax DDE Toolbox\mexReadZRD\mexReadZRD\mexReadZRD.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I"c:\program files\MATLAB\R2014a\extern\include" /Zi /nologo /W3 /WX- /Od /D MEXFUNCTION /D _WINDLL /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc110.pdb" /Gd /TP /errorReport:prompt ReadBufferCalcFields.cpp mexReadZRD.cpp
+         mexReadZRD.cpp
+     1>mexReadZRD.cpp(261): error C2065: 'logFile' : undeclared identifier
+     1>mexReadZRD.cpp(262): error C2065: 'logFile' : undeclared identifier
+         ReadBufferCalcFields.cpp
+         Generating Code...
+     1>Done Building Project "C:\Users\davidmarx\Documents\MATLAB\Zemax DDE Toolbox\mexReadZRD\mexReadZRD\mexReadZRD.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:02.10

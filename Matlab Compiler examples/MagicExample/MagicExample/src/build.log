@@ -1,0 +1,144 @@
+mcc -o MagicExample -W main -d C:\tamar\Matlab\MagicExample\MagicExample\src -T link:exe -v C:\tamar\Matlab\MagicExample\magicsquare.m 
+mcc -o MagicExample -W main -d C:\tamar\Matlab\MagicExample\MagicExample\src -T link:exe -v C:\tamar\Matlab\MagicExample\magicsquare.m  
+Compiler version: 4.6 (R2007a) 
+Processing C:\Program Files\MATLAB\R2007a\toolbox\matlab\mcc.enc 
+Processing include files... 
+2 item(s) added. 
+Processing directories installed with MCR... 
+The file C:\tamar\Matlab\MagicExample\MagicExample\src\mccExcludedFiles.log contains a list of functions excluded from the CTF archive. 
+2 item(s) added. 
+Generating MATLAB path for the compiled application... 
+Created 39 path items. 
+Begin validation of MEX files: Wed Aug 08 14:46:53 2007 
+Validating 'C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\clc.mexw32'. 
+Found M-file 'C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\clc.m'. 
+MEX file 
+    'C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\clc.mexw32' 
+ is valid. It contains 'mexFunction.' 
+Validating 'C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\deploywhich.mexw32'. 
+No conflicting M-file found. 
+Validating 'C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\readline.mexw32'. 
+No conflicting M-file found. 
+End validation of MEX files: Wed Aug 08 14:46:53 2007 
+Deleting 3 temporary MEX authorization files. 
+Removing: 'C:\DOCUME~1\dmarx\LOCALS~1\Temp\mathworks_tmp_20665_2960.auth'. 
+Removing: 'C:\DOCUME~1\dmarx\LOCALS~1\Temp\mathworks_tmp_31994_2960.auth'. 
+Removing: 'C:\DOCUME~1\dmarx\LOCALS~1\Temp\mathworks_tmp_18537_2960.auth'. 
+Parsing file "C:\tamar\Matlab\MagicExample\magicsquare.m" 
+	(Referenced from: "Compiler Command Line"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\matlabrc.m" 
+	(Referenced from: "Compiler Command Line"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\compiler\dirname.m" 
+	(Referenced from: "Compiler Command Line"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\deployprint.m" 
+	(Referenced from: "Compiler Command Line"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\printdlg.m" 
+	(Referenced from: "Compiler Command Line"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\elmat\magic.m" 
+	(Referenced from: "C:\tamar\Matlab\MagicExample\magicsquare.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\strfun\str2num.m" 
+	(Referenced from: "C:\tamar\Matlab\MagicExample\magicsquare.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\iofun\filesep.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\matlabrc.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\hgrc.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\matlabrc.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\codetools\initdesktoputils.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\matlabrc.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\local\initprefs.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\matlabrc.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\general\isdeployed.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\matlabrc.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\general\ispc.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\matlabrc.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\lang\lasterror.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\matlabrc.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\local\pathdef.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\matlabrc.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\general\pwd.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\matlabrc.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\general\recycle.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\matlabrc.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\local\reporterrorlogs.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\matlabrc.m"). 
+Parsing file "C:\tamar\Matlab\startup.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\matlabrc.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\strfun\str2double.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\matlabrc.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\general\usejava.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\matlabrc.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\iofun\fileparts.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\dirname.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\timefun\datestr.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\deployprint.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\graphics\getappdata.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\deployprint.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\datatypes\isfield.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\deployprint.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\uitools\msgbox.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\deployprint.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\timefun\now.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\deployprint.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\datatypes\num2cell.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\deployprint.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\strfun\num2str.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\deployprint.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\graphics\orient.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\deployprint.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\graphics\print.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\deployprint.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\iofun\tempname.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\deployprint.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\general\path.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\printdlg.m"). 
+Parsing file "C:\Program Files\MATLAB\R2007a\toolbox\matlab\general\rmpath.m" 
+	(Referenced from: "C:\Program Files\MATLAB\R2007a\toolbox\compiler\deploy\printdlg.m"). 
+Generating file "C:\tamar\Matlab\MagicExample\MagicExample\src\MagicExample_main.c". 
+Generating file "C:\tamar\Matlab\MagicExample\MagicExample\src\readme.txt". 
+Generating file "C:\tamar\Matlab\MagicExample\MagicExample\src\MagicExample_mcc_component_data.c". 
+Executing command: mbuild -O -v -output "MagicExample" -I"C:\tamar\Matlab\MagicExample\MagicExample\src" "C:\tamar\Matlab\MagicExample\MagicExample\src\MagicExample_main.c" "C:\tamar\Matlab\MagicExample\MagicExample\src\MagicExample_mcc_component_data.c" -link exe -outdir "C:\tamar\Matlab\MagicExample\MagicExample\src" 
+ This is mbuild Copyright 1984-2006 The MathWorks, Inc. 
+ 
+-> Default options filename found in C:\Documents and Settings\dmarx\Application Data\MathWorks\MATLAB\R2007a 
+---------------------------------------------------------------- 
+->    Options file           = C:\Documents and Settings\dmarx\Application Data\MathWorks\MATLAB\R2007a\compopts.bat 
+->    COMPILER               = lcc 
+->    Compiler flags: 
+         COMPFLAGS           = -c -Zp8 -I"C:\PROGRA~1\MATLAB\R2007a\sys\lcc\include" -noregistrylookup 
+         OPTIMFLAGS          = -DNDEBUG 
+         DEBUGFLAGS          = -g4 
+         arguments           =  -IC:\tamar\Matlab\MagicExample\MagicExample\src 
+         Name switch         = -Fo 
+->    Pre-linking commands   =  
+->    LINKER                 = lcclnk 
+->    Link directives: 
+         LINKFLAGS           = -tmpdir "C:\tamar\Matlab\MagicExample\MagicExample\src\." -L"C:\PROGRA~1\MATLAB\R2007a\sys\lcc\lib" -libpath "C:\PROGRA~1\MATLAB\R2007a\extern\lib\win32\lcc" 
+         LINKFLAGSPOST       = mclmcrrt.lib 
+         Name directive      = -o "C:\tamar\Matlab\MagicExample\MagicExample\src\MagicExample.exe" 
+         File link directive =  
+         Lib. link directive =  
+         Rsp file indicator  = @ 
+->    Resource Compiler      =  
+->    Resource Linker        =  
+---------------------------------------------------------------- 
+ 
+ 
+--> "lcc  -IC:\tamar\Matlab\MagicExample\MagicExample\src -c -Zp8 -I"C:\PROGRA~1\MATLAB\R2007a\sys\lcc\include" -noregistrylookup -FoC:\DOCUME~1\dmarx\LOCALS~1\Temp\mbuild_63C53171-0157-4EB0-BA93-CD21FC175961\MagicExample_main.obj -IC:\PROGRA~1\MATLAB\R2007a\extern\include -DNDEBUG C:\tamar\Matlab\MagicExample\MagicExample\src\MagicExample_main.c" 
+ 
+ 
+--> "lcc  -IC:\tamar\Matlab\MagicExample\MagicExample\src -c -Zp8 -I"C:\PROGRA~1\MATLAB\R2007a\sys\lcc\include" -noregistrylookup -FoC:\DOCUME~1\dmarx\LOCALS~1\Temp\mbuild_63C53171-0157-4EB0-BA93-CD21FC175961\MagicExample_mcc_component_data.obj -IC:\PROGRA~1\MATLAB\R2007a\extern\include -DNDEBUG C:\tamar\Matlab\MagicExample\MagicExample\src\MagicExample_mcc_component_data.c" 
+ 
+    Contents of C:\DOCUME~1\dmarx\LOCALS~1\Temp\mbuild_63C53171-0157-4EB0-BA93-CD21FC175961\mbuild_tmp.rsp: 
+  C:\DOCUME~1\dmarx\LOCALS~1\Temp\mbuild_63C53171-0157-4EB0-BA93-CD21FC175961\MagicExample_main.obj  C:\DOCUME~1\dmarx\LOCALS~1\Temp\mbuild_63C53171-0157-4EB0-BA93-CD21FC175961\MagicExample_mcc_component_data.obj 
+ 
+ 
+--> "lcclnk -o "C:\tamar\Matlab\MagicExample\MagicExample\src\MagicExample.exe" -tmpdir "C:\tamar\Matlab\MagicExample\MagicExample\src\." -L"C:\PROGRA~1\MATLAB\R2007a\sys\lcc\lib" -libpath "C:\PROGRA~1\MATLAB\R2007a\extern\lib\win32\lcc"  @C:\DOCUME~1\dmarx\LOCALS~1\Temp\mbuild_63C53171-0157-4EB0-BA93-CD21FC175961\mbuild_tmp.rsp  mclmcrrt.lib" 
+ 
+ 
+--> "if exist C:\DOCUME~1\dmarx\LOCALS~1\Temp\mbuild_63C53171-0157-4EB0-BA93-CD21FC175961\templib.def del C:\DOCUME~1\dmarx\LOCALS~1\Temp\mbuild_63C53171-0157-4EB0-BA93-CD21FC175961\templib.def" 
+ 
+ 
+--> "if exist %LIB_NAME_stub.obj del %LIB_NAME_stub.obj" 
+ 
+DEMO Compiler license. 
+  The generated application will expire 30 days from today, 
+  on Fri Sep 07 14:46:54 2007. 

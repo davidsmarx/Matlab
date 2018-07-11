@@ -1,0 +1,11 @@
+﻿Build started 6/16/2014 6:04:00 PM.
+     1>Project "C:\Users\davidmarx\Documents\multi incoh sources 2014-05-02\test all sources to zrd\mexReadZRD\mexReadZRD\mexReadZRD.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D MEXFUNCTION /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt mexReadZRD.cpp
+         mexReadZRD.cpp
+     1>c:\users\davidmarx\documents\multi incoh sources 2014-05-02\test all sources to zrd\mexreadzrd\mexreadzrd\mexreadzrd.cpp(18): fatal error C1083: Cannot open include file: 'mex.h': No such file or directory
+     1>Done Building Project "C:\Users\davidmarx\Documents\multi incoh sources 2014-05-02\test all sources to zrd\mexReadZRD\mexReadZRD\mexReadZRD.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.90

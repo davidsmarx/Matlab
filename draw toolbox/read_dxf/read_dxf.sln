@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "read_dxf", "read_dxf.vcproj", "{F11AD248-81A7-4BA8-ABF1-63DEF5B1BDC1}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{F11AD248-81A7-4BA8-ABF1-63DEF5B1BDC1}.Debug.ActiveCfg = Debug|Win32
+		{F11AD248-81A7-4BA8-ABF1-63DEF5B1BDC1}.Debug.Build.0 = Debug|Win32
+		{F11AD248-81A7-4BA8-ABF1-63DEF5B1BDC1}.Release.ActiveCfg = Release|Win32
+		{F11AD248-81A7-4BA8-ABF1-63DEF5B1BDC1}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

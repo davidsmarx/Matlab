@@ -1,0 +1,1050 @@
+!
+!  UIDiffraction.f90 - This file contains the implementation of the
+!                    IDiffraction methods
+!
+    ! IDiffraction_get_dx
+    function IDiffraction_get_dx( ObjectData ,&
+             VALUE) result (hresult)
+        use Diffraction_Types
+        use Wavefronts
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(out) :: VALUE
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        call GetWavefrontSampling(ObjectData%wvfront, dx=VALUE)
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_put_dx
+    function IDiffraction_put_dx( ObjectData ,&
+             VALUE) result (hresult)
+        use Diffraction_Types
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: VALUE
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        ObjectData%dx = VALUE
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_get_dy
+    function IDiffraction_get_dy( ObjectData ,&
+             VALUE) result (hresult)
+        use Diffraction_Types
+        use Wavefronts
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(out) :: VALUE
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        call GetWavefrontSampling(ObjectData%wvfront, dy=VALUE)
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_put_dy
+    function IDiffraction_put_dy( ObjectData ,&
+             VALUE) result (hresult)
+        use Diffraction_Types
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: VALUE
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        ObjectData%dy = VALUE
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_get_wavelength
+    function IDiffraction_get_wavelength( ObjectData ,&
+             VALUE) result (hresult)
+        use Diffraction_Types
+        use Wavefronts
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(out) :: VALUE
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        VALUE = WavefrontWavelength(ObjectData%wvfront)
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_put_wavelength
+    function IDiffraction_put_wavelength( ObjectData ,&
+             VALUE) result (hresult)
+        use Diffraction_Types
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: VALUE
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        ObjectData%wavelength = VALUE
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_get_curvature
+    function IDiffraction_get_curvature( ObjectData ,&
+             VALUE) result (hresult)
+        use Diffraction_Types
+        use Wavefronts
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(out) :: VALUE
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        VALUE = WavefrontCurvature(ObjectData%wvfront)
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_put_curvature
+    function IDiffraction_put_curvature( ObjectData ,&
+             VALUE) result (hresult)
+        use Diffraction_Types
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: VALUE
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        ObjectData%curvature = VALUE
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_get_Nx
+    function IDiffraction_get_Nx( ObjectData ,&
+             VALUE) result (hresult)
+        use Diffraction_Types
+        use Wavefronts
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        INTEGER(4), intent(out) :: VALUE
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        call GetWavefrontSampling(ObjectData%wvfront, Nx=VALUE)
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_put_Nx
+    function IDiffraction_put_Nx( ObjectData ,&
+             VALUE) result (hresult)
+        use Diffraction_Types
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        INTEGER(4), intent(in) :: VALUE
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        ObjectData%Nx = VALUE
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_get_Ny
+    function IDiffraction_get_Ny( ObjectData ,&
+             VALUE) result (hresult)
+        use Diffraction_Types
+        use Wavefronts
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        INTEGER(4), intent(out) :: VALUE
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        call GetWavefrontSampling(ObjectData%wvfront, Ny=VALUE)
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_put_Ny
+    function IDiffraction_put_Ny( ObjectData ,&
+             VALUE) result (hresult)
+        use Diffraction_Types
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        INTEGER(4), intent(in) :: VALUE
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        ObjectData%Ny = VALUE
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_x_vector_get
+    function IDiffraction_x_vector_get( ObjectData ,&
+             x_vector) result (hresult)
+        use Diffraction_Types
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(inout) :: x_vector
+        DIMENSION x_vector(1:,1:)
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        integer nx, ny
+
+        nx = SIZE(x_vector,1)
+        ny = SIZE(x_vector,2)
+
+        IF (nx == ObjectData%Nx) THEN
+            x_vector(:,1) = ObjectData%x_vector
+        ELSEIF (ny == ObjectData%Nx) THEN
+            x_vector(1,:) = ObjectData%x_vector
+        ELSE 
+            ! error condition
+        ENDIF
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_y_vector_get
+    function IDiffraction_y_vector_get( ObjectData ,&
+             y_vector) result (hresult)
+        use Diffraction_Types
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(inout) :: y_vector
+        DIMENSION y_vector(1:,1:)
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        integer nx, ny
+
+        nx = SIZE(y_vector,1)
+        ny = SIZE(y_vector,2)
+
+        IF (nx == ObjectData%Ny) THEN
+            y_vector(:,1) = ObjectData%y_vector
+        ELSEIF (ny == ObjectData%Ny) THEN
+            y_vector(1,:) = ObjectData%y_vector
+        ELSE 
+            ! error condition
+        ENDIF
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_wavefront_put
+    function IDiffraction_wavefront_put( ObjectData ,&
+             amp_r,&
+			 amp_i) result (hresult)
+        use Diffraction_Types
+        use KINDS
+        use Wavefronts
+        use Error_Exit
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: amp_r
+        DIMENSION amp_r(1:,1:)
+        REAL(8), intent(in) :: amp_i
+        DIMENSION amp_i(1:,1:)
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        ! temporary complex array to hold amp_r + j*amp_i
+        COMPLEX(prc), ALLOCATABLE, DIMENSION(:,:) :: tmpbeam
+
+        ! check that size of input agrees with Ny and Nx
+        IF ( SIZE(amp_r,1).EQ.SIZE(amp_i,1) .AND. &
+             SIZE(amp_r,1).EQ.ObjectData%Ny .AND. &
+             SIZE(amp_r,2).EQ.SIZE(amp_i,2) .AND. &
+             SIZE(amp_r,2).EQ.ObjectData%Nx) THEN
+
+             ALLOCATE(tmpbeam(ObjectData%ny,ObjectData%Nx))
+             
+             tmpbeam = amp_r + CMPLX(0.0_pr,1.0_pr,prc)*amp_i
+
+             call CreateWavefront(ObjectData%wvfront, tmpbeam, &
+                 ObjectData%dx, ObjectData%dy, ObjectData%wavelength)
+
+             DEALLOCATE(tmpbeam)
+
+        ELSE
+            call ErrorExit("wavefront_put: size error")
+
+        ENDIF
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_wavefront_get
+    function IDiffraction_wavefront_get( ObjectData ,&
+             amp_r,&
+			 amp_i) result (hresult)
+        use Diffraction_Types
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(inout) :: amp_r
+        DIMENSION amp_r(1:,1:)
+        REAL(8), intent(inout) :: amp_i
+        DIMENSION amp_i(1:,1:)
+        integer(LONG) hresult
+         ! TODO:  Add implementation
+        COMPLEX(prc), ALLOCATABLE, DIMENSION(:,:) :: tmpbeam
+
+        call GetWavefrontParameters(ObjectData%wvfront, &
+            tmpbeam, ObjectData%dx, ObjectData%dy, &
+            ObjectData%wavelength, &
+            ObjectData%x_vector, ObjectData%y_vector, &
+            ObjectData%curvature )
+
+        amp_r = REAL(tmpbeam)
+        amp_i = IMAG(tmpbeam)
+
+        ! de-allocate temporary array
+        DEALLOCATE(tmpbeam)
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_WriteWavefrontUNF
+    function IDiffraction_WriteWavefrontUNF( ObjectData ,&
+             StrFilename) result (hresult)
+
+        use Diffraction_Types
+        use Wavefronts
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        CHARACTER(*), intent(in) :: StrFilename
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+
+        call WriteWavefrontUNF( ObjectData%wvfront, StrFilename )
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_ReadWavefrontUNF
+    function IDiffraction_ReadWavefrontUNF( ObjectData ,&
+             StrFilename) result (hresult)
+
+        use Diffraction_Types
+        use Wavefronts
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        CHARACTER(*), intent(in) :: StrFilename
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+
+        call ReadWavefrontUNF( ObjectData%wvfront, StrFilename )
+
+        call GetWavefrontParameters(ObjectData%wvfront, &
+            ObjectData%beam, ObjectData%dx, ObjectData%dy, &
+            ObjectData%wavelength, &
+            ObjectData%x_vector, ObjectData%y_vector, &
+            ObjectData%curvature )        
+                
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_WavefrontPower
+    function IDiffraction_WavefrontPower( ObjectData ,&
+             power) result (hresult)
+ 
+        use Diffraction_Types
+        use Kinds
+        use Wavefronts
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(out) :: power
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+
+        power = WavefrontPower(ObjectData%wvfront)
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_ApplyMask
+    function IDiffraction_ApplyMask( ObjectData ,&
+             length_r,&
+			 length_t,&
+			 offset,&
+			 direction) result (hresult)
+        
+        use Diffraction_Types
+        use IntMetRoutines
+        use Kinds
+        use Wavefronts
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: length_r
+        REAL(8), intent(in) :: length_t
+        REAL(8), intent(in) :: offset
+        CHARACTER(*), intent(in) :: direction
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        
+        call ApplyMask(ObjectData%wvfront, length_r, length_t, offset, direction)
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_ApplyMaskMisalign
+    function IDiffraction_ApplyMaskMisalign( ObjectData ,&
+             length_r,&
+			 length_t,&
+			 offset,&
+			 xc,&
+			 yc,&
+			 direction) result (hresult)
+
+        use Diffraction_Types
+        use IntMetRoutines
+        use Kinds
+        use Wavefronts
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: length_r
+        REAL(8), intent(in) :: length_t
+        REAL(8), intent(in) :: offset
+        REAL(8), intent(in) :: xc
+        REAL(8), intent(in) :: yc
+        CHARACTER(*), intent(in) :: direction
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+
+        call ApplyMask(ObjectData%wvfront, length_r, length_t, offset, direction, &
+            x_align=xc, y_align=yc )
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_ApplyMaskRotate
+    function IDiffraction_ApplyMaskRotate( ObjectData ,&
+             length_r,&
+			 length_t,&
+			 offset,&
+			 angle,&
+			 direction) result (hresult)
+
+        use Diffraction_Types
+        use IntMetRoutines
+        use Kinds
+        use Wavefronts
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: length_r
+        REAL(8), intent(in) :: length_t
+        REAL(8), intent(in) :: offset
+        REAL(8), intent(in) :: angle
+        CHARACTER(*), intent(in) :: direction
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+
+        call ApplyMaskRotate(ObjectData%wvfront, length_r, length_t, offset, angle, direction)
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_ApplyMaskGeneral
+    !! Subroutine for applying a more general mask consisting of two
+    !! rectangles symmetric about the origin
+   function IDiffraction_ApplyMaskGeneral( ObjectData ,&
+             len_x,&
+			 len_y,&
+			 off_x,&
+			 off_y) result (hresult)
+
+        use Diffraction_Types
+        use IntMetRoutines
+        use Kinds
+        use Wavefronts
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: len_x
+        REAL(8), intent(in) :: len_y
+        REAL(8), intent(in) :: off_x
+        REAL(8), intent(in) :: off_y
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+
+        ! call ApplyMaskGeneral
+        call ApplyMaskGeneral(ObjectData%wvfront, len_x, len_y, off_x, off_y)
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_ApplyMaskPoly
+    function IDiffraction_ApplyMaskPoly( ObjectData ,&
+             vertices,&
+             xc,&
+             yc) result (hresult)
+
+        use Diffraction_Types
+        use IntMetRoutines
+        use Kinds
+        use Wavefronts
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: vertices
+        DIMENSION vertices(1:,1:)
+        REAL(8), intent(in) :: xc
+        REAL(8), intent(in) :: yc
+         integer(LONG) hresult
+        ! TODO:  Add implementation
+        
+        call ApplyMaskPoly(ObjectData%wvfront, vertices, xc, yc)
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_ApplyMaskX
+    !! Mask consisting of four squares set on an 'X' pattern
+    !! radius = distance from origin to center of each of the four squares
+    !! length = side of each square
+    function IDiffraction_ApplyMaskX( ObjectData ,&
+             radius,&
+			 length) result (hresult)
+
+        use Diffraction_Types
+        use IntMetRoutines
+        use Kinds
+        use Wavefronts
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: radius
+        REAL(8), intent(in) :: length
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        
+        ! call ApplyMaskGeneral
+        call ApplyMaskX(ObjectData%wvfront, radius, length)
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_ApplyMaskXRounded
+    function IDiffraction_ApplyMaskXRounded( ObjectData ,&
+             radius,&
+			 length,&
+			 corner_rad) result (hresult)
+
+        use Diffraction_Types
+        use IntMetRoutines
+        use Kinds
+        use Wavefronts
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: radius
+        REAL(8), intent(in) :: length
+        REAL(8), intent(in) :: corner_rad
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+
+        ! call ApplyMask
+        call ApplyMaskXRounded(ObjectData%wvfront, radius, length, corner_rad)
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_CreateGausSource
+    function IDiffraction_CreateGausSource( ObjectData ,&
+             BeamWaistDiam) result (hresult)
+        
+        use Diffraction_Types
+        use Kinds
+        use Wavefronts
+
+        implicit none
+        
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        
+        REAL(8), intent(in) :: BeamWaistDiam ! 1/e^2 intensity diameter
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+
+        call GenGaussBeam(ObjectData%wvfront, &
+            ObjectData%Nx, ObjectData%Ny, &
+            ObjectData%dx, ObjectData%dy, &
+            ObjectData%wavelength, BeamWaistDiam)
+        
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_CreateTophatSource
+    function IDiffraction_CreateTophatSource( ObjectData ,&
+             BeamDiam) result (hresult)
+
+        use Diffraction_Types
+        use Kinds
+        use Wavefronts
+
+        implicit none
+
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+
+        REAL(8), intent(in) :: BeamDiam
+        integer(LONG) hresult
+
+        ! TODO:  Add implementation
+
+        call GenTopHatBeam(ObjectData%wvfront, &
+            ObjectData%Nx, ObjectData%Ny, &
+            ObjectData%dx, ObjectData%dy, &
+            ObjectData%wavelength, BeamDiam)
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_Propagate
+    function IDiffraction_Propagate( ObjectData ,&
+             Distance) result (hresult)
+
+        use Diffraction_Types
+        use Kinds
+        use Wavefronts
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: Distance
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+
+        call Propagate(ObjectData%wvfront, Distance, &
+            ObjectData%dx, ObjectData%dy, applyCurv=.TRUE. )
+
+        !! store new wavefront in object data
+        call GetWavefrontParameters(ObjectData%wvfront, &
+            ObjectData%beam, ObjectData%dx, ObjectData%dy, &
+            ObjectData%wavelength, &
+            ObjectData%x_vector, ObjectData%y_vector, &
+            ObjectData%curvature )
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_PropagateExt
+    function IDiffraction_PropagateExt( ObjectData ,&
+             Distance,&
+			 dxout,&
+			 dyout,&
+			 applyCurv) result (hresult)
+
+
+        use Diffraction_Types
+        use Kinds
+        use Wavefronts
+
+        implicit none
+
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: Distance
+        REAL(8), intent(in) :: dxout
+        REAL(8), intent(in) :: dyout
+        LOGICAL(4), intent(in) :: applyCurv
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+
+        call Propagate(ObjectData%wvfront, Distance, &
+            dxout, dyout, applyCurv)
+
+        !! store new wavefront in object data
+        call GetWavefrontParameters(ObjectData%wvfront, &
+            ObjectData%beam, ObjectData%dx, ObjectData%dy, &
+            ObjectData%wavelength, &
+            ObjectData%x_vector, ObjectData%y_vector, &
+            ObjectData%curvature )
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_CornerCube
+    ! create a CornerCube object and reflect wavefront on it
+    function IDiffraction_CornerCube( ObjectData ,&
+             ccsize,&
+			 shape,&
+			 xc,&
+			 yc,&
+			 spin,&
+			 gapwidth,&
+			 rotmatrix,&
+             dihedral,&
+			 edgelength) result (hresult)
+
+        use Diffraction_Types
+        use Kinds
+        use Wavefronts
+        use Corner_Cubes
+        use Array_Routines
+        use Error_Exit
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: ccsize
+        CHARACTER(*), intent(in) :: shape
+        REAL(8), intent(in) :: xc
+        REAL(8), intent(in) :: yc
+        REAL(8), intent(in) :: spin
+        REAL(8), intent(in) :: gapwidth
+        DIMENSION gapwidth(1:,1:)
+        REAL(8), intent(in) :: rotmatrix
+        DIMENSION rotmatrix(1:,1:)
+        REAL(8), intent(in) :: dihedral
+        DIMENSION dihedral(1:,1:)
+        REAL(8), intent(in) :: edgelength
+        DIMENSION edgelength(1:,1:)
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+
+        !! lcoal variables
+        type(CornerCube)         :: ccube
+        REAL(pr), DIMENSION(3,3) :: Rmatrix
+        REAL(pr)                 :: gw1, gw2, gw3, dh1, dh2, dh3, el1, el2, el3
+
+        ! parse input gapwidth
+        IF ( SIZE(gapwidth,2).EQ.3 ) THEN
+            gw1 = gapwidth(1,1)
+            gw2 = gapwidth(1,2)
+            gw3 = gapwidth(1,3)
+        ELSEIF ( SIZE(gapwidth,1).EQ.3 ) THEN
+            gw1 = gapwidth(1,1)
+            gw2 = gapwidth(2,1)
+            gw3 = gapwidth(3,1)
+        ELSE
+            call ErrorExit("gapwidth input must be vector of length 3")
+        ENDIF
+
+        ! parse input dihedral
+        IF ( SIZE(dihedral,2).EQ.3 ) THEN
+            dh1 = dihedral(1,1)
+            dh2 = dihedral(1,2)
+            dh3 = dihedral(1,3)
+        ELSEIF ( SIZE(dihedral,1).EQ.3 ) THEN
+            dh1 = dihedral(1,1)
+            dh2 = dihedral(2,1)
+            dh3 = dihedral(3,1)
+        ELSE
+            call ErrorExit("dihedral input must be vector of length 3")
+        ENDIF
+
+        ! parse input edgelength
+        IF ( SIZE(edgelength,2).EQ.3 ) THEN
+            el1 = edgelength(1,1)
+            el2 = edgelength(1,2)
+            el3 = edgelength(1,3)
+        ELSEIF ( SIZE(edgelength,1).EQ.3 ) THEN
+            el1 = edgelength(1,1)
+            el2 = edgelength(2,1)
+            el3 = edgelength(3,1)
+        ELSE
+            call ErrorExit("edgelength input must be vector of length 3")
+        ENDIF
+
+        ! check that input rotmatrix is 3 x 3
+        IF ( SIZE(rotmatrix,1).NE.3 .OR. SIZE(rotmatrix,2).NE.3 ) THEN
+            call ErrorExit("rotmatrix input must be 3 x 3")
+        ENDIF
+
+        ! create corner cube object and apply to wavefront
+        call NewCornerCube( ccube,                  &
+            ccsize, shape, xc, yc, spin, rotmatrix, &
+            dh1, dh2, dh3,                          & ! dihedral
+            gw1, gw2, gw3,                          & ! gap widths
+            el1, el2, el3 )                           ! edge lengths
+
+        call ReflectFromCornerCube( ccube, ObjectData%wvfront )
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_focuslens
+    ! result = focuslens(real(beam),imag(beam))
+    function IDiffraction_focuslens( ObjectData, &
+             focuslens_f,&
+			 focuslens_D,&
+			 dxout,&
+			 dyout) result (hresult)
+        use Diffraction_Types
+        use KINDS
+        use Wavefronts
+        use IntMetRoutines
+
+        implicit none
+
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: focuslens_f
+        REAL(8), intent(in) :: focuslens_D
+        REAL(8), intent(in) :: dxout
+        REAL(8), intent(in) :: dyout
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        
+        !! call FocusLens
+        call FocusLens( ObjectData%wvfront, focuslens_f, focuslens_D, dxout, dyout )
+
+        !! and set the other parameters
+        call GetWavefrontParameters(ObjectData%wvfront, &
+            ObjectData%beam, ObjectData%dx, ObjectData%dy, &
+            ObjectData%wavelength, &
+            ObjectData%x_vector, ObjectData%y_vector, &
+            ObjectData%curvature )
+                
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_ReflectAsphere
+    function IDiffraction_ReflectAsphere( ObjectData ,&
+             rCurv,&
+			 conicConst,&
+			 diam,&
+			 xDecenter,&
+			 yDecenter,&
+			 incidenceAngle,&
+			 azimuth,&
+			 applyCurv) result (hresult)
+        
+        use Diffraction_Types
+        use Wavefronts
+        use Optics_Routines
+
+        implicit none
+        
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: rCurv
+        REAL(8), intent(in) :: conicConst
+        REAL(8), intent(in) :: diam
+        REAL(8), intent(in) :: xDecenter
+        REAL(8), intent(in) :: yDecenter
+        REAL(8), intent(in) :: incidenceAngle
+        REAL(8), intent(in) :: azimuth
+        INTEGER(4), intent(in) :: applyCurv
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+        
+        ! local variables
+        type(asphere)   mirror
+        logical         logAC
+
+        !! make asphere object from input values
+        call SetAsphereProperties( mirror, rCurv, conicConst, diam, &
+                                    xDecenter, yDecenter )
+
+        IF (applyCurv .NE. 0) THEN
+            logAC = .TRUE.
+        ELSE
+            logAC = .FALSE.
+        ENDIF
+
+        !! apply the mirror to the wavefront
+        call Reflect( mirror, ObjectData%wvfront, incidenceAngle, azimuth, logAC )
+ 
+        !! store new wavefront in object data
+        call GetWavefrontParameters(ObjectData%wvfront, &
+            ObjectData%beam, ObjectData%dx, ObjectData%dy, &
+            ObjectData%wavelength, &
+            ObjectData%x_vector, ObjectData%y_vector, &
+            ObjectData%curvature )        
+        
+        hresult = S_OK
+    end function
+
+
+    ! IDiffraction_PistonTiltFocus
+    function IDiffraction_PistonTiltFocus( ObjectData ,&
+             piston,&
+			 xtilt,&
+			 ytilt,&
+			 focus,&
+			 xc,&
+			 yc) result (hresult)
+
+        use Diffraction_Types
+        use Kinds
+        use Wavefronts
+
+        implicit none
+
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: piston
+        REAL(8), intent(in) :: xtilt
+        REAL(8), intent(in) :: ytilt
+        REAL(8), intent(in) :: focus
+        REAL(8), intent(in) :: xc
+        REAL(8), intent(in) :: yc
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+
+        call PistonTiltFocus( ObjectData%wvfront, piston, xtilt, ytilt, &
+             focus, xc, yc )
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_ClipCirc
+    function IDiffraction_ClipCirc( ObjectData ,&
+             Diameter, xc, yc, obscDiam) result (hresult)
+    ! clip the wavefront by a circular aperture with
+    ! Diameter = Diameter
+    ! xc, yc = center coordinate of aperture
+    ! obscDiam (optional) = Diameter of center obscuration for creating an annulus
+    ! if obscDiam > Diameter, then apply only obscuration to wavefront
+
+        use Diffraction_Types
+        use Kinds
+        use Wavefronts
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: Diameter
+        REAL(8), intent(in) :: xc
+        REAL(8), intent(in) :: yc
+        REAL(8), intent(in), optional :: obscDiam
+
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+
+        IF ( PRESENT( obscDiam ) ) THEN
+            IF ( obscDiam .GE. Diameter ) THEN
+                call ClipCirc( ObjectData%wvfront, obscDiam, xc, yc, obsc=.TRUE. )
+            ELSE
+                call ClipCirc( ObjectData%wvfront, Diameter, xc, yc )
+                call ClipCirc( ObjectData%wvfront, obscDiam, xc, yc, obsc=.TRUE. )
+            ENDIF
+        ELSE
+            call ClipCirc( ObjectData%wvfront, Diameter, xc, yc )
+        ENDIF
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_ClipRect
+    function IDiffraction_ClipRect( ObjectData ,&
+             len_x,&
+			 len_y,&
+			 off_x,&
+			 off_y,&
+             obscFlag) result (hresult)
+    ! if obsc is present, make obscuration mask
+
+        use Diffraction_Types
+        use Kinds
+        use Wavefronts
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: len_x
+        REAL(8), intent(in) :: len_y
+        REAL(8), intent(in) :: off_x
+        REAL(8), intent(in) :: off_y
+        INTEGER(8), intent(in), optional :: obscFlag
+ 
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+ 
+        IF ( PRESENT( obscFlag ) ) THEN
+        !IF ( obsc .LE. 0 ) THEN
+            call ClipRect( ObjectData%wvfront, len_x, len_y, off_x, off_y, obsc=.TRUE. )
+        ELSE
+            call ClipRect( ObjectData%wvfront, len_x, len_y, off_x, off_y )
+        ENDIF
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_ClipPolygon
+    ! vertices = 2 rows by n columns, 
+    !   first row = x coordinate
+    !   second row = y coordinate
+    !   the list of vertices must be counterclockwise
+    function IDiffraction_ClipPolygon( ObjectData ,&
+             vertices,&
+             xc,&
+             yc,&
+             angle) result (hresult)
+
+        use Diffraction_Types
+        use Kinds
+        use Wavefronts
+        use Polygons
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: vertices
+        DIMENSION vertices(1:,1:)
+        REAL(8), intent(in) :: xc
+        REAL(8), intent(in) :: yc
+        REAL(8), intent(in) :: angle
+
+
+        integer(LONG) hresult
+        ! TODO:  Add implementation
+
+        type(polygon) tmppoly
+
+        ! create the polygon and the wavefront
+        tmppoly = vertices
+        call ClipPoly( ObjectData%wvfront, tmppoly, xc, yc, angle)
+
+        hresult = S_OK
+    end function
+
+    ! IDiffraction_ClipBWindow
+    function IDiffraction_ClipBWindow( ObjectData ,&
+             winT,&
+			 winA,&
+			 xc,&
+			 yc,&
+			 rotAngle) result (hresult)
+
+        use Diffraction_Types
+        use Kinds
+        use Wavefronts
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        REAL(8), intent(in) :: winT
+        REAL(8), intent(in) :: winA
+        REAL(8), intent(in) :: xc
+        REAL(8), intent(in) :: yc
+        REAL(8), intent(in) :: rotAngle
+
+        integer(LONG) hresult
+
+        ! TODO:  Add implementation
+
+        call ClipWindow( ObjectData%wvfront, winT, winA, xc, yc, rotAngle )
+
+        hresult = S_OK
+    end function

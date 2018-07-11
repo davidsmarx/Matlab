@@ -1,0 +1,19 @@
+
+Four m-files that extend MATLAB's gamma functions to complex arguments
+and perform the translation from Mathematica's to MATLAB's versions of
+gamma functions.
+
+GAMMAZ		same as GAMMA, but possibly complex arguments
+GAMMAIZ		same as GAMMAINC,        -"-
+GAMMALNZ	same as GAMMALN,         -"-
+GAMATH		same as GAMMA in Mathematica (several sub-definitions
+		  for 1, 2, or 3 (possibly complex) arguments).
+
+
+Karl Hollenbeck
+
+Dept. of Hydrodynamics and Water Resources, Tech. Univ. of Denmark
+karl@isva.dtu.dk
+
+8 July 1997, tested for MATLAB 5, but should run on 4.2 also.
+

@@ -1,0 +1,65 @@
+!
+!  UDiffractionTY.f90 - This module contains user-defined class 
+!  definitions and methods
+!
+
+module Diffraction_USE
+
+USE Kinds
+USE SI_Units
+USE Wavefronts
+
+    type Diffraction_InstanceData
+        sequence
+        !  TODO:  Add fields and remove "dummy"
+	    INTEGER  :: Nx = 1024
+	    INTEGER  :: Ny = 1024                  ! grid size	
+        REAL(pr) :: dx = 0.0_pr
+        REAL(pr) :: dy = 0.0_pr
+        REAL(pr) :: wavelength = 1.319e-6_pr
+        REAL(pr) :: curvature = 0.0_pr
+        REAL(pr) :: xc = 0.0_pr
+        REAL(pr) :: yc = 0.0_pr
+        type(wavefront) :: wvfront
+        REAL(pr),     ALLOCATABLE, DIMENSION(:)   :: x_vector
+        REAL(pr),     ALLOCATABLE, DIMENSION(:)   :: y_vector
+        COMPLEX(prc), ALLOCATABLE, DIMENSION(:,:) :: beam
+
+        !! dummy 4 byte variable provides alignment to allow sequence attribute
+        INTEGER  :: dummy1
+
+    end type
+
+  contains
+
+    !
+    !  Constructor
+    !
+    function Diffraction_CONSTRUCTOR( ObjectData ) result (hresult)
+
+        use dfwinty
+
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        integer(LONG) hresult
+
+        hresult = S_OK
+        !  TODO:  Add field initialization code
+
+    end function
+
+    !
+    !  Destructor
+    !
+    subroutine Diffraction_DESTRUCTOR( ObjectData )
+        implicit none
+        type(Diffraction_InstanceData) ObjectData
+        !dec$ attributes reference :: ObjectData
+        !  TODO:  Add field cleanup code
+    end subroutine
+
+end module
+
+
+

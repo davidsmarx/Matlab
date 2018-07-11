@@ -1,0 +1,47 @@
+function IntMetCom_WaitForThreads(h,Tlist,TimeOut)
+% IntMetCom_WaitForThreads(h,Tlist,TimeOut)
+%
+% h = COM server
+% Tlist = vector of Thread ID's
+% TimeOut = seconds (default = 60)
+
+global MS;
+
+if ~exist('TimeOut','var') | isempty(TimeOut),
+    TimeOut = 60;
+end
+
+for ii = 1:length(Tlist),
+    waitstatus = h.WaitForThread(Tlist(ii),TimeOut/MS);
+    CheckWaitStatus;
+    CheckError;
+end
+
+%%%%%%%%%
+    function CheckWaitStatus
+        switch waitstatus,
+            case 0,
+                % thread terminated successfully (signaled state)
+            case 258,
+                % timeout
+                error(['Time Out Error, ThreadID = ' num2str(Tlist(ii))]);
+            case 128,
+                % wait abandoned
+                error(['Wait Abandoned, ThreadID = ' num2str(Tlist(ii))]);
+            case -1,
+                % wait function failed, call GetLastError
+                error(['Wait Failed, ThreadID = ' num2str(Tlist(ii))]);
+            otherwise,
+                error(['Unknown wait status = ' num2str(waitstatus)...
+                    ', ThreadID = ' num2str(Tlist(ii))]);
+        end
+        
+    end
+%%%%%%%%%%%%%%%%%%%%
+    function CheckError
+        if h.ThreadStatus(Tlist(ii)) < 0,
+            error(['thread error: ' num2str(h.ThreadStatus(Tlist(ii)))]);
+        end
+    end
+%%%%%%%%%%%%%%%%%%%
+end

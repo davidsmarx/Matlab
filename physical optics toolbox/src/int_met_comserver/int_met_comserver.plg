@@ -1,0 +1,204 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: int_met_comserver - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "midl.exe /nologo /D "NDEBUG" /tlb "Release/server.tlb" /win32 /cpp_cmdfpp /cpp_opt"/a /m /B /extend_source 132" "C:\My_Documents\internal_metrology\diffraction\int_met_comserver\server.idl""
+Creating command line "rc.exe /l 0x409 /fo"Release/int_met_comserver.res" /i ".\Release" /d "NDEBUG" "C:\My_Documents\internal_metrology\diffraction\int_met_comserver\int_met_comserver.rc"" 
+Creating temporary file "C:\DOCUME~1\dmarx\LOCALS~1\Temp\RSPD6D5.tmp" with contents
+[
+/automatic /browser:"Release/" /compile_only /libs:dll /nologo /threads /warn:argument_checking /warn:nofileopt /winapp /module:"Release/" /object:"Release/" 
+"C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\Kinds.F90"
+"C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\Constants.F90"
+"C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\Error_Exit.F90"
+"C:\My_Documents\internal_metrology\diffraction\int_met_comserver\fftw_module.f90"
+"C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\Math_Routines.F90"
+"C:\My_Documents\internal_metrology\diffraction\2003.10.14 update fftw\Singleton_FFT.F90"
+"C:\My_Documents\internal_metrology\diffraction\2003.10.14 update fftw\Sorensen_FFT.F90"
+"C:\My_Documents\internal_metrology\diffraction\2003.10.14 update fftw\Discrete_Transforms_fftw.F90"
+"C:\My_Documents\internal_metrology\diffraction\2003.10.14 update fftw\Array_Routines_fftw.F90"
+"C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\Polygons.F90"
+"C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\Clipping_Routines.f90"
+"C:\My_Documents\internal_metrology\diffraction\2003.10.14 update fftw\MyCorner_Cubes.F90"
+"C:\My_Documents\internal_metrology\diffraction\2003.10.14 update fftw\Quadrature_Routines_#3F5803.f90"
+"C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\Utility_Routines.F90"
+"C:\My_Documents\internal_metrology\diffraction\2003.10.14 update fftw\MyWavefronts_fftw_mt.F90"
+"C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\SI_Units.F90"
+"C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\Angle_Units.F90"
+"C:\My_Documents\internal_metrology\diffraction\2003.11.19 update\Optics_Routines 031202.f90"
+"C:\My_Documents\internal_metrology\diffraction\int_met_comserver\int_met_routines.f90"
+"C:\My_Documents\internal_metrology\diffraction\int_met_comserver\threadwrappers.f90"
+"C:\My_Documents\internal_metrology\diffraction\int_met_comserver\UDiffractionTY.f90"
+"C:\My_Documents\internal_metrology\diffraction\int_met_comserver\clsfactty.f90"
+"C:\My_Documents\internal_metrology\diffraction\int_met_comserver\int_met_comserverGlobal.f90"
+"C:\My_Documents\internal_metrology\diffraction\int_met_comserver\DiffractionTY.f90"
+"C:\My_Documents\internal_metrology\diffraction\int_met_comserver\serverhelper.f90"
+"C:\My_Documents\internal_metrology\diffraction\int_met_comserver\IDiffraction.f90"
+"C:\My_Documents\internal_metrology\diffraction\int_met_comserver\exemain.f90"
+"C:\My_Documents\internal_metrology\diffraction\int_met_comserver\clsfact.f90"
+"C:\My_Documents\internal_metrology\diffraction\int_met_comserver\UIDiffraction.f90"
+]
+Creating temporary file "C:\DOCUME~1\dmarx\LOCALS~1\Temp\RSPD6D6.tmp" with contents
+[
+kernel32.lib /nologo /stack:0x8000000,0x1000000 /subsystem:windows /incremental:no /pdb:"Release/int_met_comserver.pdb" /machine:I386 /out:"Release/int_met_comserver.exe" 
+.\Release\Angle_Units.obj
+.\Release\Array_Routines_fftw.obj
+.\Release\Clipping_Routines.obj
+.\Release\Constants.obj
+.\Release\Discrete_Transforms_fftw.obj
+.\Release\Error_Exit.obj
+.\Release\fftw_module.obj
+.\Release\int_met_routines.obj
+.\Release\Kinds.obj
+.\Release\Math_Routines.obj
+.\Release\MyCorner_Cubes.obj
+.\Release\MyWavefronts_fftw_mt.obj
+".\Release\Optics_Routines 031202.obj"
+.\Release\Polygons.obj
+".\Release\Quadrature_Routines_#3F5803.obj"
+.\Release\SI_Units.obj
+.\Release\Singleton_FFT.obj
+.\Release\Sorensen_FFT.obj
+.\Release\threadwrappers.obj
+.\Release\UDiffractionTY.obj
+.\Release\UIDiffraction.obj
+.\Release\Utility_Routines.obj
+.\Release\clsfact.obj
+.\Release\clsfactty.obj
+.\Release\DiffractionTY.obj
+.\Release\exemain.obj
+.\Release\IDiffraction.obj
+.\Release\int_met_comserverGlobal.obj
+.\Release\serverhelper.obj
+.\Release\int_met_comserver.res
+"..\fftw-3.0.1-w32-pl1\fftw3fortran.lib"
+"..\fftw-3.0.1-w32-pl1\fftw3.lib"
+]
+Creating command line "link.exe @C:\DOCUME~1\dmarx\LOCALS~1\Temp\RSPD6D6.tmp"
+Creating temporary file "C:\DOCUME~1\dmarx\LOCALS~1\Temp\RSPD6D7.bat" with contents
+[
+@echo off
+".\Release\int_met_comserver.exe" /Regserver > ".\Release\regsvr32.trg"
+]
+Creating command line "C:\DOCUME~1\dmarx\LOCALS~1\Temp\RSPD6D7.bat"
+Creating Type Library...
+Processing C:\My_Documents\internal_metrology\diffraction\int_met_comserver\server.idl
+Compaq (R) Fortran Preprocessor Version 6.6-25
+Copyright 2001 Compaq Computer Corporation.
+
+Processing C:\Program Files\Microsoft Visual Studio\VC98\Include\oaidl.idl
+Compaq (R) Fortran Preprocessor Version 6.6-25
+Copyright 2001 Compaq Computer Corporation.
+
+Processing C:\Program Files\Microsoft Visual Studio\VC98\Include\objidl.idl
+Compaq (R) Fortran Preprocessor Version 6.6-25
+Copyright 2001 Compaq Computer Corporation.
+
+Processing C:\Program Files\Microsoft Visual Studio\VC98\Include\unknwn.idl
+Compaq (R) Fortran Preprocessor Version 6.6-25
+Copyright 2001 Compaq Computer Corporation.
+
+Processing C:\Program Files\Microsoft Visual Studio\VC98\Include\wtypes.idl
+Compaq (R) Fortran Preprocessor Version 6.6-25
+Copyright 2001 Compaq Computer Corporation.
+
+Processing C:\Program Files\Microsoft Visual Studio\VC98\Include\ocidl.idl
+Compaq (R) Fortran Preprocessor Version 6.6-25
+Copyright 2001 Compaq Computer Corporation.
+
+Processing C:\Program Files\Microsoft Visual Studio\VC98\Include\oleidl.idl
+Compaq (R) Fortran Preprocessor Version 6.6-25
+Copyright 2001 Compaq Computer Corporation.
+
+Processing C:\Program Files\Microsoft Visual Studio\VC98\Include\servprov.idl
+Compaq (R) Fortran Preprocessor Version 6.6-25
+Copyright 2001 Compaq Computer Corporation.
+
+Processing C:\Program Files\Microsoft Visual Studio\VC98\Include\urlmon.idl
+Compaq (R) Fortran Preprocessor Version 6.6-25
+Copyright 2001 Compaq Computer Corporation.
+
+Processing C:\Program Files\Microsoft Visual Studio\VC98\Include\msxml.idl
+Compaq (R) Fortran Preprocessor Version 6.6-25
+Copyright 2001 Compaq Computer Corporation.
+
+Compiling resources...
+Compiling Fortran...
+C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\Kinds.F90
+C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\Constants.F90
+C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\Error_Exit.F90
+C:\My_Documents\internal_metrology\diffraction\int_met_comserver\fftw_module.f90
+C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\Math_Routines.F90
+C:\My_Documents\internal_metrology\diffraction\2003.10.14 update fftw\Singleton_FFT.F90
+C:\My_Documents\internal_metrology\diffraction\2003.10.14 update fftw\Sorensen_FFT.F90
+C:\My_Documents\internal_metrology\diffraction\2003.10.14 update fftw\Discrete_Transforms_fftw.F90
+C:\My_Documents\internal_metrology\diffraction\2003.10.14 update fftw\Array_Routines_fftw.F90
+C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\Polygons.F90
+C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\Clipping_Routines.f90
+C:\My_Documents\internal_metrology\diffraction\2003.10.14 update fftw\MyCorner_Cubes.F90
+C:\My_Documents\internal_metrology\diffraction\2003.10.14 update fftw\Quadrature_Routines_#3F5803.f90
+C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\Utility_Routines.F90
+C:\My_Documents\internal_metrology\diffraction\2003.10.14 update fftw\MyWavefronts_fftw_mt.F90
+C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\SI_Units.F90
+C:\My_Documents\internal_metrology\diffraction\2003.10.14 update\Angle_Units.F90
+C:\My_Documents\internal_metrology\diffraction\2003.11.19 update\Optics_Routines 031202.f90
+C:\My_Documents\internal_metrology\diffraction\int_met_comserver\int_met_routines.f90
+C:\My_Documents\internal_metrology\diffraction\int_met_comserver\threadwrappers.f90
+C:\My_Documents\internal_metrology\diffraction\int_met_comserver\UDiffractionTY.f90
+C:\My_Documents\internal_metrology\diffraction\int_met_comserver\clsfactty.f90
+C:\My_Documents\internal_metrology\diffraction\int_met_comserver\int_met_comserverGlobal.f90
+C:\My_Documents\internal_metrology\diffraction\int_met_comserver\DiffractionTY.f90
+C:\My_Documents\internal_metrology\diffraction\int_met_comserver\serverhelper.f90
+C:\My_Documents\internal_metrology\diffraction\int_met_comserver\IDiffraction.f90
+C:\My_Documents\internal_metrology\diffraction\int_met_comserver\exemain.f90
+C:\My_Documents\internal_metrology\diffraction\int_met_comserver\clsfact.f90
+C:\My_Documents\internal_metrology\diffraction\int_met_comserver\UIDiffraction.f90
+Linking...
+<h3>Output Window</h3>
+Performing Registration
+Creating temporary file "C:\DOCUME~1\dmarx\LOCALS~1\Temp\RSPD6E3.tmp" with contents
+[
+/nologo /o"Release/int_met_comserver.bsc" 
+.\Release\Angle_Units.sbr
+.\Release\Array_Routines_fftw.sbr
+.\Release\Clipping_Routines.sbr
+.\Release\Constants.sbr
+.\Release\Discrete_Transforms_fftw.sbr
+.\Release\Error_Exit.sbr
+.\Release\fftw_module.sbr
+.\Release\int_met_routines.sbr
+.\Release\Kinds.sbr
+.\Release\Math_Routines.sbr
+.\Release\MyCorner_Cubes.sbr
+.\Release\MyWavefronts_fftw_mt.sbr
+".\Release\Optics_Routines 031202.sbr"
+.\Release\Polygons.sbr
+".\Release\Quadrature_Routines_#3F5803.sbr"
+.\Release\SI_Units.sbr
+.\Release\Singleton_FFT.sbr
+.\Release\Sorensen_FFT.sbr
+.\Release\threadwrappers.sbr
+.\Release\UDiffractionTY.sbr
+.\Release\UIDiffraction.sbr
+.\Release\Utility_Routines.sbr
+.\Release\clsfact.sbr
+.\Release\clsfactty.sbr
+.\Release\DiffractionTY.sbr
+.\Release\exemain.sbr
+.\Release\IDiffraction.sbr
+.\Release\int_met_comserverGlobal.sbr
+.\Release\serverhelper.sbr]
+Creating command line "bscmake.exe @C:\DOCUME~1\dmarx\LOCALS~1\Temp\RSPD6E3.tmp"
+Creating browse info file...
+<h3>Output Window</h3>
+
+
+
+<h3>Results</h3>
+int_met_comserver.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

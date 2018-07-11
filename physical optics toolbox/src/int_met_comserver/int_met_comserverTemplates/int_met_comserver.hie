@@ -1,0 +1,1900 @@
+TYPELIB_ID = "7FB676A4-8C3D-49A4-804D-073530B6B400"
+EXESERVER = "T"
+TYPELIB_VERSION = "1.0"
+CLASS : Diffraction
+{
+    INTERFACE : IDiffraction
+    {
+        METHOD : x_vector_get
+        {
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : x_vector
+            {
+                UB1 = "10"
+                UB2 = "10"
+                ARRAY = "T"
+                IDLDATATYPE = "double"
+                LB1 = "1"
+                DATATYPE = "REAL(8)"
+                LB2 = "1"
+                ASSUMEDSHAPE = "T"
+                INTENT = "InOut"
+                RANK = "2"
+            }
+            AUTOID = "13"
+        }
+        METHOD : y_vector_get
+        {
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : y_vector
+            {
+                UB1 = "10"
+                UB2 = "10"
+                ARRAY = "T"
+                IDLDATATYPE = "double"
+                LB1 = "1"
+                DATATYPE = "REAL(8)"
+                LB2 = "1"
+                ASSUMEDSHAPE = "T"
+                INTENT = "InOut"
+                RANK = "2"
+            }
+            AUTOID = "15"
+        }
+        METHOD : wavefront_put
+        {
+            ARGUMENT : amp_r
+            {
+                UB1 = "10"
+                UB2 = "10"
+                ARRAY = "T"
+                IDLDATATYPE = "double"
+                LB1 = "1"
+                DATATYPE = "REAL(8)"
+                LB2 = "1"
+                ASSUMEDSHAPE = "T"
+                INTENT = "IN"
+                RANK = "2"
+            }
+            ARGUMENT : amp_i
+            {
+                UB1 = "10"
+                UB2 = "10"
+                ARRAY = "T"
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                LB1 = "1"
+                LB2 = "1"
+                ASSUMEDSHAPE = "T"
+                INTENT = "IN"
+                RANK = "2"
+            }
+            ARGUMENT : dx
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : dy
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : wavelength
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : curv
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "18"
+        }
+        METHOD : wavefront_get
+        {
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : amp_r
+            {
+                UB1 = "1024"
+                UB2 = "1024"
+                ARRAY = "T"
+                IDLDATATYPE = "double"
+                LB1 = "1"
+                DATATYPE = "REAL(8)"
+                LB2 = "1"
+                ASSUMEDSHAPE = "T"
+                INTENT = "InOut"
+                RANK = "2"
+            }
+            ARGUMENT : amp_i
+            {
+                UB1 = "1024"
+                UB2 = "1024"
+                ARRAY = "T"
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                LB1 = "1"
+                LB2 = "1"
+                ASSUMEDSHAPE = "T"
+                INTENT = "InOut"
+                RANK = "2"
+            }
+            AUTOID = "19"
+        }
+        METHOD : CopyWavefront
+        {
+            ARGUMENT : BeamIDfrom
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamIDto
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "63"
+        }
+        METHOD : CopyWavefrontAmp
+        {
+            ARGUMENT : BeamIDAmp
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamIDPhase
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "67"
+        }
+        METHOD : SumWavefront
+        {
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamIDadd
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "64"
+        }
+        METHOD : GetWavefrontParms
+        {
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : Nx
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            ARGUMENT : Ny
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            ARGUMENT : dx
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            ARGUMENT : dy
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            ARGUMENT : curv
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            ARGUMENT : wavelength
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "60"
+        }
+        METHOD : WriteWavefrontUNF
+        {
+            ARGUMENT : StrFilename
+            {
+                IDLDATATYPE = "BSTR"
+                DATATYPE = "CHARACTER(*)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "29"
+        }
+        METHOD : ReadWavefrontUNF
+        {
+            ARGUMENT : StrFilename
+            {
+                IDLDATATYPE = "BSTR"
+                DATATYPE = "CHARACTER(*)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "38"
+        }
+        METHOD : WavefrontPower
+        {
+            ARGUMENT : power
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            AUTOID = "37"
+        }
+        METHOD : CreateGausSource
+        {
+            ARGUMENT : BeamWaistDiam
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : Nx
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : Ny
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : dx
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : dy
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : wavelength
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            PROPINTENT = "propget"
+            AUTOID = "23"
+        }
+        METHOD : CreateTophatSource
+        {
+            ARGUMENT : BeamDiam
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : Nx
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : Ny
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : dx
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : dy
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : wavelength
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "35"
+        }
+        METHOD : ClearWavefront
+        {
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "68"
+        }
+        METHOD : ApplyMask
+        {
+            ARGUMENT : length_r
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : length_t
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : offset
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : direction
+            {
+                IDLDATATYPE = "BSTR"
+                DATATYPE = "CHARACTER(*)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "22"
+        }
+        METHOD : ApplyMaskMisalign
+        {
+            ARGUMENT : length_r
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : length_t
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : offset
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : xc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : yc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : direction
+            {
+                IDLDATATYPE = "BSTR"
+                DATATYPE = "CHARACTER(*)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "44"
+        }
+        METHOD : ApplyMaskGeneral
+        {
+            ARGUMENT : len_x
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : len_y
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : off_x
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : off_y
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "31"
+        }
+        METHOD : ApplyMaskPoly
+        {
+            ARGUMENT : vertices
+            {
+                UB1 = "10"
+                UB2 = "10"
+                ARRAY = "T"
+                IDLDATATYPE = "double"
+                LB1 = "1"
+                DATATYPE = "REAL(8)"
+                LB2 = "1"
+                ASSUMEDSHAPE = "T"
+                INTENT = "IN"
+                RANK = "2"
+            }
+            ARGUMENT : xc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : yc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "42"
+        }
+        METHOD : ApplyMaskX
+        {
+            ARGUMENT : radius
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : length
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "36"
+        }
+        METHOD : ApplyMaskXRounded
+        {
+            ARGUMENT : radius
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : length
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : corner_rad
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "39"
+        }
+        METHOD : ApplyMaskRotate
+        {
+            ARGUMENT : length_r
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : length_t
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : offset
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : angle
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : xc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : yc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : direction
+            {
+                IDLDATATYPE = "BSTR"
+                DATATYPE = "CHARACTER(*)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "41"
+        }
+        METHOD : ApplyMaskTilt
+        {
+            ARGUMENT : length_r
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : length_t
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : offset
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : rotangle
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : xc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : yc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : tiltangle
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : tiltorientation
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : direction
+            {
+                IDLDATATYPE = "BSTR"
+                DATATYPE = "CHARACTER(*)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "66"
+        }
+        METHOD : Propagate
+        {
+            ARGUMENT : Distance
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "24"
+        }
+        METHOD : PropagateExt
+        {
+            ARGUMENT : Distance
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : dxout
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : dyout
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : applyCurv
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "LOGICAL(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "49"
+        }
+        METHOD : PropagateDefDx
+        {
+            ARGUMENT : Distance
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "53"
+        }
+        METHOD : CornerCube
+        {
+            ARGUMENT : ccsize
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : shape
+            {
+                IDLDATATYPE = "BSTR"
+                DATATYPE = "CHARACTER(*)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : xc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : yc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : spin
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : gapwidth
+            {
+                UB1 = "3"
+                UB2 = "10"
+                ARRAY = "T"
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                LB1 = "1"
+                LB2 = "1"
+                ASSUMEDSHAPE = "T"
+                INTENT = "IN"
+                RANK = "2"
+            }
+            ARGUMENT : rotmatrix
+            {
+                UB1 = "10"
+                UB2 = "10"
+                ARRAY = "T"
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                LB1 = "1"
+                LB2 = "1"
+                ASSUMEDSHAPE = "T"
+                INTENT = "IN"
+                RANK = "2"
+            }
+            ARGUMENT : dihedral
+            {
+                UB1 = "10"
+                UB2 = "10"
+                ARRAY = "T"
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                LB1 = "1"
+                LB2 = "1"
+                ASSUMEDSHAPE = "T"
+                INTENT = "IN"
+                RANK = "2"
+            }
+            ARGUMENT : edgelength
+            {
+                UB1 = "10"
+                UB2 = "10"
+                ARRAY = "T"
+                IDLDATATYPE = "double"
+                LB1 = "1"
+                DATATYPE = "REAL(8)"
+                LB2 = "1"
+                ASSUMEDSHAPE = "T"
+                INTENT = "IN"
+                RANK = "2"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "25"
+        }
+        METHOD : focuslens
+        {
+            ARGUMENT : focuslens_f
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : focuslens_D
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : dxout
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : dyout
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "3"
+        }
+        METHOD : ThinLens
+        {
+            ARGUMENT : focallength
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : diameter
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : xc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : yc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "52"
+        }
+        METHOD : ReflectAsphere
+        {
+            ARGUMENT : rCurv
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : conicConst
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : diam
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : xDecenter
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : yDecenter
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : incidenceAngle
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : azimuth
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : applyCurv
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "48"
+        }
+        METHOD : PistonTiltFocus
+        {
+            ARGUMENT : piston
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : xtilt
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : ytilt
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : focus
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : xc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : yc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "In"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "47"
+        }
+        METHOD : PropagateToFocalPlane
+        {
+            ARGUMENT : lens_f
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : lens_D
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : dxout
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : dyout
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : applycurv
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "LOGICAL(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "65"
+        }
+        METHOD : ClipCirc
+        {
+            ARGUMENT : Diameter
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : xc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : yc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : obscDiam
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "26"
+        }
+        METHOD : ClipRect
+        {
+            ARGUMENT : len_x
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : len_y
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : off_x
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : off_y
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : obscFlag
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "30"
+        }
+        METHOD : ClipPolygon
+        {
+            ARGUMENT : vertices
+            {
+                UB1 = "10"
+                UB2 = "10"
+                ARRAY = "T"
+                IDLDATATYPE = "double"
+                LB1 = "1"
+                DATATYPE = "REAL(8)"
+                LB2 = "1"
+                ASSUMEDSHAPE = "T"
+                INTENT = "IN"
+                RANK = "2"
+            }
+            ARGUMENT : xc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : yc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : angle
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "33"
+        }
+        METHOD : ClipBWindow
+        {
+            ARGUMENT : winT
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : winA
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : xc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : yc
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : rotAngle
+            {
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : BeamID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : status
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "34"
+        }
+        METHOD : AddThreadCommand
+        {
+            ARGUMENT : ThreadID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : CmdID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : rP
+            {
+                UB1 = "10"
+                UB2 = "10"
+                ARRAY = "T"
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                LB1 = "1"
+                LB2 = "1"
+                ASSUMEDSHAPE = "T"
+                INTENT = "IN"
+                RANK = "2"
+            }
+            ARGUMENT : iP
+            {
+                UB1 = "10"
+                UB2 = "10"
+                ARRAY = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                LB1 = "1"
+                LB2 = "1"
+                ASSUMEDSHAPE = "T"
+                INTENT = "IN"
+                RANK = "2"
+            }
+            ARGUMENT : pwAID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : pwBID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : strP
+            {
+                IDLDATATYPE = "BSTR"
+                DATATYPE = "CHARACTER(*)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : flagStatus
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "54"
+        }
+        METHOD : ExecuteThread
+        {
+            ARGUMENT : ThreadID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : flagStatus
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "55"
+        }
+        METHOD : ThreadStatus
+        {
+            ARGUMENT : ThreadID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : flagStatus
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "56"
+        }
+        METHOD : WaitForThread
+        {
+            ARGUMENT : ThreadID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : TimeOutMS
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : WaitStatus
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "61"
+        }
+        METHOD : WaitForMultipleThreads
+        {
+            ARGUMENT : pThreadID
+            {
+                UB1 = "10"
+                UB2 = "10"
+                ARRAY = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                LB1 = "1"
+                LB2 = "1"
+                ASSUMEDSHAPE = "T"
+                INTENT = "IN"
+                RANK = "2"
+            }
+            ARGUMENT : TimeOutMS
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : flagWaitAll
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : WaitStatus
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "62"
+        }
+        METHOD : ClearThread
+        {
+            ARGUMENT : ThreadID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : flagStatus
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "Out"
+                RANK = "1"
+            }
+            AUTOID = "57"
+        }
+        METHOD : get_ThreadOPD
+        {
+            ARGUMENT : ThreadID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : OPDID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : VALUE
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "out"
+                RANK = "1"
+            }
+            PROPERTY = "T"
+            PROPINTENT = "propget"
+            AUTOID = "58"
+        }
+        METHOD : get_ThreadPOW
+        {
+            ARGUMENT : ThreadID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : POWID
+            {
+                IDLDATATYPE = "long"
+                DATATYPE = "INTEGER(4)"
+                INTENT = "IN"
+                RANK = "1"
+            }
+            ARGUMENT : VALUE
+            {
+                RETVAL = "T"
+                IDLDATATYPE = "double"
+                DATATYPE = "REAL(8)"
+                INTENT = "out"
+                RANK = "1"
+            }
+            PROPERTY = "T"
+            PROPINTENT = "propget"
+            AUTOID = "59"
+        }
+        IID = "44182096-CE96-4DC8-8D63-EC2FC6FA8D85"
+        OLEAUTOMATION = "T"
+        NEXT_AUTOID_HEX = "F"
+        DEFAULT = "T"
+        NEXT_AUTOID = "69"
+        DUAL = "T"
+    }
+    INSTANCETYPE : Diffraction_InstanceData
+    {
+        CONSTRUCTOR = "Diffraction_CONSTRUCTOR"
+        USE = "Diffraction_USE"
+        DESTRUCTOR = "Diffraction_DESTRUCTOR"
+    }
+    SHORTNAME = "Diffraction"
+    CLSID = "E4BF1897-350C-488F-B246-E14BAF2A0756"
+    DESCRIPTION = "Diffraction Class"
+    PROGID = "int_met_comserver.Diffraction"
+    THREADINGMODEL = "APARTMENT"
+    VERSION = "1.0"
+}
