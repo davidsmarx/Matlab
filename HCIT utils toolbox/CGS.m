@@ -180,10 +180,10 @@ classdef CGS < handle
             title(['gsnum ' num2str(S.gsnum) ' Amp -  Ref gsnum ' num2str(Sref.gsnum) ' Amp'])
             
             hax(4) = subplot(2,2,4);
-            imageschcit(S.x, S.y, angle(S.E.*conj(Sref.E)))
+            him = imageschcit(S.x, S.y, angle(S.E.*conj(Sref.E)));
             colorbartitle('Phase (rad)')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
-            set(gca,'clim',0.125*[-1 1])
+            set(gca,'clim',AutoClim(get(him,'CData'),'symmetric'))
             title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(angle(S.E(S.bMask).*conj(Sref.E(S.bMask)))),'%.3f') 'rad'])
             
             

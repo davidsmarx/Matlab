@@ -19,10 +19,16 @@ function y=jinc(x)
 %   Author(s): T. Krauss, 1-14-93
 %   Copyright 1988-2004 The MathWorks, Inc.
 %   $Revision: 1.7.4.1 $  $Date: 2004/08/10 02:11:27 $
+%   revised 2018-07-16, D. Marx, to use bool indexing
 
-i=find(x==0);                                                              
-x(i)= 1;      % From LS: don't need this is /0 warning is off                           
-y = besselj(1,pi*x)./(pi*x);                                                     
-y(i) = 1/2;   
+% i=find(x==0);                                                              
+% x(i)= 1;      % From LS: don't need this is /0 warning is off                           
+% y = besselj(1,pi*x)./(pi*x);                                                     
+% y(i) = 1/2;   
+
+ii = ~(x==0);
+y = zeros(size(x));
+y(~ii) = 0.5;
+y(ii) = besselj(1,pi*x(ii))./(pi*x(ii));
 
 return

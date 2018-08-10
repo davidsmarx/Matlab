@@ -58,6 +58,6 @@ switch class(fun),
         if nr ~= N, error('input data length mismatch'); end
         fn = [fun; 0]; % length = N+1
     otherwise,
-        error('unrecognized class: fun');
+        error(['unrecognized class fun: ' class(fun)]);
 end
 return

@@ -15,6 +15,7 @@ function [u2, rn] = fresnel_bessel_propagate(u1,A,lam,z,N,varargin)
 
 [u1p,xn,rn,N,Nf] = ParseInputs(u1,A,lam,z,N,varargin{:});
 % figure, plot(A*xn,abs(u1p),'-o'), grid, title('source beam amplitude')
+disp(['Nf = ' num2str(Nf)]);
 
 % apply quadratic phase for propagation
 u1p = u1p.*exp(j.*pi.*rn.^2./(lam.*z));
@@ -28,7 +29,7 @@ u2 = -j.*A.^2.*u2.*exp(j*pi.*Nf.*(xn.^2))./(lam.*z);
 return
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [u1p,xn,rn,N,Nf] = ParseInputs(u1,A,lam,z,Nin,varargin);
+function [u1p,xn,rn,N,Nf] = ParseInputs(u1,A,lam,z,Nin,varargin)
 
 % test valid A input
 if isempty(A) | A<=0, error('A must be > 0 for functional u1'); end

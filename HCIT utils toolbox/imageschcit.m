@@ -2,16 +2,19 @@ function hout = imageschcit(varargin)
 % hh = imageschcit(Im)
 % hh = imageschcit(x, y, Im)
 % hh = imageschcit(x, y, Im, axes property, value, ...)
+%
+% Im can be an array or a fits filename
 
 cProperties = {};
-        
+   
+x = []; y = [];
 if nargin == 1,
     Im = varargin{1};
-    nn = size(Im); % in case Im is more than 2-d, e.g. rgb
-    nr = nn(1);
-    nc = nn(2);
-    x = (1:nc)';
-    y = (1:nr)';
+    %     nn = size(Im); % in case Im is more than 2-d, e.g. rgb
+    %     nr = nn(1);
+    %     nc = nn(2);
+    %     x = (1:nc)';
+    %     y = (1:nr)';
     
 elseif nargin == 3,
     [x, y, Im] = deal(varargin{:});
@@ -24,6 +27,22 @@ else,
     error('usage: hh = imageschcit(x, y, Im);');
 end
 
+% if Im is a filename, read the image from file
+if ischar(Im),
+    [pn, fn, fext] = fileparts(Im);
+    switch fext,
+        case '.fits',
+            Im = fitsread(Im);
+        otherwise,
+            error(['image file type ' fext ' not yet implemented']);
+    end
+end
+
+% create grid if necessary
+if isempty(x) || isempty(y),
+    [x, y] = CreateGrid(Im);
+end
+    
 hh = imagesc(x, y, Im);
 axis image
 set(gca,'ydir','normal')
