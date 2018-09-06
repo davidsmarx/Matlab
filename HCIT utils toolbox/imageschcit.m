@@ -32,7 +32,13 @@ if ischar(Im),
     [pn, fn, fext] = fileparts(Im);
     switch fext,
         case '.fits',
-            Im = fitsread(Im);
+            % check if primary hdu is empty, and if so, use first image hdu
+            finfo = fitsinfo(Im);
+            if isempty(finfo.PrimaryData.Size),
+                Im = fitsread(Im,'image');
+            else
+                Im = fitsread(Im);
+            end
         otherwise,
             error(['image file type ' fext ' not yet implemented']);
     end
