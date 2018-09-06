@@ -53,7 +53,18 @@ classdef CGS < handle
             end
             
             if ~exist('bn','var') || isempty(bn),
-                bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
+                %bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
+                bn = '/proj/dst/data/dB_PR/gsdst_';
+            else
+                switch lower(bn),
+                    case 'dst'
+                        bn = '/proj/dst/data/dB_PR/gsdst_';
+                    case 'spc_disc'
+                        bn = '/home/dmarx/HCIT/SPC_disc/gsspc_20171204/reduced/gsspc_';
+                    otherwise
+                        % do nothing, let bn = bn
+                        disp(bn);
+                end % switch bn
             end
             
             ampinfo = fitsinfo(PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits']));

@@ -52,6 +52,9 @@ elseif isequal([A{2} '/' A{3}],'net/piaa-data')
     winpath = strjoin({'X:\', A{5:end}}, '\');
     %A = {A{1:3},A{5:end}}; % remove /Data/
 
+elseif length(A) >= 4 && isequal([A{2} '/' A{3} '/' A{4}],'proj/dst/data')
+    winpath = strjoin({'Y:\ln_dst_data', A{5:end}}, '\');
+    
 elseif isequal(A{1}, '..') || isequal(A{1}, '.'),
     % relative path, no need to translate
     winpath = s383path;
