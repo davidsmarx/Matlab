@@ -97,7 +97,8 @@ classdef CRunData < handle & CConstants
         Contrast_total
         Contrast_inco
         Contrast_co
-        
+
+        Ndm = 1; % # of DM's should get this from the data, maybe from the number of images in dmvcube
         DMvCube
         ProbeModel
         ProbeMeasAmp
@@ -230,6 +231,8 @@ classdef CRunData < handle & CConstants
 
             % Norm Intensity from first, non-probed image, for each wave
             S.NofW = FitsGetKeywordVal(S.ImKeys,'NCOLOR');
+            if isempty(S.NofW), S.NofW = FitsGetKeywordVal(S.ImKeys,'NCHANNEL'); end
+            if isempty(S.NofW), error('keyword NCOLOR and NCHANNEL missing'); end
             S.Nlamcorr = S.NofW; % not strictly corect, should come from reduced or config length(S.ilamcorr);
             S.imgindex = 1:S.NumImProbe:S.NofW*S.NumImProbe;
             
@@ -442,8 +445,8 @@ classdef CRunData < handle & CConstants
                 % pampzero is logical, imag and real are the same logical
                 % pampzero = true for pixels where: eest == 0 OR iinc < -()
                 %    OR eestcond < eestcondlim
-                isl = S.Nppair + 2*(1 + 1 + 1 + S.Nbscan + 1+1)-1;
-                S.bPampzero(iwl,:,:) = logical(RedData(:,:,isl * S.Nlamcorr+iwl)); % + 1i*RedData(:,:,(isl + 1)*S.Nlamcorr+iwl);
+                %                 isl = S.Nppair + 2*(1 + 1 + 1 + S.Nbscan + 1+1)-1;
+                %                 S.bPampzero(iwl,:,:) = logical(RedData(:,:,isl * S.Nlamcorr+iwl)); % + 1i*RedData(:,:,(isl + 1)*S.Nlamcorr+iwl);
 
                 % mean coherent and incoherent contrast
                 S.Contrast_inco(iwl) = mean(nonzeros(S.IncInt{iwl}.*S.mdMask));
@@ -530,7 +533,7 @@ classdef CRunData < handle & CConstants
         
         function S = ReadDMvCube(S)
             
-            for dmnum = 1:2,
+            for dmnum = 1:S.Ndm,
                 S.DMvCube{dmnum} = fitsread(S.Rundir_fn,'image',dmnum);
             end
             
@@ -597,7 +600,9 @@ classdef CRunData < handle & CConstants
                
                set(gca,'xlim',xlim,'ylim',ylim)
                xlabel('\lambda/D'), ylabel('\lambda/D')
-               title(['Iter #' num2str(S.iter) ', Wave ' num2str(S.NKTcenter(iwvpl)/S.NM) 'nm'])
+               if ~isempty(S.NKTcenter),
+                   title(['Iter #' num2str(S.iter) ', Wave ' num2str(S.NKTcenter(iwvpl)/S.NM) 'nm'])
+               end
                 
                % overlay circles if requested
                if ~isempty(sOpt.drawRadii),
@@ -719,7 +724,7 @@ classdef CRunData < handle & CConstants
                 %caxis(clim);
                 colormap(gray)
                 colorbartitle(cbartitle)
-                title(['Inc Int, \lambda = ' num2str(S.NKTcenter(iwv)/S.NM) 'nm, it#' num2str(S.iter)])
+                if ~isempty(S.NKTcenter), title(['Inc Int, \lambda = ' num2str(S.NKTcenter(iwv)/S.NM) 'nm, it#' num2str(S.iter)]), end
             
             end
             set(hax,'xlim',xlim,'ylim',ylim,'clim',clim);
@@ -742,7 +747,7 @@ classdef CRunData < handle & CConstants
                 IncIntrad(IncIntrad < 1e-11) = 1e-11;
                 qplot{1,iwv} = fovrplot;
                 qplot{2,iwv} = IncIntrad;
-                legstr{iwv} = [num2str(S.NKTcenter(iwv)/S.NM) 'nm'];
+                if ~isempty(S.NKTcenter), legstr{iwv} = [num2str(S.NKTcenter(iwv)/S.NM) 'nm']; end
             end
             figure, semilogy(qplot{:}); 
             hax(end+1) = gca;
@@ -1068,12 +1073,9 @@ classdef CRunData < handle & CConstants
             
             switch length(varargin),
                 case 0,
-                    refDM1v = 0;
-                    strRefDM1 = '';
+                    refDMv{1:S.Ndm} = deal(0);
+                    strRefDM{1:S.Ndm} = deal('');
 
-                    refDM2v = 0;
-                    strRefDM2 = '';
-                    
                 case 1,
                     if isa(varargin{1},'CRunData'),
                         Sref = varargin{1};
@@ -1109,25 +1111,22 @@ classdef CRunData < handle & CConstants
                     
             end % switch nargin
 
-            hfig = figure_mxn(1,2);
+            hfig = figure_mxn(1,S.Ndm);
             
-            dDMv1 = squeeze(S.DMvCube{1}(:,:,1)) - refDM1v;
-            rmsdDMv1 = rms(dDMv1(abs(dDMv1)>0));
-            hax(1) = subplot(1,2,1);
-            imageschcit(dDMv1)
-            colorbartitle('Vmu')
-            title(['Iter # ' num2str(S.iter) '; DM1; \DeltaVmu, ref = ' strRefDM1])
+            for idm = 1:S.Ndm,
+                
+                dDMv = squeeze(S.DMvCube{idm}(:,:,1)) - refDMv{idm};
+                rmsdDMv(idm) = rms(dDMv(abs(dDMv)>0));
+                hax(idm) = subplot(1,S.Ndm,idm);
+                imageschcit(dDMv)
+                colorbartitle('Vmu')
+                title(['Iter # ' num2str(S.iter) '; DM ' num2str(idm) '; \DeltaVmu, ref = ' strRefDM{idm}])
+                
+            end % for idm
             
-            dDMv2 = squeeze(S.DMvCube{2}(:,:,1)) - refDM2v;
-            rmsdDMv2 = rms(dDMv2(abs(dDMv2)>0));
-            hax(2) = subplot(1,2,2);
-            imageschcit(dDMv2)
-            colorbartitle('Vmu')
-            title(['Iter # ' num2str(S.iter) '; DM2; \DeltaVmu, ref = ' strRefDM2])
-            
-            fprintf('rms dDMv1 = %.3f Vmu\n',rmsdDMv1);
-            fprintf('rms dDMv2 = %.3f Vmu\n',rmsdDMv2);
-            
+            %             fprintf('rms dDMv1 = %.3f Vmu\n',rmsdDMv1);
+            %             fprintf('rms dDMv2 = %.3f Vmu\n',rmsdDMv2);
+            %
         end % DisplayDMv
         
         %
