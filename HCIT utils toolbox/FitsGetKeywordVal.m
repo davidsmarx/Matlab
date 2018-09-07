@@ -31,7 +31,7 @@ end
     function [val, comment, ik] = GetOneKeyVal(key)
         ik = find(strcmpi(key,Keywords(:,1)));
         
-        val = [];
+        val = []; comment = [];
         if ~isempty(ik),
             if length(ik) == 1,
                 val = Keywords{ik,2};
