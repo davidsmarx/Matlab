@@ -239,7 +239,7 @@ classdef CRunData < handle & CConstants
             % get actual wavelengths from the camera fits files
             for iwv = 1:S.NofW,
                fn = FitsGetKeywordVal(S.ImKeys, ['C' num2str(iwv-1) 'P0J0']) ;
-               if ~exist(PathTranslator(fn),'file'),
+               if isempty(fn) || ~exist(PathTranslator(fn),'file'),
                    warning(['cannot open ' fn]);
                    continue
                end
@@ -578,7 +578,7 @@ classdef CRunData < handle & CConstants
             end
             
             [x, y, X, Y, R] = CreateGrid(S.ImCubeUnProb{1}, 1./S.ppl0);
-            xlim = 25*[-1 1]; ylim = xlim;
+            xlim = 20*[-1 1]; ylim = xlim;
             
             if isempty(sOpt.ilam),
                 sOpt.ilam = 1:S.NofW;
@@ -600,9 +600,11 @@ classdef CRunData < handle & CConstants
                
                set(gca,'xlim',xlim,'ylim',ylim)
                xlabel('\lambda/D'), ylabel('\lambda/D')
+               titlestr = ['Iter #' num2str(S.iter)];
                if ~isempty(S.NKTcenter),
-                   title(['Iter #' num2str(S.iter) ', Wave ' num2str(S.NKTcenter(iwvpl)/S.NM) 'nm'])
+                   titlestr = [titlestr ', Wave ' num2str(S.NKTcenter(iwvpl)/S.NM) 'nm'];
                end
+               title(titlestr)
                 
                % overlay circles if requested
                if ~isempty(sOpt.drawRadii),
@@ -704,7 +706,7 @@ classdef CRunData < handle & CConstants
             
             hfig = figure_mxn(1,S.Nlamcorr);
             
-            xlim = 25*[-1 1]; ylim = xlim;
+            xlim = 20*[-1 1]; ylim = xlim;
 
             if bClim,
                 clim = pFun(climopt);
@@ -723,8 +725,9 @@ classdef CRunData < handle & CConstants
                 ylabel('\lambda / D')
                 %caxis(clim);
                 colormap(gray)
-                colorbartitle(cbartitle)
-                if ~isempty(S.NKTcenter), title(['Inc Int, \lambda = ' num2str(S.NKTcenter(iwv)/S.NM) 'nm, it#' num2str(S.iter)]), end
+                colorbartitle(cbartitle)                
+                if ~isempty(S.NKTcenter), strlam = ['\lambda = ' num2str(S.NKTcenter(iwv)/S.NM) 'nm']; else strlam = ['Wave #' num2str(iwv)]; end
+                title(['it#' num2str(S.iter) ', ' strlam])
             
             end
             set(hax,'xlim',xlim,'ylim',ylim,'clim',clim);
@@ -747,6 +750,7 @@ classdef CRunData < handle & CConstants
                 IncIntrad(IncIntrad < 1e-11) = 1e-11;
                 qplot{1,iwv} = fovrplot;
                 qplot{2,iwv} = IncIntrad;
+                legstr{iwv} = ' ';
                 if ~isempty(S.NKTcenter), legstr{iwv} = [num2str(S.NKTcenter(iwv)/S.NM) 'nm']; end
             end
             figure, semilogy(qplot{:}); 
@@ -778,7 +782,7 @@ classdef CRunData < handle & CConstants
                 S.ReadReducedCube;
             end
             
-            xlimlamD = 22*[-1 1];
+            xlimlamD = 20*[-1 1];
             [x, y] = CreateGrid(S.ProbeAmp{1,1}, 1./S.ppl0);
             
             % ProbeAmp is from reduced data cube, Primary HDU
