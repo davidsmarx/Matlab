@@ -621,7 +621,8 @@ classdef CRunData < handle & CConstants
             % auto-clim, unless specific clim requested
             if isempty(sOpt.clim),
                 cmaxsort = sort(clim(:),'descend');
-                set(ha,'clim', [min(clim(:)) cmaxsort(2)]);
+                %set(ha,'clim', [min(clim(:)) cmaxsort(2)]);
+                set(ha,'clim', [max(clim(:,1)) min(clim(:,2))])
             else
                 set(ha,'clim',sOpt.clim);
             end
