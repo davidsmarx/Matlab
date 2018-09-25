@@ -665,6 +665,7 @@ classdef CRunData < handle & CConstants
             %    'drawradii'
             %    'bLog'
             %    'clim'
+            %    'hax'
             
             if isempty(S.IncInt),
                 S.ReadReducedCube;
@@ -691,6 +692,12 @@ classdef CRunData < handle & CConstants
             bClim = any(iClim);
             if bClim,
                 climopt = varargin{find(iClim)+1};
+            end
+            
+            % if hax option, then draw on that axes
+            ihax = strcmpi('hax',varargin);
+            if any(ihax),
+                haxopt = varargin(find(ihax)+1);
             end
             
             %%%% end options
