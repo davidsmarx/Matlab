@@ -15,12 +15,9 @@ if nargin < 3 || isempty(y),
 end
 
 % options
-titlestr = '';
-iv = find(strcmp(varargin,'titlestr'));
-if ~isempty(iv), titlestr = varargin{iv+1}; end
-bLog = false;
-iv = find(strcmp(varargin,'bLog'));
-if ~isempty(iv), bLog = varargin{iv+1}; end
+titlestr = CheckOption('titlestr','',varargin{:});
+bLog = CheckOption('bLog',false,varargin{:});
+ydir = CheckOption('ydir', 'reverse', varargin{:});
 
 pos = get(gcf,'position');
 pos(3) = 1.75*pos(3);
@@ -40,6 +37,8 @@ imagesc(x,y,Aplot), axis image,...
 hax(2) = subplot(1,2,2);
 imagesc(x,y,angle(A)./pi), axis image, title(pwd2titlestr(titlestr)),...
     colorbartitle('\pi rad') %SetColorbar('\pi radians');
+
+set(hax,'ydir',ydir);
 
 if nargout > 0,
     haxout = hax;

@@ -15,6 +15,10 @@ function [R, T, rr, tt] = thin_film_filter_2(n,d,theta,lam,tetm)
 % T =        "   transmitted     "
 % rr = complex field reflection coefficient
 % tt =      "        transmission "
+%
+% Ref:
+% H. Angus Macleod, "Thin-Film Optical Filters", Fourth Edition, 2010, p.
+% 89-92, equation 3.16
 
 if nargin == 0, error('usage: [R, T, rr, tt] = thin_film_filter_2(n,d,theta,lam,[tetm])'); end
 
