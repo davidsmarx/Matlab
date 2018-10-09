@@ -22,12 +22,10 @@ classdef CRunData < handle & CConstants
 %       co_mean: 1.4262e-08    (Mean Coherent Contrast RminSc to RmaxSc)
 %
 %
-% [hfig, hax] = DisplayImCubeUnProb(S, sOptions)
-%             sOpt = struct(...
-%                 'bPlotLog', false ...
-%                 ,'drawRadii', [] ...
-%                 ,'clim', [] ...
-%                 );
+% [hfig, hax] = DisplayImCubeUnProb(S, options{:})
+%                 'bLog', false
+%                 'drawRadii', []
+%                 'clim', []
 %
 % [hfig, him, Im] = DisplayImCubeImage(S, imnum)
 % imnum is: S.ImCube(:,:,imnum)
@@ -38,8 +36,8 @@ classdef CRunData < handle & CConstants
 %
 % [hfig, hax] = DisplayIncInt(S, varargin)
 % options:
-%    'drawradii'
-%    'bLog'
+%    'drawradii', default = []
+%    'bLog', default = false
 %
 % [hfig, hax] = DisplayDMv(S)
 % [hfig, hax] = DisplayDMv(S, Sref)
@@ -118,11 +116,24 @@ classdef CRunData < handle & CConstants
     
     methods
         function S = CRunData(runnum, iter, sOptin)
+
+            switch runnum,
+                case 603,
+                    results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run603/';
+                case 604,
+                    results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
+                case 0
+                    results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run000/';
+                case 606,
+                    results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run606/';
+                otherwise
+                    error('unrecognized runnum');
+            end
             
             if ~exist('sOptin','var'), sOptin = struct(); end
             % validate sOptions, default values:
             sOptions = struct(...                  %'results_pn', ['../results/run' num2str(runnum, '%03d') '/'] ...
-                'results_pn', ['/home/dmarx/ln_dst_data/EFC/HLC/run' num2str(runnum, '%03d') '/'] ...
+                'results_pn', results_pn ...
                 ,'PCtemp_pn', 'C:\Users\dmarx\HCITdatatemp\' ...
                 ,'debug',false ...
                 );
@@ -264,19 +275,11 @@ classdef CRunData < handle & CConstants
                 S.ReadImageCube;
             end
 
-            % default values from the class
-            RminSc = S.RminSc;
-            RmaxSc = S.RmaxSc;
-            
             % parse options
-            iRminSc = find(strcmpi('RminSc',varargin));
-            if ~isempty(iRminSc),
-                RminSc = varargin{iRminSc(end)+1};
-            end
-            iRmaxSc = find(strcmpi('RmaxSc',varargin));
-            if ~isempty(iRmaxSc),
-                RmaxSc = varargin{iRmaxSc(end)+1};
-            end
+            % default values from the class
+            %val = FindOption(sOpt, valDefault, varargin)
+            RminSc = FindOption('RminSc', S.RminSc, varargin{:});
+            RmaxSc = FindOption('RmaxSc', S.RmaxSc, varargin{:});
                 
             
             [x, y, X, Y, R] = CreateGrid(S.ImCubeUnProb{1}, 1./S.ppl0);
@@ -557,39 +560,41 @@ classdef CRunData < handle & CConstants
             
         end % DisplayImCubeImage
         
-        function [hfig, ha] = DisplayImCubeUnProb(S, sOptions)
+        function [hfig, ha] = DisplayImCubeUnProb(S, varargin)
             
             if isempty(S.ImCube),
                 S.ReadImageCube;
             end
             
             % default options and set requested options
-            sOpt = struct(...
-                'bPlotLog', false ...
-                ,'drawRadii', [] ...
-                ,'clim', [] ...
-                ,'ilam', [] ...
-                );
-            if exist('sOptions','var') && isstruct(sOptions),
-                fnames = fieldnames(sOptions);
-                for ii = 1:length(fnames),
-                    sOpt.(fnames{ii}) = sOptions.(fnames{ii});
-                end
-            end
+            %  val = FindOption(sOpt, valDefault, varargin)
+            bPlotLog = FindOption('bLog', false, varargin{:});
+            drawRadii = FindOption('drawRadii', [], varargin{:});
+            climopt = FindOption('clim', [], varargin{:});
+            ilam = FindOption('ilam', 1:S.NofW, varargin{:});
+            %             sOpt = struct(...
+            %                 'bPlotLog', false ...
+            %                 ,'drawRadii', [] ...
+            %                 ,'clim', [] ...
+            %                 ,'ilam', [] ...
+            %                 );
+            %             if exist('sOptions','var') && isstruct(sOptions),
+            %                 fnames = fieldnames(sOptions);
+            %                 for ii = 1:length(fnames),
+            %                     sOpt.(fnames{ii}) = sOptions.(fnames{ii});
+            %                 end
+            %             end
             
             [x, y, X, Y, R] = CreateGrid(S.ImCubeUnProb{1}, 1./S.ppl0);
             xlim = 20*[-1 1]; ylim = xlim;
             
-            if isempty(sOpt.ilam),
-                sOpt.ilam = 1:S.NofW;
-            end
-            Nlam = length(sOpt.ilam);
+            Nlam = length(ilam);
             
             hfig = figure_mxn(1,Nlam);
             for iwv = 1:Nlam,
-                iwvpl = sOpt.ilam(iwv);
+                iwvpl = ilam(iwv);
                 ha(iwv) = subplot(1,Nlam,iwv);
-                if sOpt.bPlotLog,
+                if bPlotLog,
                     imageschcit(x, y, log10(abs(S.ImCubeUnProb{iwvpl}))), axis image,
                     colorbartitle('log_{10}(Intensity)')
                 else
@@ -607,10 +612,10 @@ classdef CRunData < handle & CConstants
                title(titlestr)
                 
                % overlay circles if requested
-               if ~isempty(sOpt.drawRadii),
+               if ~isempty(drawRadii),
                    hold on
-                   for irad = 1:length(sOpt.drawRadii),
-                       draw_circle([0 0], 2*sOpt.drawRadii(irad), 1, 'r');
+                   for irad = 1:length(drawRadii),
+                       draw_circle([0 0], 2*drawRadii(irad), 1, 'r');
                    end
                    hold off
                end
@@ -619,12 +624,12 @@ classdef CRunData < handle & CConstants
             
             % set each image plot to the same clim
             % auto-clim, unless specific clim requested
-            if isempty(sOpt.clim),
+            if isempty(climopt),
                 cmaxsort = sort(clim(:),'descend');
                 %set(ha,'clim', [min(clim(:)) cmaxsort(2)]);
                 set(ha,'clim', [max(clim(:,1)) min(clim(:,2))])
             else
-                set(ha,'clim',sOpt.clim);
+                set(ha,'clim',climopt);
             end
 
             % radial plot
@@ -643,11 +648,11 @@ classdef CRunData < handle & CConstants
         
             S.rplot = mean([re(1:end-1) re(2:end)],2); % radii midway between edges
             figure, semilogy(S.rplot, [S.IntRad{:}]), grid
-            if ~isempty(sOpt.drawRadii),
+            if ~isempty(drawRadii),
                 ylim = get(gca,'ylim');
                 hold on
-                for irad = 1:length(sOpt.drawRadii),
-                    plot(sOpt.drawRadii(irad)*[1 1], ylim, '--r')
+                for irad = 1:length(drawRadii),
+                    plot(drawRadii(irad)*[1 1], ylim, '--r')
                 end
                 hold off
             end
@@ -663,7 +668,7 @@ classdef CRunData < handle & CConstants
             % [hfig, hax] = DisplayIncInt(S, varargin)
             % options:
             %    'drawradii'
-            %    'bLog'
+            %    'bLog' (default = true)
             %    'clim'
             %    'hax'
             
@@ -671,34 +676,13 @@ classdef CRunData < handle & CConstants
                 S.ReadReducedCube;
             end
 
+            
             % options:
-            iblog = strcmpi('blog',varargin);
-            if any(iblog),
-                ic = find(iblog);
-                bLog = varargin{ic+1};
-            else
-                bLog = false;
-            end
-            
-            % check option draw radii
-            ibDrawRadii = strcmpi('drawradii',varargin);
-            bDrawRadii = any(ibDrawRadii);
-            if bDrawRadii,
-                ic = find(ibDrawRadii);
-                radii = varargin{ic+1};
-            end
-            
-            iClim = strcmpi('clim',varargin);
-            bClim = any(iClim);
-            if bClim,
-                climopt = varargin{find(iClim)+1};
-            end
-            
-            % if hax option, then draw on that axes
-            ihax = strcmpi('hax',varargin);
-            if any(ihax),
-                haxopt = varargin(find(ihax)+1);
-            end
+            % %  val = FindOption(sOpt, valDefault, varargin)
+            bLog = FindOption('blog', true, varargin{:});
+            drawRadii = FindOption('drawradii', [], varargin{:});
+            climopt = FindOption('clim', [], varargin{:});
+            haxopt = FindOption('hax', [], varargin{:}); % put image on this axes
             
             %%%% end options
             
@@ -716,7 +700,7 @@ classdef CRunData < handle & CConstants
             
             xlim = 20*[-1 1]; ylim = xlim;
 
-            if bClim,
+            if ~isempty(climopt),
                 clim = pFun(climopt);
             else
                 clim = pClim([S.IncInt{:}]);
@@ -740,12 +724,12 @@ classdef CRunData < handle & CConstants
             end
             set(hax,'xlim',xlim,'ylim',ylim,'clim',clim);
             
-            if bDrawRadii,
+            if ~isempty(drawRadii),
                 for iax = 1:length(hax),
                     axes(hax(iax));
                     hold on
-                    for irad = 1:length(radii),
-                        draw_circle([0 0], 2*radii(irad), 1, 'r');
+                    for irad = 1:length(drawRadii),
+                        draw_circle([0 0], 2*drawRadii(irad), 1, 'r');
                     end
                     hold off
                 end % for each axes               
@@ -765,16 +749,15 @@ classdef CRunData < handle & CConstants
             hax(end+1) = gca;
             grid on
             set(gca,'xlim',[0 1].*xlim)
-            if bClim,
-                set(gca,'ylim',clim)
-            end
+            %set(gca,'ylim',clim)
+
             xlabel('Radius (\lambda/D)')
             ylabel('Unmodulated (Norm. Int.)')
             title(['Inc Int, it#' num2str(S.iter)])
             
-            if bDrawRadii,
+            if ~isempty(drawRadii),
                 hold on
-                for irad = 1:length(radii),
+                for irad = 1:length(drawRadii),
                     plot(radii(irad)*[1 1], get(gca,'ylim'), '--r')
                 end
                 hold off
@@ -785,19 +768,22 @@ classdef CRunData < handle & CConstants
 
         end % DisplayIncInt
                 
-        function hfig = DisplayProbeAmp(S)
+        function [hfig, hax] = DisplayProbeAmp(S, varargin)
             if isempty(S.ProbeAmp),
                 S.ReadReducedCube;
             end
             
-            xlimlamD = 20*[-1 1];
+            % check options
+            clim = FindOption('clim', [], varargin{:});
+            
+            xlimlamD = 20;
             [x, y] = CreateGrid(S.ProbeAmp{1,1}, 1./S.ppl0);
             
             % ProbeAmp is from reduced data cube, Primary HDU
             % arrange subplots
             Nwide = max([S.Nppair, S.Nlamcorr]);
             Nhigh = min([S.Nppair, S.Nlamcorr]);
-            hfig = figure_mxn(Nhigh, Nwide);
+            hfig(1) = figure_mxn(Nhigh, Nwide);
             for ip = 1:S.Nppair,
                 for iw = 1:S.Nlamcorr,
                     if Nwide == S.Nlamcorr,
@@ -805,17 +791,33 @@ classdef CRunData < handle & CConstants
                     else
                         ipl = (iw-1)*S.Nppair+ip;
                     end
-                    subplot(Nhigh, Nwide, ipl),
-                    imageschcit(x, y, S.ProbeAmp{iw,ip}), axis image, colorbar,
-                    set(gca,'xlim',xlimlamD,'ylim',xlimlamD)
-                    title(['Iteration # ' num2str(S.iter) ' Wave #' num2str(iw) ' Probe # ' num2str(ip) ' Amplitude'])
+                    hax(ipl) = subplot(Nhigh, Nwide, ipl);
+                    imageschcit(x, y, S.ProbeAmp{iw,ip}), axis image,
+                    xlabel('Cam X (\lambda/D)'), ylabel('Cam Y (\lambda/D)')
+                    colorbartitle('Amplitude (Normalized)'),
+                    set(gca,'xlim',xlimlamD*[-1 1],'ylim',xlimlamD*[-1 1])
+                    title(['Iteration # ' num2str(S.iter) ' Wave #' num2str(iw) ' Probe # ' num2str(ip)])
+                    meanProbeh = mean( abs(S.ProbeAmp{iw,ip}(S.bMask)).^2 );
+                    ht = text(-xlimlamD, xlimlamD, [' Mean Probe Int = ' num2str(meanProbeh, '%.1e')]);
+                    set(ht,'VerticalAlignment','top')
+                    set(ht,'Color',[1 1 1])
+                    
+                    axclim(ipl,:) = get(hax(ipl),'clim');
                     
                 end
             end
+            
+            % adjust clim
+            if isempty(clim),
+                clim = [min(axclim(:)) max(axclim(:))];
+            end
+            set(hax, 'clim', clim);
 
+            if ~any(S.bPampzero(:)), return, end
+            
             % again, but only show points where bPampzero = false
             % i.e. pixels used by EFC
-            hfig = figure_mxn(Nhigh, Nwide);
+            hfig(2) = figure_mxn(Nhigh, Nwide);
             for ip = 1:S.Nppair,
                 for iw = 1:S.Nlamcorr,
                     if Nwide == S.Nlamcorr,
@@ -827,8 +829,10 @@ classdef CRunData < handle & CConstants
                     bPamp = squeeze(S.bPampzero(iw,:,:));
                     probeamptmp = S.ProbeAmp{iw,ip};
                     probeamptmp(bPamp) = 0.0;
-                    imageschcit(x, y, probeamptmp), axis image, colorbar,
-                    set(gca,'xlim',xlimlamD,'ylim',xlimlamD)
+                    imageschcit(x, y, probeamptmp), axis image, 
+                    xlabel('Cam X (\lambda/D)'), ylabel('Cam Y (\lambda/D)')
+                    colorbartitle('Amplitude (Normalized)'),
+                    set(gca,'xlim',xlimlamD*[-1 1],'ylim',xlimlamD*[-1 1])
                     title(['Iteration # ' num2str(S.iter) ' Wave #' num2str(iw) ' Probe # ' num2str(ip) ' Amplitude'])
                     
                 end
@@ -1149,3 +1153,14 @@ classdef CRunData < handle & CConstants
     end % methods
     
 end % classdef
+
+% utilities
+function val = FindOption(sOpt, valDefault, varargin)
+
+val = valDefault;
+ifind = find(strcmpi(sOpt, varargin));
+if ~isempty(ifind),
+    val = varargin{ifind(end)+1};
+end
+
+end
