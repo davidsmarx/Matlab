@@ -47,14 +47,27 @@ end
 % create grid if necessary
 if isempty(x) || isempty(y),
     [x, y] = CreateGrid(Im);
+elseif x == 0 || y == 0,
+    % make zero-offset axis to match python arrays
+    [nr, nc] = size(Im);
+    x = (1:nc)'-1;
+    y = (1:nr)'-1;
 end
+
+maxIm = max(abs(imag(Im(:))));
+maxRe = max(abs(real(Im(:))));
+if maxIm > eps*maxRe && maxRe > eps*maxIm,
+    [hax, hh] = ImageReIm(x, y, Im);
     
-hh = imagesc(x, y, Im);
-axis image
-set(gca,'ydir','normal')
+else
+    hh = imagesc(x, y, Im);
+    axis image
+    set(gca,'ydir','normal')
+    hax = gca;
+end
 
 if ~isempty(cProperties),
-    set(gca, cProperties{:});
+    set(hax, cProperties{:});
 end
 
 
@@ -62,3 +75,23 @@ end
 if nargout > 0,
     hout = hh;
 end
+
+end % main
+
+function [hax, hh] = ImageReIm(x, y, Im)
+
+    hax(1) = subplot(1,2,1);
+    hh(1) = imagesc(x, y, real(Im));
+    axis image
+    
+    hax(2) = subplot(1,2,2);
+    hh(2) = imagesc(x, y, imag(Im));
+    axis image
+    
+    set(hax,'ydir','normal');
+
+    clim1 = get(hax(1),'clim');
+    clim2 = get(hax(2),'clim');
+    set(hax,'clim',[ min([clim1 clim2]) max([clim1 clim2])])
+    
+end % ImageReIm
