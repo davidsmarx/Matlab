@@ -1000,7 +1000,7 @@ classdef CRunData < handle & CConstants
             
             % FFT of dE
             Nlam2 = 1200; % a guess right now, about ppl0*D in pixels
-            Nfft = Nlam2 ./(S.NKTcenter(2)./S.NKTcenter);
+            Nfft = Nlam2 ./(mean(S.NKTcenter)./S.NKTcenter);
             for iwv = 1:S.NofW,
                 dEtmp = squeeze(dE(iwv,:,:));
                 % need to eliminate outliers
