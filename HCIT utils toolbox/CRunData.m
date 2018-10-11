@@ -42,11 +42,9 @@ classdef CRunData < handle & CConstants
 % [hfig, hax] = DisplayDMv(S)
 % [hfig, hax] = DisplayDMv(S, Sref)
 % [hfig, hax] = DisplayDMv(S, DM1ref_fits_fn, DM2ref_fits_fn)
-
-%    'bLog', true or false (default = false)
-%    'drawradii', [list of radii]
 %
 % [hfig, ha] = DisplayDEfields(S, Sref, hfig)
+%
 
     properties
         
@@ -96,7 +94,7 @@ classdef CRunData < handle & CConstants
         Contrast_inco
         Contrast_co
 
-        Ndm = 1; % # of DM's should get this from the data, maybe from the number of images in dmvcube
+        Ndm    % # of DM's, see ReadDMvCube
         DMvCube
         ProbeModel
         ProbeMeasAmp
@@ -535,6 +533,11 @@ classdef CRunData < handle & CConstants
         end % ReadImageCube
         
         function S = ReadDMvCube(S)
+            
+            finfo = fitsinfo(S.Rundir_fn);
+            % Primary hdu is unprobed images
+            % one Image hdu per DM
+            S.Ndm = length(finfo.Image);
             
             for dmnum = 1:S.Ndm,
                 S.DMvCube{dmnum} = fitsread(S.Rundir_fn,'image',dmnum);
@@ -1082,44 +1085,55 @@ classdef CRunData < handle & CConstants
         end % DisplayPampzero
 
         function [hfig, hax] = DisplayDMv(S, varargin)
+            % [hfig, hax] = S.DisplayDMv
+            % [hfig, hax] = S.DisplayDMv(Sref)
+            % [hfig, hax] = S.DisplayDMv(refDM1v_fits, refDM2v_fits)
             
             if isempty(S.DMvCube)
                 S.ReadDMvCube;
             end
-            
+
+            % extract the DV v to plot
+            for idm = 1:S.Ndm,
+                DMvtmp = squeeze(S.DMvCube{idm}(:,:,1));
+                rmsDMv(idm) = rms(DMvtmp(DMvtmp>0));
+                
+                DMv{idm} = DMvtmp;
+                strDM{idm} = ['it#' num2str(S.iter) ...
+                    ', DM' num2str(idm) ...
+                    ', ' num2str(rmsDMv(idm),'%.4f') 'V rms'];
+            end
+
             switch length(varargin),
                 case 0,
-                    refDMv{1:S.Ndm} = deal(0);
-                    strRefDM{1:S.Ndm} = deal('');
+                    refDMv = [];
+                    strRefDM = [];
 
                 case 1,
-                    if isa(varargin{1},'CRunData'),
-                        Sref = varargin{1};
-                        if isempty(Sref.DMvCube)
-                            Sref.ReadDMvCube;
-                        end
-                        
-                        refDM1v = squeeze(Sref.DMvCube{1}(:,:,1));
-                        strRefDM1 = ['it#' num2str(Sref.iter)];
-                        refDM2v = squeeze(Sref.DMvCube{2}(:,:,1));
-                        strRefDM2 = ['it#' num2str(Sref.iter)];
-                        
-                    else, 
+                    if ~isa(varargin{1},'CRunData'),
                         error('usage');
+                    end
+                    
+                    Sref = varargin{1};
+                    if isempty(Sref.DMvCube)
+                        Sref.ReadDMvCube;
+                    end
+                    
+                    for idm = 1:Sref.Ndm,
+                        refDMv{idm} = squeeze(Sref.DMvCube{idm}(:,:,1));
+                        strRefDM{idm} = ['it#' num2str(Sref.iter) ', DM' num2str(idm)];
                     end
                     
                 case 2,
                     [refDM1v_fn, refDM2v_fn] = deal(varargin{1:2});
                     
-                    refDM1v = fitsread(PathTranslator(refDM1v_fn));
+                    refDMv{1} = fitsread(PathTranslator(refDM1v_fn));
                     aatmp = regexp(refDM1v_fn, '/', 'split');
-                    strRefDM1 = pwd2titlestr(aatmp{end});
-
-                    
-                                
-                    refDM2v = fitsread(PathTranslator(refDM2v_fn));
+                    strRefDM{1} = pwd2titlestr(aatmp{end});
+                                                    
+                    refDMv{2} = fitsread(PathTranslator(refDM2v_fn));
                     aatmp = regexp(refDM2v_fn, '/', 'split');
-                    strRefDM2 = pwd2titlestr(aatmp{end});
+                    strRefDM{2} = pwd2titlestr(aatmp{end});
 
 
                 otherwise %else
@@ -1127,16 +1141,32 @@ classdef CRunData < handle & CConstants
                     
             end % switch nargin
 
-            hfig = figure_mxn(1,S.Ndm);
+            if isempty(refDMv),
+                Nr = 1;
+            else
+                Nr = 2;
+            end
+            hfig = figure_mxn(Nr,S.Ndm);
             
             for idm = 1:S.Ndm,
-                
-                dDMv = squeeze(S.DMvCube{idm}(:,:,1)) - refDMv{idm};
-                rmsdDMv(idm) = rms(dDMv(abs(dDMv)>0));
-                hax(idm) = subplot(1,S.Ndm,idm);
-                imageschcit(dDMv)
+
+                % plot S DMv
+                hax(idm) = subplot(Nr, S.Ndm, idm);
+                imageschcit(DMv{idm}), 
                 colorbartitle('Vmu')
-                title(['Iter # ' num2str(S.iter) '; DM ' num2str(idm) '; \DeltaVmu, ref = ' strRefDM{idm}])
+                title(strDM{idm})
+                
+                % if Ref defined:
+                if ~isempty(refDMv),
+                    hax(idm+S.Ndm) = subplot(Nr, S.Ndm, idm+S.Ndm);
+                
+                    dDMv = DMv{idm} - refDMv{idm};
+                    rmsdDMv = rms(dDMv(abs(dDMv)>0));
+
+                    imageschcit(dDMv)
+                    colorbartitle('Vmu')
+                    title(['\Delta ' strRefDM{idm} ', ' num2str(rmsdDMv,'%.4f') 'V rms'])
+                end
                 
             end % for idm
             

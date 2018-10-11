@@ -47,11 +47,11 @@ end
 % create grid if necessary
 if isempty(x) || isempty(y),
     [x, y] = CreateGrid(Im);
-elseif x == 0 || y == 0,
+elseif isscalar(x) || isscalar(y),
     % make zero-offset axis to match python arrays
     [nr, nc] = size(Im);
-    x = (1:nc)'-1;
-    y = (1:nr)'-1;
+    if isscalar(x), x = x + (1:nc)'-1; end
+    if isscalar(y), y = y + (1:nr)'-1; end
 end
 
 maxIm = max(abs(imag(Im(:))));
