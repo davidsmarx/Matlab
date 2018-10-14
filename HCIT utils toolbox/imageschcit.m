@@ -50,8 +50,8 @@ if isempty(x) || isempty(y),
 elseif isscalar(x) || isscalar(y),
     % make zero-offset axis to match python arrays
     [nr, nc] = size(Im);
-    x = (1:nc)'-1;
-    y = (1:nr)'-1;
+    if isscalar(x), x = x + (1:nc)'-1; end
+    if isscalar(y), y = y + (1:nr)'-1; end
 end
 
 maxIm = max(abs(imag(Im(:))));
