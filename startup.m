@@ -15,20 +15,14 @@ more on
 constants;
 unitsdefinitions;
 
-% % hardware
-% global IMSMOTION;
-% IMSMOTION = 1;
-% 
-% %Aq_Startup.m   Acqiris Startup file
-% % 
-% % This file is generated automatically during the installation
-% % DO NOT EDIT - File will be overwritten if re-installing or updating
-%  
-% AqRoot=getenv('AcqirisDxRoot');
-% if ~isempty(AqRoot)
-%     addpath([AqRoot,'\bin']);
-%     addpath([AqRoot,'\MATLAB\mex']); %,[AqRoot,'\MATLAB\mex\help']);
-%     if exist([AqRoot,'\MATLAB\mex\functions'],'dir'),
-%         addpath([AqRoot,'\MATLAB\mex\functions']);
-%     end
-% end
+% python path
+[pyver, pyexe, isloaded] = pyversion;
+if ~isempty(pyver),
+    pypath = py.sys.path;
+    pypath.append('/home/dmarx/src/Falco-jpl/FALCO-python/falco')
+    pypath.append('/home/dmarx/src/Falco-jpl/FALCO-python/falco/models')
+    pypath.append('/home/dmarx/src/python_toolbox')
+else,
+    error('Python not found');
+end
+    

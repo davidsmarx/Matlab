@@ -47,7 +47,7 @@ end
 % create grid if necessary
 if isempty(x) || isempty(y),
     [x, y] = CreateGrid(Im);
-elseif x == 0 || y == 0,
+elseif isscalar(x) || isscalar(y),
     % make zero-offset axis to match python arrays
     [nr, nc] = size(Im);
     x = (1:nc)'-1;
