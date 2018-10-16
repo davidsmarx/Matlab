@@ -38,6 +38,15 @@ classdef CRunData < handle & CConstants
 % options:
 %    'drawradii', default = []
 %    'bLog', default = false
+%    'clim'
+%    'hax'
+%
+% [hfig, hax] = DisplayCohInt(S, varargin)
+% options:
+%    'drawradii'
+%    'bLog' (default = true)
+%    'clim'
+%    'hax'
 %
 % [hfig, hax] = DisplayDMv(S)
 % [hfig, hax] = DisplayDMv(S, Sref)
@@ -104,6 +113,8 @@ classdef CRunData < handle & CConstants
         
         rplot
         IntRad
+        dispXYlim = 15; % lam/D for all imageschcit
+        
         
     end % properties
         
@@ -124,6 +135,7 @@ classdef CRunData < handle & CConstants
                     results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run000/';
                 case 606,
                     results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run606/';
+                    S.ppl0 = 6.09; % MCB SPC from config_MCB_SPC_20181015.py
                 otherwise
                     error('unrecognized runnum');
             end
@@ -275,9 +287,9 @@ classdef CRunData < handle & CConstants
 
             % parse options
             % default values from the class
-            %val = FindOption(sOpt, valDefault, varargin)
-            RminSc = FindOption('RminSc', S.RminSc, varargin{:});
-            RmaxSc = FindOption('RmaxSc', S.RmaxSc, varargin{:});
+            %val = CheckOption(sOpt, valDefault, varargin)
+            RminSc = CheckOption('RminSc', S.RminSc, varargin{:});
+            RmaxSc = CheckOption('RmaxSc', S.RmaxSc, varargin{:});
                 
             
             [x, y, X, Y, R] = CreateGrid(S.ImCubeUnProb{1}, 1./S.ppl0);
@@ -570,11 +582,11 @@ classdef CRunData < handle & CConstants
             end
             
             % default options and set requested options
-            %  val = FindOption(sOpt, valDefault, varargin)
-            bPlotLog = FindOption('bLog', false, varargin{:});
-            drawRadii = FindOption('drawRadii', [], varargin{:});
-            climopt = FindOption('clim', [], varargin{:});
-            ilam = FindOption('ilam', 1:S.NofW, varargin{:});
+            %  val = CheckOption(sOpt, valDefault, varargin)
+            bPlotLog = CheckOption('bLog', false, varargin{:});
+            drawRadii = CheckOption('drawradii', [], varargin{:});
+            climopt = CheckOption('clim', [], varargin{:});
+            ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             %             sOpt = struct(...
             %                 'bPlotLog', false ...
             %                 ,'drawRadii', [] ...
@@ -589,7 +601,7 @@ classdef CRunData < handle & CConstants
             %             end
             
             [x, y, X, Y, R] = CreateGrid(S.ImCubeUnProb{1}, 1./S.ppl0);
-            xlim = 20*[-1 1]; ylim = xlim;
+            xlim = S.dispXYlim*[-1 1]; ylim = xlim;
             
             Nlam = length(ilam);
             
@@ -615,13 +627,7 @@ classdef CRunData < handle & CConstants
                title(titlestr)
                 
                % overlay circles if requested
-               if ~isempty(drawRadii),
-                   hold on
-                   for irad = 1:length(drawRadii),
-                       draw_circle([0 0], 2*drawRadii(irad), 1, 'r');
-                   end
-                   hold off
-               end
+               DrawCircles(ha, drawRadii);
                
             end % for each wavelength and subplot
             
@@ -637,7 +643,7 @@ classdef CRunData < handle & CConstants
 
             % radial plot
             Nr = 128;
-            re = linspace(0, 25, Nr+1)';
+            re = linspace(0, S.dispXYlim, Nr+1)';
             S.IntRad = cell(S.NofW,1);
             legstr = cell(1,S.NofW);
             for iwv = 1:S.NofW,
@@ -681,11 +687,11 @@ classdef CRunData < handle & CConstants
 
             
             % options:
-            % %  val = FindOption(sOpt, valDefault, varargin)
-            bLog = FindOption('blog', true, varargin{:});
-            drawRadii = FindOption('drawradii', [], varargin{:});
-            climopt = FindOption('clim', [], varargin{:});
-            haxopt = FindOption('hax', [], varargin{:}); % put image on this axes
+            % %  val = CheckOption(sOpt, valDefault, varargin)
+            bLog = CheckOption('blog', true, varargin{:});
+            drawRadii = CheckOption('drawradii', [], varargin{:});
+            clim = CheckOption('clim', [], varargin{:});
+            haxopt = CheckOption('hax', [], varargin{:}); % put image on this axes
             
             %%%% end options
             
@@ -701,12 +707,10 @@ classdef CRunData < handle & CConstants
             
             hfig = figure_mxn(1,S.Nlamcorr);
             
-            xlim = 20*[-1 1]; ylim = xlim;
+            xlim = S.dispXYlim*[-1 1]; ylim = xlim;
 
-            if ~isempty(climopt),
-                clim = pFun(climopt);
-            else
-                clim = pClim([S.IncInt{:}]);
+            if isempty(clim),
+                clim = pClim(pFun([S.IncInt{:}]));
             end
             
             [x, y] = CreateGrid(S.IncInt{1}, 1./S.ppl0);
@@ -727,16 +731,7 @@ classdef CRunData < handle & CConstants
             end
             set(hax,'xlim',xlim,'ylim',ylim,'clim',clim);
             
-            if ~isempty(drawRadii),
-                for iax = 1:length(hax),
-                    axes(hax(iax));
-                    hold on
-                    for irad = 1:length(drawRadii),
-                        draw_circle([0 0], 2*drawRadii(irad), 1, 'r');
-                    end
-                    hold off
-                end % for each axes               
-            end % if option drawradii
+            DrawCircles(hax, drawRadii);
             
             % radial plot
             for iwv = 1:S.Nlamcorr,
@@ -761,7 +756,7 @@ classdef CRunData < handle & CConstants
             if ~isempty(drawRadii),
                 hold on
                 for irad = 1:length(drawRadii),
-                    plot(radii(irad)*[1 1], get(gca,'ylim'), '--r')
+                    plot(drawRadii(irad)*[1 1], get(gca,'ylim'), '--r')
                 end
                 hold off
             end
@@ -777,9 +772,9 @@ classdef CRunData < handle & CConstants
             end
             
             % check options
-            clim = FindOption('clim', [], varargin{:});
+            clim = CheckOption('clim', [], varargin{:});
             
-            xlimlamD = 20;
+            xlimlamD = S.dispXYlim;
             [x, y] = CreateGrid(S.ProbeAmp{1,1}, 1./S.ppl0);
             
             % ProbeAmp is from reduced data cube, Primary HDU
@@ -843,34 +838,28 @@ classdef CRunData < handle & CConstants
 
         end % DisplayProbeAmp
         
-        function [pl, hfig] = DisplayOneProbeAmp(S, ip, drawradii)
+        function [pl, hfig, hax] = DisplayOneProbeAmp(S, ip, varargin)
             if isempty(S.ProbeAmp),
                 S.ReadReducedCube;
             end
-            if nargin < 3, drawradii = []; end
+
+            drawRadii = CheckOption('drawradii', [], varargin{:});
                 
             % display one probe at all wavelengths and plot cross sections
             [x, y] = CreateGrid(S.ProbeAmp{1,1}, 1./S.ppl0);
             xlimlamD = 22*[-1 1];
             hfig = figure_mxn(1,S.Nlamcorr);
             for iw = 1:S.Nlamcorr,
-                subplot(1,S.Nlamcorr,iw);
+                hax(iw) = subplot(1,S.Nlamcorr,iw);
                 imageschcit(x, y, (S.ProbeAmp{iw, ip}).^2), axis image, colorbartitle('Norm Intensity')
                 set(gca,'xlim',xlimlamD,'ylim',xlimlamD)
                 title(['Iteration # ' num2str(S.iter) ' Wave #' num2str(iw) ' Probe # ' num2str(ip) ' Amplitude'])
-                
-                if ~isempty(drawradii),
-                    hold on
-                    for ir = 1:length(drawradii),
-                        draw_circle([0 0],2*drawradii(ir),1, 'r');
-                    end
-                    hold off
-                end
-                
+                                
                 pl{1,iw} = [x(:) y(:)];
                 pl{2,iw} = [S.ProbeAmp{iw, ip}(y==0, :).' S.ProbeAmp{iw, ip}(:, x==0)].^2;
                 
             end 
+            DrawCircles(hax, drawRadii);
             
             figure, semilogy(pl{:}), grid
             set(gca,'xlim',xlimlamD)
@@ -905,18 +894,113 @@ classdef CRunData < handle & CConstants
             for ip = 1:S.Nppair,
                 ha(ip) = subplot(2,S.Nppair,ip);
                 imageschcit(x,y,abs(S.ProbeModel{iwvplot,ip}).^2), axis image, colorbar
-                set(gca,'xlim',25*[-1 1],'ylim',25*[-1 1])
+                set(gca,'xlim',S.dispXYlim*[-1 1],'ylim',S.dispXYlim*[-1 1])
                 xlabel('\lambda / D'), ylabel('\lambda / D')
                 title(['wave #' num2str(iwvplot) ', it ' num2str(S.iter) ', Model Probe #' num2str(ip)])
                 
                 ha(S.Nppair+ip) = subplot(2,S.Nppair,S.Nppair+ip);
                 imageschcit(x,y,S.ProbeMeasAmp{iwvplot,ip}.^2), axis image, colorbar
-                set(gca,'xlim',25*[-1 1],'ylim',25*[-1 1])
+                set(gca,'xlim',S.dispXYlim*[-1 1],'ylim',S.dispXYlim*[-1 1])
                 xlabel('\lambda / D'), ylabel('\lambda / D')
                 title(['wave #' num2str(iwvplot) ', it ' num2str(S.iter) ', Measure Probe #' num2str(ip)])
             end
 
         end % DisplayProbeCube
+        
+        function [hfig, hax] = DisplayCohInt(S, varargin)
+            % [hfig, hax] = DisplayCohInt(S, varargin)
+            % options:
+            %    'drawradii'
+            %    'bLog' (default = true)
+            %    'clim'
+            %    'hax'
+            
+            if isempty(S.E_t),
+                S.ReadReducedCube;
+            end
+            
+            for iwv = 1:S.Nlamcorr,
+                CohInt{iwv} = abs(squeeze(S.E_t(iwv,:,:))).^2;
+            end
+
+            % options:
+            % %  val = CheckOption(sOpt, valDefault, varargin)
+            bLog = CheckOption('blog', true, varargin{:});
+            drawRadii = CheckOption('drawradii', [], varargin{:});
+            clim = CheckOption('clim', [], varargin{:});
+            haxopt = CheckOption('hax', [], varargin{:}); % put image on this axes
+            
+            %%%% end options
+            
+            if bLog,
+                pFun  = @(a) real(log10(a));
+                pClim = @(a) [-10 0.99*max(real(log10(a(:))))];
+                cbartitle = 'log_{10} Norm Intensity';
+            else
+                pFun  = @(a) (a);
+                pClim = @(a) AutoClim(a);
+                cbartitle = 'Norm Intensity';
+            end
+            
+            hfig = figure_mxn(1,S.Nlamcorr);
+            
+            xlim = S.dispXYlim*[-1 1]; ylim = xlim;
+
+            if isempty(clim),
+                clim = pClim(pFun([CohInt{:}]));
+            end
+            
+            [x, y] = CreateGrid(CohInt{1}, 1./S.ppl0);
+
+            for iwv = 1:S.Nlamcorr,
+            
+                hax(iwv) = subplot(1, S.Nlamcorr, iwv);
+                him(iwv) = imageschcit(x, y, pFun(CohInt{iwv})); axis image
+                xlabel('\lambda / D')
+                ylabel('\lambda / D')
+                %caxis(clim);
+                colorbartitle(cbartitle)                
+                if ~isempty(S.NKTcenter), strlam = ['\lambda = ' num2str(S.NKTcenter(iwv)/S.NM) 'nm']; else strlam = ['Wave #' num2str(iwv)]; end
+                title(['it#' num2str(S.iter) ', ' strlam])
+            
+            end
+            set(hax,'xlim',xlim,'ylim',ylim,'clim',clim);
+            
+            DrawCircles(hax, drawRadii);
+            
+            % radial plot
+            for iwv = 1:S.Nlamcorr,
+                [fovrplot, CohIntrad] = RadialMean(x, y, S.CohInt{iwv}, 128);
+                % remove negative inc int values so we can use log plot
+                IncIntrad(CohIntrad < 1e-11) = 1e-11;
+                qplot{1,iwv} = fovrplot;
+                qplot{2,iwv} = CohIntrad;
+                legstr{iwv} = ' ';
+                if ~isempty(S.NKTcenter), legstr{iwv} = [num2str(S.NKTcenter(iwv)/S.NM) 'nm']; end
+            end
+            figure, semilogy(qplot{:}); 
+            hax(end+1) = gca;
+            grid on
+            set(gca,'xlim',[0 1].*xlim)
+            %set(gca,'ylim',clim)
+
+            xlabel('Radius (\lambda/D)')
+            ylabel('Modulated (Norm. Int.)')
+            title(['Mod Int, it#' num2str(S.iter)])
+            
+            if ~isempty(drawRadii),
+                hold on
+                for irad = 1:length(drawRadii),
+                    plot(drawRadii(irad)*[1 1], get(gca,'ylim'), '--r')
+                end
+                hold off
+            end
+            
+            % legend must go after everything is plotted
+            legend(legstr{:},'Location','North')
+            
+            
+        end % DisplayCohInt
         
         function [hfig, ha] = DisplayEfields(S, iwvplot)
             if ~exist('iwvplot','var') || isempty(iwvplot),
@@ -1068,7 +1152,7 @@ classdef CRunData < handle & CConstants
             [nw, ny, nx] = size(S.bPampzero);
             
             [x, y] = CreateGrid([nx ny], 1./S.ppl0);
-            xlim = 25*[-1 1]; ylim = xlim;
+            xlim = S.dispXYlim*[-1 1]; ylim = xlim;
 
             hfig = figure_mxn(1,S.NofW);
             for iw = 1:S.NofW,
@@ -1185,12 +1269,19 @@ classdef CRunData < handle & CConstants
 end % classdef
 
 % utilities
-function val = FindOption(sOpt, valDefault, varargin)
+function DrawCircles(hax, drawRadii)
 
-val = valDefault;
-ifind = find(strcmpi(sOpt, varargin));
-if ~isempty(ifind),
-    val = varargin{ifind(end)+1};
+if isempty(drawRadii),
+    return
 end
 
-end
+for iax = 1:length(hax),
+    axes(hax(iax));
+    hold on
+    for irad = 1:length(drawRadii),
+        draw_circle([0 0], 2*drawRadii(irad), 1, 'r');
+    end
+    hold off
+end % for each axes
+
+end % DrawCircles

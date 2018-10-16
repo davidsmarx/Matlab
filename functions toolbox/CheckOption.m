@@ -1,8 +1,10 @@
 function val = CheckOption(varstring, defaultval, varargin)
-% CheckOption(varstring, defaultval, varargin)
+% val = CheckOption(varstring, defaultval, varargin)
 %
 % utility for checking varargin for an option
-% if found, the following entry in varargin is returned
+% varstring = string keyword
+% if varstring is found in varargin{:},
+% the value of the following entry in varargin is returned
 % else the defaultval is returned
 
 iv = find(strcmp(varargin, varstring));
