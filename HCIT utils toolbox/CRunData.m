@@ -3,7 +3,7 @@ classdef CRunData < handle & CConstants
 %
 % S = CRunData(runnum, iter, sOptions)
 %     default  sOptions = struct(...
-%                 'results_pn', ['../results/run' num2str(runnum, '%03d') '/'] ...
+%                 'Results_pn', ['../results/run' num2str(runnum, '%03d') '/'] ...
 %                 ,'Rundir_pn', [sOptions.results_pn 'rundir/'] ...
 %                 ,'Reduced_pn', [sOptions.results_pn 'rundir/reduced/'] ...
 %                 ,'PCtemp_pn', 'C:\Users\dmarx\HCITdatatemp\' ...
@@ -60,14 +60,17 @@ classdef CRunData < handle & CConstants
         % SPC disc:
         lambda          = [542 553 565 577 588]*CConstants.NM;
         %ilamcorr        = [0, 1, 2, 3, 4];
-        ppl0            = 4.01;
+        ppl0
         RminSc          = 6.3; % lam/D
         RmaxSc          = 19.5;
         Nbscan          = 6;
 
-        Reduced_fn = '';
-        Rundir_fn  = '';
         Results_pn = '';
+        Rundir_pn  = 'rundir/';         % always relative to Results_pn
+        Reduced_pn = 'rundir/reduced/'; % always relative to Results_pn
+        PCtemp_pn  = 'C:\Users\dmarx\HCITdatatemp\';
+        Rundir_fn  = ''; % filenames include full path assembled in the init 
+        Reduced_fn = '';
         
         runnum
         iter
@@ -114,7 +117,8 @@ classdef CRunData < handle & CConstants
         rplot
         IntRad
         dispXYlim = 15; % lam/D for all imageschcit
-        
+
+        debug = false;
         
     end % properties
         
@@ -126,104 +130,84 @@ classdef CRunData < handle & CConstants
     methods
         function S = CRunData(runnum, iter, sOptin)
 
-            switch runnum,
+            S.runnum = runnum;
+            S.iter = iter;
+
+            % default paths based on runnum
+            % 'rundir_pn' and 'reduced_pn' are always relative to
+            % Results_pn
+            switch S.runnum,
                 case 603,
-                    results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run603/';
+                    S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run603/';
                 case 604,
-                    results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
+                    S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
                 case 0
-                    results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run000/';
+                    S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run000/';
                 case 606,
-                    results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run606/';
+                    S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run606/';
                     S.ppl0 = 6.09; % MCB SPC from config_MCB_SPC_20181015.py
                 otherwise
                     error('unrecognized runnum');
             end
-            
-            if ~exist('sOptin','var'), sOptin = struct(); end
-            % validate sOptions, default values:
-            sOptions = struct(...                  %'results_pn', ['../results/run' num2str(runnum, '%03d') '/'] ...
-                'results_pn', results_pn ...
-                ,'PCtemp_pn', 'C:\Users\dmarx\HCITdatatemp\' ...
-                ,'debug',false ...
-                );
+
             % replace default values with given options
+            if ~exist('sOptin','var'), sOptin = struct(); end
             ffields = fieldnames(sOptin);
             for ii = 1:length(ffields),
-                sOptions.(ffields{ii}) = sOptin.(ffields{ii});
-            end
-
-            % default if not already defined by options:
-            if ~isfield(sOptions,'Rundir_pn')
-                sOptions.Rundir_pn =  [sOptions.results_pn 'rundir/'];
-            end
-            if ~isfield(sOptions,'Reduced_pn')
-                sOptions.Reduced_pn = [sOptions.results_pn 'rundir/reduced/'];
-            end
-
-            % if only relative paths are used, don't need PathTranslator
-            %results_pn = ['../results/run' num2str(runnum, '%03d') '/'];
-            if ~exist(PathTranslator(sOptions.results_pn), 'dir'),
-                error(['not found: ' sOptions.results_pn]);
-            end
-            S.Results_pn = sOptions.results_pn;
-
-            % array of iteration #'s
-            if ~exist('iter','var') || isempty(iter),
-                error('must define iterv iterations');
+                S.(ffields{ii}) = sOptin.(ffields{ii});
             end
      
             % unzip the fits files if necessary
             % basename, such as 'run603it00000.fits'
-            s_bn = ['run' num2str(runnum,'%03d') 'it' num2str(iter,'%05d') '.fits'];
-            % 'local' fits files are on PC, if ispc
-            if ispc,                
-                if ~exist([sOptions.PCtemp_pn 'reduced\'],'dir')
-                    mkdir([sOptions.PCtemp_pn 'reduced\']);
-                end
-                sReduced_fn = [sOptions.PCtemp_pn 'reduced\' s_bn];
-            else
-                sReduced_fn = [sOptions.Reduced_pn s_bn];
-            end
+            s_bn = ['run' num2str(S.runnum,'%03d') 'it' num2str(iter,'%05d') '.fits'];
+            S.Reduced_fn = PathTranslator([S.Results_pn S.Reduced_pn s_bn]);
             
-            % first check if 'local' fits files exist, then skip ahead
-            if ~exist(PathTranslator(sReduced_fn),'file'),
+            %             % 'local' fits files are on PC, if ispc
+            %             if ispc,
+            %                 if ~exist([S.PCtemp_pn 'reduced\'],'dir')
+            %                     mkdir([S.PCtemp_pn 'reduced\']);
+            %                 end
+            %                 S.Reduced_fn = [sOptions.PCtemp_pn 'reduced\' s_bn];
+            %             else
+
+            % first check if 'local' fits files exists,
+            % if not (copy) & unzip
+            if ~exist(S.Reduced_fn,'file'),
                 % source location:
-                sReduced_gz = [sOptions.Reduced_pn s_bn '.gz'];
+                sReduced_gz = [S.Reduced_fn '.gz'];
                 if ~exist(PathTranslator(sReduced_gz), 'file'),
                     warning(['data file: ' sReduced_fn '.gz' ' does not exist, no reduced data available']);
-                    sReduced_fn = [];
-                else
-                    
-                    % if desktop pc, faster to copy local then unzip
-                    if ispc,
-                        copyfile(PathTranslator(sReduced_gz), [sReduced_fn '.gz']);
-                        sReduced_gz = [sReduced_fn '.gz'];
-                    end
+                    S.Reduced_fn = [];
+                    %                 else
+                    %
+                    %                     % if desktop pc, faster to copy local then unzip
+                    %                     if ispc,
+                    %                         copyfile(PathTranslator(sReduced_gz), [S.Reduced_fn '.gz']);
+                    %                         sReduced_gz = [sReduced_fn '.gz'];
+                    %                     end
                 end
                 % sReduced_gz is now either on server or local pc
                 gunzip(sReduced_gz);
             end
             
             % repeat local logic for rundir
-            if ispc,
-                sRundir_fn = [sOptions.PCtemp_pn s_bn];
-            else,
-                sRundir_fn = PathTranslator([sOptions.Rundir_pn s_bn]);
-            end
+            %             if ispc,
+            %                 sRundir_fn = [sOptions.PCtemp_pn s_bn];
+            %             else,
+            S.Rundir_fn = PathTranslator([S.Results_pn S.Rundir_pn s_bn]);
             
             % if 'local' rundir fits file does not exist, unzip
-            if ~exist(sRundir_fn,'file'),
+            if ~exist(S.Rundir_fn,'file'),
                 % source location:
-                sRundir_gz = [sOptions.Rundir_pn s_bn '.gz'];
+                sRundir_gz = [S.Results_pn S.Rundir_pn s_bn '.gz'];
                 if ~exist(PathTranslator(sRundir_gz),'file'),
                     error(['data file: ' sRundir_gz ' does not exist']);
                 end
                 
-                if ispc,
-                    copyfile(PathTranslator(sRundir_gz), [sRundir_fn '.gz']);
-                    sRundir_gz = [sRundir_fn '.gz'];
-                end
+                %                 if ispc,
+                %                     copyfile(PathTranslator(sRundir_gz), [sRundir_fn '.gz']);
+                %                     sRundir_gz = [sRundir_fn '.gz'];
+                %                 end
                     
                 % sRundir_gz is now either local pc or still server
                 % gunzip should create sRundir_fn
@@ -231,19 +215,14 @@ classdef CRunData < handle & CConstants
                 
             end
             
-            finfo = fitsinfo(sRundir_fn);
+            finfo = fitsinfo(S.Rundir_fn);
             S.ImKeys = finfo.PrimaryData.Keywords;
             
-            if ~isempty(sReduced_fn),
-                finfo = fitsinfo(sReduced_fn);
+            if ~isempty(S.Reduced_fn),
+                finfo = fitsinfo(S.Reduced_fn);
                 S.ReducedKeys = finfo.PrimaryData.Keywords;
             end
             
-            S.runnum = runnum;
-            S.iter = iter;
-            S.Reduced_fn = sReduced_fn;
-            S.Rundir_fn = sRundir_fn;        
-
             % number of probes, and images per wavelength if probed
             % from lyotserver_IFS.py
             S.Nppair = (FitsGetKeywordVal(S.ImKeys,'NUMIM')+FitsGetKeywordVal(S.ImKeys,'PROBEF'));
@@ -587,31 +566,26 @@ classdef CRunData < handle & CConstants
             drawRadii = CheckOption('drawradii', [], varargin{:});
             climopt = CheckOption('clim', [], varargin{:});
             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
-            %             sOpt = struct(...
-            %                 'bPlotLog', false ...
-            %                 ,'drawRadii', [] ...
-            %                 ,'clim', [] ...
-            %                 ,'ilam', [] ...
-            %                 );
-            %             if exist('sOptions','var') && isstruct(sOptions),
-            %                 fnames = fieldnames(sOptions);
-            %                 for ii = 1:length(fnames),
-            %                     sOpt.(fnames{ii}) = sOptions.(fnames{ii});
-            %                 end
-            %             end
+            haxuse = CheckOption('hax', [], varargin{:});
             
             [x, y, X, Y, R] = CreateGrid(S.ImCubeUnProb{1}, 1./S.ppl0);
             xlim = S.dispXYlim*[-1 1]; ylim = xlim;
             
             Nlam = length(ilam);
             
-            hfig = figure_mxn(1,Nlam);
+            if isempty(haxuse), hfig = figure_mxn(1,Nlam); else hfig = gcf; end
             for iwv = 1:Nlam,
                 iwvpl = ilam(iwv);
-                ha(iwv) = subplot(1,Nlam,iwv);
+                if isempty(haxuse),
+                    ha(iwv) = subplot(1,Nlam,iwv);
+                else
+                    ha(iwv) = haxuse(iwv);
+                    axes(haxuse(iwv));
+                end
+                
                 if bPlotLog,
                     imageschcit(x, y, log10(abs(S.ImCubeUnProb{iwvpl}))), axis image,
-                    colorbartitle('log_{10}(Intensity)')
+                    colorbartitle('log_{10} Norm Intensity')
                 else
                     imageschcit(x, y, S.ImCubeUnProb{iwvpl}), axis image,
                     colorbar
@@ -691,7 +665,7 @@ classdef CRunData < handle & CConstants
             bLog = CheckOption('blog', true, varargin{:});
             drawRadii = CheckOption('drawradii', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
-            haxopt = CheckOption('hax', [], varargin{:}); % put image on this axes
+            haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
             
             %%%% end options
             
@@ -705,7 +679,7 @@ classdef CRunData < handle & CConstants
                 cbartitle = 'Norm Intensity';
             end
             
-            hfig = figure_mxn(1,S.Nlamcorr);
+            if isempty(haxuse), hfig = figure_mxn(1,S.Nlamcorr); else hfig = gcf; end
             
             xlim = S.dispXYlim*[-1 1]; ylim = xlim;
 
@@ -717,13 +691,20 @@ classdef CRunData < handle & CConstants
             % auto-scale
             %Agg = [
             for iwv = 1:S.Nlamcorr,
-            
-                hax(iwv) = subplot(1, S.Nlamcorr, iwv);
+
+                if isempty(haxuse),
+                    hax(iwv) = subplot(1, S.Nlamcorr, iwv);
+                    colormap(gray)
+                else
+                    hax(iwv) = haxuse(iwv);
+                    axes(haxuse(iwv));
+                end
+                
                 him(iwv) = imageschcit(x, y, pFun(S.IncInt{iwv})); axis image
                 xlabel('\lambda / D')
                 ylabel('\lambda / D')
                 %caxis(clim);
-                colormap(gray)
+
                 colorbartitle(cbartitle)                
                 if ~isempty(S.NKTcenter), strlam = ['\lambda = ' num2str(S.NKTcenter(iwv)/S.NM) 'nm']; else strlam = ['Wave #' num2str(iwv)]; end
                 title(['it#' num2str(S.iter) ', ' strlam])
@@ -928,7 +909,7 @@ classdef CRunData < handle & CConstants
             bLog = CheckOption('blog', true, varargin{:});
             drawRadii = CheckOption('drawradii', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
-            haxopt = CheckOption('hax', [], varargin{:}); % put image on this axes
+            haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
             
             %%%% end options
             
@@ -942,7 +923,7 @@ classdef CRunData < handle & CConstants
                 cbartitle = 'Norm Intensity';
             end
             
-            hfig = figure_mxn(1,S.Nlamcorr);
+            if isempty(haxuse), hfig = figure_mxn(1,S.Nlamcorr); else hfig = gcf; end
             
             xlim = S.dispXYlim*[-1 1]; ylim = xlim;
 
@@ -953,8 +934,13 @@ classdef CRunData < handle & CConstants
             [x, y] = CreateGrid(CohInt{1}, 1./S.ppl0);
 
             for iwv = 1:S.Nlamcorr,
-            
-                hax(iwv) = subplot(1, S.Nlamcorr, iwv);
+                if isempty(haxuse),
+                    hax(iwv) = subplot(1, S.Nlamcorr, iwv);
+                else
+                    hax(iwv) =  haxuse(iwv);
+                    axes(haxuse(iwv));
+                end
+              
                 him(iwv) = imageschcit(x, y, pFun(CohInt{iwv})); axis image
                 xlabel('\lambda / D')
                 ylabel('\lambda / D')
@@ -1001,6 +987,43 @@ classdef CRunData < handle & CConstants
             
             
         end % DisplayCohInt
+        
+        function [hfig, haxlist] = DisplayAllInt(S, varargin)
+            % display large table of unprobed, coh int, inc int images
+            
+            % defaults that might be different
+            varargin{end+1} = 'bLog'; varargin{end+1} = true;
+            
+            hfig = figure_mxn(3,S.Nlamcorr);
+            haxlist = zeros(3,S.Nlamcorr);
+            
+            % unprobed images
+            figure(hfig);
+            for ii = 1:S.Nlamcorr,
+                haxlist(1,ii) = subplot(3,S.Nlamcorr,ii);
+            end
+            S.DisplayImCubeUnProb('hax',haxlist(1,:),varargin{:});
+
+            % Coh Int
+            figure(hfig);            
+            for ii = 1:S.Nlamcorr,
+                haxlist(2,ii) = subplot(3,S.Nlamcorr,ii+S.Nlamcorr);
+            end
+
+            S.DisplayCohInt('hax',haxlist(2,:), varargin{:});
+
+            % Inc Int
+            figure(hfig);            
+            for ii = 1:S.Nlamcorr,
+                haxlist(3,ii) = subplot(3,S.Nlamcorr,ii+2*S.Nlamcorr);
+            end
+            S.DisplayIncInt('hax',haxlist(3,:), varargin{:});
+
+            % make common clim
+            climlist = get(haxlist,'clim');
+            set(haxlist,'clim',[min([climlist{:}]) max([climlist{:}])])
+
+        end
         
         function [hfig, ha] = DisplayEfields(S, iwvplot)
             if ~exist('iwvplot','var') || isempty(iwvplot),
