@@ -60,7 +60,7 @@ classdef CRunData < handle & CConstants
         % SPC disc:
         lambda          = [542 553 565 577 588]*CConstants.NM;
         %ilamcorr        = [0, 1, 2, 3, 4];
-        ppl0            = 4.01;
+        ppl0            
         RminSc          = 6.3; % lam/D
         RmaxSc          = 19.5;
         Nbscan          = 6;
