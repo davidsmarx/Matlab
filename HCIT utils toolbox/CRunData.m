@@ -118,6 +118,8 @@ classdef CRunData < handle & CConstants
         rplot
         IntRad
         dispXYlim = 15; % lam/D for all imageschcit
+        DrawradiiDefault = [];
+        DrawthetaDefault = [];
 
         debug = false;
         
@@ -147,6 +149,9 @@ classdef CRunData < handle & CConstants
                 case 606,
                     S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run606/';
                     S.ppl0 = 6.09; % MCB SPC from config_MCB_SPC_20181015.py
+                    S.DrawradiiDefault = [2.6 9.0];
+                    S.DrawthetaDefault = 65*[-0.5 0.5]*CConstants.P;
+
                 otherwise
                     error('unrecognized runnum');
             end
@@ -564,7 +569,8 @@ classdef CRunData < handle & CConstants
             % default options and set requested options
             %  val = CheckOption(sOpt, valDefault, varargin)
             bPlotLog = CheckOption('bLog', false, varargin{:});
-            drawRadii = CheckOption('drawradii', [], varargin{:});
+            drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
             climopt = CheckOption('clim', [], varargin{:});
             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             haxuse = CheckOption('hax', [], varargin{:});
@@ -603,6 +609,7 @@ classdef CRunData < handle & CConstants
                 
                % overlay circles if requested
                DrawCircles(ha, drawRadii);
+               DrawThetaLines(ha, drawTheta, drawRadii);
                
             end % for each wavelength and subplot
             
@@ -664,7 +671,7 @@ classdef CRunData < handle & CConstants
             % options:
             % %  val = CheckOption(sOpt, valDefault, varargin)
             bLog = CheckOption('blog', true, varargin{:});
-            drawRadii = CheckOption('drawradii', [], varargin{:});
+            drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
             
@@ -825,7 +832,7 @@ classdef CRunData < handle & CConstants
                 S.ReadReducedCube;
             end
 
-            drawRadii = CheckOption('drawradii', [], varargin{:});
+            drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
                 
             % display one probe at all wavelengths and plot cross sections
             [x, y] = CreateGrid(S.ProbeAmp{1,1}, 1./S.ppl0);
@@ -908,7 +915,7 @@ classdef CRunData < handle & CConstants
             % options:
             % %  val = CheckOption(sOpt, valDefault, varargin)
             bLog = CheckOption('blog', true, varargin{:});
-            drawRadii = CheckOption('drawradii', [], varargin{:});
+            drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
             
@@ -1309,3 +1316,36 @@ for iax = 1:length(hax),
 end % for each axes
 
 end % DrawCircles
+
+function DrawThetaLines(hax, drawTheta, drawRadii)
+
+if isempty(drawTheta),
+    return
+end
+
+
+for iax = 1:length(hax),
+    axes(hax(iax));
+
+    if isempty(drawRadii),
+        r0 = 0;
+        r1 = max(get(hax(iax),'xlim'));
+    else
+        r0 = min(drawRadii);
+        r1 = max(drawRadii);
+    end
+    
+
+    
+    hold on
+    for ith = 1:length(drawTheta),
+        th = drawTheta(ith) + pi/2;
+        plot( [r0 r1]*cos(th), [r0 r1]*sin(th), '-r');
+        plot(-[r0 r1]*cos(th),-[r0 r1]*sin(th), '-r');
+        
+    end % for each theta
+    hold off;
+
+end % for each axes
+
+end % DrawThetaLines
