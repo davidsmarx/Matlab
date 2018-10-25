@@ -23,6 +23,6 @@ if ~isempty(pyver),
     pypath.append('/home/dmarx/src/Falco-jpl/FALCO-python/falco/models')
     pypath.append('/home/dmarx/src/python_toolbox')
 else,
-    error('Python not found');
+    warning('Python not found');
 end
     
