@@ -190,24 +190,25 @@ classdef CRunData < handle & CConstants
                 sReduced_gz = [sReduced_local_fn '.gz'];
                 if ~exist(sReduced_gz, 'file') && ispc,
                     copyfile([S.Reduced_fn '.gz'], sReduced_gz);
-                    S.Reduced_fn = sReduced_local_fn;
                 end
                 gunzip(sReduced_gz);
                 % now reduced data should be unzipped, and 
                 % S.Reduced_fn = the 'local' unzipped data file
             end
+            S.Reduced_fn = sReduced_local_fn;
 
             % repeat local logic for rundir
             if ~exist(sRundir_local_fn, 'file'),
                 sRundir_gz = [sRundir_local_fn '.gz'];
                 if ~exist(sRundir_gz, 'file') && ispc,
                     copyfile([S.Rundir_fn '.gz'], sRundir_gz);
-                    S.Rundir_fn = sRundir_local_fn;
                 end
                 gunzip(sRundir_gz);
                 % now rundir data should be unzipped, and 
                 % S.Rundir_fn = the 'local' unzipped data file
             end
+            S.Rundir_fn = sRundir_local_fn;
+               
             
             finfo = fitsinfo(S.Rundir_fn);
             S.ImKeys = finfo.PrimaryData.Keywords;
@@ -752,6 +753,7 @@ classdef CRunData < handle & CConstants
             
             % check options
             clim = CheckOption('clim', [], varargin{:});
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             
             xlimlamD = dispXYlim;
             [x, y] = CreateGrid(S.ProbeAmp{1,1}, 1./S.ppl0);
@@ -850,17 +852,21 @@ classdef CRunData < handle & CConstants
             
         end % DisplayOneProbeAmp
         
-        function [hfig, ha] = DisplayProbeCube(S, iwvplot)
+        function [hfig, ha] = DisplayProbeCube(S, iwvplot, varargin)
             % hfig = DisplayProbeCube(S, iwvplot)
             % ProbeCube is 2nd HDU of reduced data cube
             if isempty(S.ProbeModel),
                 S.ReadProbeCube;
             end
+            
             if ~exist('iwvplot','var') || isempty(iwvplot),
                 warning('wavelength # not specified, plotting wave #1');
                 iwvplot = 1;
             end
             
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            bLog = CheckOption('blog', true, varargin{:});
+
             [x, y] = CreateGrid(S.ProbeModel{1,1}, 1./S.ppl0);
             
             ip = 1;
@@ -869,17 +875,27 @@ classdef CRunData < handle & CConstants
             xlabel('Y (\lambda / D)')
             legend(['it ' num2str(S.iter) ' model'],['it ' num2str(S.iter) ' Measured'])
             title(['Cross Section, it ' num2str(S.iter) ', Wave #' num2str(iwvplot) ', Measure Probe #' num2str(ip)])
-            
+
+            if bLog,
+                ImModel = real(log10(abs(S.ProbeModel{iwvplot,ip}).^2));
+                ImMeasure = real(log10(S.ProbeMeasAmp{iwvplot,ip}.^2));
+                sctitle = 'log_{10} Norm Intensity';
+            else
+                ImModel = abs(S.ProbeModel{iwvplot,ip}).^2;
+                ImMeasure = S.ProbeMeasAmp{iwvplot,ip}.^2;
+                sctitle = 'Linear Norm Intensity';
+            end
+                
             hfig = figure_mxn(2,S.Nppair);
             for ip = 1:S.Nppair,
                 ha(ip) = subplot(2,S.Nppair,ip);
-                imageschcit(x,y,abs(S.ProbeModel{iwvplot,ip}).^2), axis image, colorbar
+                imageschcit(x,y,ImModel), axis image, colorbartitle(sctitle)
                 set(gca,'xlim',dispXYlim*[-1 1],'ylim',dispXYlim*[-1 1])
                 xlabel('\lambda / D'), ylabel('\lambda / D')
                 title(['wave #' num2str(iwvplot) ', it ' num2str(S.iter) ', Model Probe #' num2str(ip)])
                 
                 ha(S.Nppair+ip) = subplot(2,S.Nppair,S.Nppair+ip);
-                imageschcit(x,y,S.ProbeMeasAmp{iwvplot,ip}.^2), axis image, colorbar
+                imageschcit(x,y,ImMeasure), axis image, colorbartitle(sctitle)
                 set(gca,'xlim',dispXYlim*[-1 1],'ylim',dispXYlim*[-1 1])
                 xlabel('\lambda / D'), ylabel('\lambda / D')
                 title(['wave #' num2str(iwvplot) ', it ' num2str(S.iter) ', Measure Probe #' num2str(ip)])
@@ -1021,7 +1037,8 @@ classdef CRunData < handle & CConstants
 
             % make common clim
             climlist = get(haxlist,'clim');
-            set(haxlist,'clim',[min([climlist{:}]) max([climlist{:}])])
+            %set(haxlist,'clim',[min([climlist{:}]) max([climlist{:}])]
+            set(haxlist,'clim',[-9 -6.5])
 
         end
         
