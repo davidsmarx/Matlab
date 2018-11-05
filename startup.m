@@ -10,8 +10,6 @@ addpath(pwd); % \Tamar\Matlab
 
 clear;
 
-more on
-
 constants;
 unitsdefinitions;
 
@@ -26,3 +24,4 @@ else,
     warning('Python not found');
 end
     
+more on
