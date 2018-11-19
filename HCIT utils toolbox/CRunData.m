@@ -60,7 +60,8 @@ classdef CRunData < handle & CConstants
         % SPC disc:
         lambda          = [542 553 565 577 588]*CConstants.NM;
         %ilamcorr        = [0, 1, 2, 3, 4];
-        ppl0
+        ppl0            
+
         RminSc          = 6.3; % lam/D
         RmaxSc          = 19.5;
         Nbscan          = 6;
@@ -116,7 +117,7 @@ classdef CRunData < handle & CConstants
         
         rplot
         IntRad
-        dispXYlim = 15; % lam/D for all imageschcit
+        XYlimDefault = []; % lam/D for all imageschcit
         DrawradiiDefault = [];
         DrawthetaDefault = [];
 
@@ -141,13 +142,17 @@ classdef CRunData < handle & CConstants
             switch S.runnum,
                 case 603,
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run603/';
+                    S.XYlimDefault = 22;
                 case 604,
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
+                    S.XYlimDefault = 22;
                 case 0
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run000/';
+                    S.XYlimDefault = 12;
                 case 606,
                     S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run606/';
                     S.ppl0 = 6.09; % MCB SPC from config_MCB_SPC_20181015.py
+                    S.XYlimDefault = 12;
                     S.DrawradiiDefault = [2.6 9.0];
                     S.DrawthetaDefault = 65*[-0.5 0.5]*CConstants.P;
 
@@ -168,63 +173,48 @@ classdef CRunData < handle & CConstants
                 S.(ffields{ii}) = sOptin.(ffields{ii});
             end
      
-            % unzip the fits files if necessary
+            % build paths and filenames for the data
             % basename, such as 'run603it00000.fits'
             s_bn = ['run' num2str(S.runnum,'%03d') 'it' num2str(iter,'%05d') '.fits'];
             S.Reduced_fn = PathTranslator([S.Results_pn S.Reduced_pn s_bn]);
-            
-            %             % 'local' fits files are on PC, if ispc
-            %             if ispc,
-            %                 if ~exist([S.PCtemp_pn 'reduced\'],'dir')
-            %                     mkdir([S.PCtemp_pn 'reduced\']);
-            %                 end
-            %                 S.Reduced_fn = [sOptions.PCtemp_pn 'reduced\' s_bn];
-            %             else
-
-            % first check if 'local' fits files exists,
-            % if not (copy) & unzip
-            if ~exist(S.Reduced_fn,'file'),
-                % source location:
-                sReduced_gz = [S.Reduced_fn '.gz'];
-                if ~exist(PathTranslator(sReduced_gz), 'file'),
-                    warning(['data file: ' sReduced_fn '.gz' ' does not exist, no reduced data available']);
-                    S.Reduced_fn = [];
-                    %                 else
-                    %
-                    %                     % if desktop pc, faster to copy local then unzip
-                    %                     if ispc,
-                    %                         copyfile(PathTranslator(sReduced_gz), [S.Reduced_fn '.gz']);
-                    %                         sReduced_gz = [sReduced_fn '.gz'];
-                    %                     end
-                end
-                % sReduced_gz is now either on server or local pc
-                gunzip(sReduced_gz);
-            end
-            
-            % repeat local logic for rundir
-            %             if ispc,
-            %                 sRundir_fn = [sOptions.PCtemp_pn s_bn];
-            %             else,
             S.Rundir_fn = PathTranslator([S.Results_pn S.Rundir_pn s_bn]);
-            
-            % if 'local' rundir fits file does not exist, unzip
-            if ~exist(S.Rundir_fn,'file'),
-                % source location:
-                sRundir_gz = [S.Results_pn S.Rundir_pn s_bn '.gz'];
-                if ~exist(PathTranslator(sRundir_gz),'file'),
-                    error(['data file: ' sRundir_gz ' does not exist']);
-                end
-                
-                %                 if ispc,
-                %                     copyfile(PathTranslator(sRundir_gz), [sRundir_fn '.gz']);
-                %                     sRundir_gz = [sRundir_fn '.gz'];
-                %                 end
-                    
-                % sRundir_gz is now either local pc or still server
-                % gunzip should create sRundir_fn
-                gunzip(sRundir_gz);
-                
+
+            % 'local' paths are either the same (linux cluster)
+            %         or local PC drive. If PC, we will copy data
+            %         locally to save unzip and read time
+            if ispc,
+                sReduced_local_fn = [S.PCtemp_pn S.Reduced_pn s_bn];
+                sRundir_local_fn  = [S.PCtemp_pn S.Rundir_pn s_bn];
+            else
+                sReduced_local_fn = S.Reduced_fn;
+                sRundir_local_fn  = S.Rundir_fn;
             end
+            
+            % unzip the fits files if necessary
+            % first check if 'local' fits files exists,
+            if ~exist(sReduced_local_fn, 'file'),
+                sReduced_gz = [sReduced_local_fn '.gz'];
+                if ~exist(sReduced_gz, 'file') && ispc,
+                    copyfile([S.Reduced_fn '.gz'], sReduced_gz);
+                end
+                gunzip(sReduced_gz);
+                % now reduced data should be unzipped, and 
+                % S.Reduced_fn = the 'local' unzipped data file
+            end
+            S.Reduced_fn = sReduced_local_fn;
+
+            % repeat local logic for rundir
+            if ~exist(sRundir_local_fn, 'file'),
+                sRundir_gz = [sRundir_local_fn '.gz'];
+                if ~exist(sRundir_gz, 'file') && ispc,
+                    copyfile([S.Rundir_fn '.gz'], sRundir_gz);
+                end
+                gunzip(sRundir_gz);
+                % now rundir data should be unzipped, and 
+                % S.Rundir_fn = the 'local' unzipped data file
+            end
+            S.Rundir_fn = sRundir_local_fn;
+               
             
             finfo = fitsinfo(S.Rundir_fn);
             S.ImKeys = finfo.PrimaryData.Keywords;
@@ -574,6 +564,7 @@ classdef CRunData < handle & CConstants
             % default options and set requested options
             %  val = CheckOption(sOpt, valDefault, varargin)
             bPlotLog = CheckOption('bLog', false, varargin{:});
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
             climopt = CheckOption('clim', [], varargin{:});
@@ -581,7 +572,7 @@ classdef CRunData < handle & CConstants
             haxuse = CheckOption('hax', [], varargin{:});
             
             [x, y, X, Y, R] = CreateGrid(S.ImCubeUnProb{1}, 1./S.ppl0);
-            xlim = S.dispXYlim*[-1 1]; ylim = xlim;
+            xlim = dispXYlim*[-1 1]; ylim = xlim;
             
             Nlam = length(ilam);
             
@@ -630,7 +621,7 @@ classdef CRunData < handle & CConstants
 
             % radial plot
             Nr = 128;
-            re = linspace(0, S.dispXYlim, Nr+1)';
+            re = linspace(0, dispXYlim, Nr+1)';
             S.IntRad = cell(S.NofW,1);
             legstr = cell(1,S.NofW);
             for iwv = 1:S.NofW,
@@ -676,6 +667,7 @@ classdef CRunData < handle & CConstants
             % options:
             % %  val = CheckOption(sOpt, valDefault, varargin)
             bLog = CheckOption('blog', true, varargin{:});
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
@@ -694,7 +686,7 @@ classdef CRunData < handle & CConstants
             
             if isempty(haxuse), hfig = figure_mxn(1,S.Nlamcorr); else hfig = gcf; end
             
-            xlim = S.dispXYlim*[-1 1]; ylim = xlim;
+            xlim = dispXYlim*[-1 1]; ylim = xlim;
 
             if isempty(clim),
                 clim = pClim(pFun([S.IncInt{:}]));
@@ -767,8 +759,9 @@ classdef CRunData < handle & CConstants
             
             % check options
             clim = CheckOption('clim', [], varargin{:});
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             
-            xlimlamD = S.dispXYlim;
+            xlimlamD = dispXYlim;
             [x, y] = CreateGrid(S.ProbeAmp{1,1}, 1./S.ppl0);
             
             % ProbeAmp is from reduced data cube, Primary HDU
@@ -837,6 +830,7 @@ classdef CRunData < handle & CConstants
                 S.ReadReducedCube;
             end
 
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
                 
             % display one probe at all wavelengths and plot cross sections
@@ -864,17 +858,21 @@ classdef CRunData < handle & CConstants
             
         end % DisplayOneProbeAmp
         
-        function [hfig, ha] = DisplayProbeCube(S, iwvplot)
+        function [hfig, ha] = DisplayProbeCube(S, iwvplot, varargin)
             % hfig = DisplayProbeCube(S, iwvplot)
             % ProbeCube is 2nd HDU of reduced data cube
             if isempty(S.ProbeModel),
                 S.ReadProbeCube;
             end
+            
             if ~exist('iwvplot','var') || isempty(iwvplot),
                 warning('wavelength # not specified, plotting wave #1');
                 iwvplot = 1;
             end
             
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            bLog = CheckOption('blog', true, varargin{:});
+
             [x, y] = CreateGrid(S.ProbeModel{1,1}, 1./S.ppl0);
             
             ip = 1;
@@ -883,18 +881,28 @@ classdef CRunData < handle & CConstants
             xlabel('Y (\lambda / D)')
             legend(['it ' num2str(S.iter) ' model'],['it ' num2str(S.iter) ' Measured'])
             title(['Cross Section, it ' num2str(S.iter) ', Wave #' num2str(iwvplot) ', Measure Probe #' num2str(ip)])
-            
+
+            if bLog,
+                ImModel = real(log10(abs(S.ProbeModel{iwvplot,ip}).^2));
+                ImMeasure = real(log10(S.ProbeMeasAmp{iwvplot,ip}.^2));
+                sctitle = 'log_{10} Norm Intensity';
+            else
+                ImModel = abs(S.ProbeModel{iwvplot,ip}).^2;
+                ImMeasure = S.ProbeMeasAmp{iwvplot,ip}.^2;
+                sctitle = 'Linear Norm Intensity';
+            end
+                
             hfig = figure_mxn(2,S.Nppair);
             for ip = 1:S.Nppair,
                 ha(ip) = subplot(2,S.Nppair,ip);
-                imageschcit(x,y,abs(S.ProbeModel{iwvplot,ip}).^2), axis image, colorbar
-                set(gca,'xlim',S.dispXYlim*[-1 1],'ylim',S.dispXYlim*[-1 1])
+                imageschcit(x,y,ImModel), axis image, colorbartitle(sctitle)
+                set(gca,'xlim',dispXYlim*[-1 1],'ylim',dispXYlim*[-1 1])
                 xlabel('\lambda / D'), ylabel('\lambda / D')
                 title(['wave #' num2str(iwvplot) ', it ' num2str(S.iter) ', Model Probe #' num2str(ip)])
                 
                 ha(S.Nppair+ip) = subplot(2,S.Nppair,S.Nppair+ip);
-                imageschcit(x,y,S.ProbeMeasAmp{iwvplot,ip}.^2), axis image, colorbar
-                set(gca,'xlim',S.dispXYlim*[-1 1],'ylim',S.dispXYlim*[-1 1])
+                imageschcit(x,y,ImMeasure), axis image, colorbartitle(sctitle)
+                set(gca,'xlim',dispXYlim*[-1 1],'ylim',dispXYlim*[-1 1])
                 xlabel('\lambda / D'), ylabel('\lambda / D')
                 title(['wave #' num2str(iwvplot) ', it ' num2str(S.iter) ', Measure Probe #' num2str(ip)])
             end
@@ -920,6 +928,7 @@ classdef CRunData < handle & CConstants
             % options:
             % %  val = CheckOption(sOpt, valDefault, varargin)
             bLog = CheckOption('blog', true, varargin{:});
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
@@ -938,7 +947,7 @@ classdef CRunData < handle & CConstants
             
             if isempty(haxuse), hfig = figure_mxn(1,S.Nlamcorr); else hfig = gcf; end
             
-            xlim = S.dispXYlim*[-1 1]; ylim = xlim;
+            xlim = dispXYlim*[-1 1]; ylim = xlim;
 
             if isempty(clim),
                 clim = pClim(pFun([CohInt{:}]));
@@ -1033,8 +1042,9 @@ classdef CRunData < handle & CConstants
             S.DisplayIncInt('hax',haxlist(3,:), varargin{:});
 
             % make common clim
-            climlist = get(haxlist,'clim');
+            %climlist = get(haxlist,'clim');
             %set(haxlist,'clim',[min([climlist{:}]) max([climlist{:}])])
+
             set(haxlist,'clim',[-9 -6.5])
 
         end
@@ -1189,7 +1199,7 @@ classdef CRunData < handle & CConstants
             [nw, ny, nx] = size(S.bPampzero);
             
             [x, y] = CreateGrid([nx ny], 1./S.ppl0);
-            xlim = S.dispXYlim*[-1 1]; ylim = xlim;
+            xlim = dispXYlim*[-1 1]; ylim = xlim;
 
             hfig = figure_mxn(1,S.NofW);
             for iw = 1:S.NofW,
