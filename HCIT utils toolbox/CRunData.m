@@ -151,6 +151,12 @@ classdef CRunData < handle & CConstants
                     S.DrawradiiDefault = [2.6 9.0];
                     S.DrawthetaDefault = 65*[-0.5 0.5]*CConstants.P;
 
+                case 607,
+                    S.Results_pn = '/home/dmarx/HCIT/MCB_SPC/hcim_model2_20181021/results/run607/';
+                    S.ppl0 = 6.09;
+                    S.DrawradiiDefault = [2.6 9.0];
+                    S.DrawthetaDefault = 65*[-0.5 0.5]*CConstants.P;
+                    
                 otherwise
                     error('unrecognized runnum');
             end
@@ -1028,7 +1034,8 @@ classdef CRunData < handle & CConstants
 
             % make common clim
             climlist = get(haxlist,'clim');
-            set(haxlist,'clim',[min([climlist{:}]) max([climlist{:}])])
+            %set(haxlist,'clim',[min([climlist{:}]) max([climlist{:}])])
+            set(haxlist,'clim',[-9 -6.5])
 
         end
         
