@@ -174,7 +174,19 @@ classdef CRunData < handle & CConstants
                     %S.Sthpt = load(PathTranslator([pntmp 'fov_20181102T110148_FluxHM_Thpt.mat']));
                     %S.Sthpt = load(PathTranslator([pntmp 'fov_20181102T110148_Flux_Thpt.mat']));
                     S.Sthpt = load(PathTranslator([pntmp 'fov_20181102T110148_Mjk_Thpt.mat']));
+
+                case 607,
+                    S.Results_pn = '/home/dmarx/HCIT/MCB_SPC/hcim_model2_20181021/results/run607/';
+                    S.ppl0 = 6.09;
+                    S.XYlimDefault = 12;
+                    S.DrawradiiDefault = [2.6 9.0];
+                    S.DrawthetaDefault = 65*[-0.5 0.5]*CConstants.P;
                     
+                    S.RminSc    = 2.6; % lam/D
+                    S.RmaxSc    = 9.0;
+                    S.ThminSc   = (90 - 32.5)*CConstants.P;
+                    S.ThmaxSc   = (90 + 32.5)*CConstants.P;
+
                 otherwise
                     error('unrecognized runnum');
             end
@@ -1042,8 +1054,9 @@ classdef CRunData < handle & CConstants
             S.DisplayIncInt('hax',haxlist(3,:), varargin{:});
 
             % make common clim
-            climlist = get(haxlist,'clim');
-            %set(haxlist,'clim',[min([climlist{:}]) max([climlist{:}])]
+            %climlist = get(haxlist,'clim');
+            %set(haxlist,'clim',[min([climlist{:}]) max([climlist{:}])])
+
             set(haxlist,'clim',[-9 -6.5])
 
         end
