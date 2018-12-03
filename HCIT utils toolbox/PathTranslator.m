@@ -47,7 +47,7 @@ elseif isequal([A{2} '/' A{3}],'net/spud-data')
     winpath = '\\s383-nfs\dmarx\HCIT\ln_spud_data_Data';
     A = {A{1:3},A{5:end}}; % remove /Data/
 
-elseif isequal([A{2} '/' A{3}],'net/piaa-data')
+elseif isequal([A{2} '/' A{3}],'net/piaa-data') || isequal([A{2} '/' A{3}],'proj/piaa-data')
     % mcb camera data
     winpath = strjoin({'X:\', A{5:end}}, '\');
     %A = {A{1:3},A{5:end}}; % remove /Data/
