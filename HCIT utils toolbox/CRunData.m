@@ -169,11 +169,12 @@ classdef CRunData < handle & CConstants
                     S.ThminSc   = (90 - 32.5)*CConstants.P;
                     S.ThmaxSc   = (90 + 32.5)*CConstants.P;
 
-                    %S.Sthpt.fovx(:), S.Sthpt.fovy(:), S.Sthpt.thpt(:)
                     pntmp = '/home/dmarx/HCIT/MCB_SPC/hcim_testbed_run606/results/FOVThroughputMap/';
-                    %S.Sthpt = load(PathTranslator([pntmp 'fov_20181102T110148_FluxHM_Thpt.mat']));
-                    %S.Sthpt = load(PathTranslator([pntmp 'fov_20181102T110148_Flux_Thpt.mat']));
-                    S.Sthpt = load(PathTranslator([pntmp 'fov_20181102T110148_Mjk_Thpt.mat']));
+                    ThptCal_fn = [pntmp 'fov_20181102T110148_Mjk_Thpt.mat'];
+                    % ThptCal_fn = [pntmp 'fov_20181102T110148_Flux_Thpt.mat'];
+                    %S.Sthpt.fovx(:), S.Sthpt.fovy(:), S.Sthpt.thpt(:)
+                    S.Sthpt = load(PathTranslator(ThptCal_fn));
+                    S.Sthpt.ThptCal_fn = ThptCal_fn;
 
                 case 607,
                     S.Results_pn = '/home/dmarx/HCIT/MCB_SPC/hcim_model2_20181021/results/run607/';
@@ -382,18 +383,20 @@ classdef CRunData < handle & CConstants
             
             [Excel, Workbook, Sheets, sheet] = Exlopen;
 
-            Exlsetval(sheet, {'A2','A6'}, [542 554 565 576 588].');
+            
+            Exlsetval(sheet, {'A2','A6'}, cellstr(num2str(S.NKTcenter(:)/S.NM,'%.1f')));
             Exlsetval(sheet, 'A7', 'Mean');
             
             for irr = 1:length(Rmin),
                 col = num2column(irr+1);
                 Ctmp = S.GetContrast('RminSc',Rmin(irr),'RmaxSc',Rmax(irr));
-                Exlsetval(sheet, [col '1'], [num2str(Rmin(irr),'%.1f') ' - ' num2str(Rmax(irr),'%.1f')]);
+                Exlsetval(sheet, [col '1'], [num2str(Rmin(irr),'%.2f') ' - ' num2str(Rmax(irr),'%.2f')]);
                 Exlsetval(sheet, {[col '2'],[col '6']}, Ctmp.contr_lam(:));
                 Exlsetval(sheet, [col '7'], Ctmp.mean);
                 
             end
-            
+
+            Exlsetval(sheet, 'A8', S.Sthpt.ThptCal_fn);
             
         end % ContrastReportExcel
         
