@@ -159,6 +159,7 @@ classdef CRunData < handle & CConstants
                 case 607,
                     S.Results_pn = '/home/dmarx/HCIT/MCB_SPC/hcim_model2_20181021/results/run607/';
                     S.ppl0 = 6.09;
+                    S.XYlimDefault = 12;
                     S.DrawradiiDefault = [2.6 9.0];
                     S.DrawthetaDefault = 65*[-0.5 0.5]*CConstants.P;
                     
