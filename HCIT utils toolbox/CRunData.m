@@ -336,7 +336,7 @@ classdef CRunData < handle & CConstants
             % note: don't like nonzeros(...) because pixels within the dark
             % hole that happen to have zero measured intesnity do not
             % contribute to the mean.
-            Contrast.total_lam = zeros(S.NofW,1);
+            Contrast.total_lam = zeros(1,S.NofW);
             for iwv = 1:S.NofW,
                 Contrast.total_lam(iwv) = mean(nonzeros( S.ImCube(:,:,S.imgindex(iwv)).*S.bMask ));
                 % NI score region
@@ -354,8 +354,8 @@ classdef CRunData < handle & CConstants
             end
 
             % scoring region
-            Contrast.inco_lam = zeros(S.NofW,1);
-            Contrast.co_lam = zeros(S.NofW,1);
+            Contrast.inco_lam = zeros(1,S.NofW);
+            Contrast.co_lam = zeros(1,S.NofW);
             for iwv = 1:S.Nlamcorr,
                 %bPampz = squeeze(S.bPampzero(iwv,:,:));
                 %bMaskUse = ~bPampz & bMaskSc;
