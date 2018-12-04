@@ -64,6 +64,8 @@ classdef CRunData < handle & CConstants
 
         RminSc          = 6.3; % lam/D
         RmaxSc          = 19.5;
+        ThminSc         = [];
+        ThmaxSc         = [];
         Nbscan          = 6;
 
         Results_pn = '';
@@ -92,6 +94,7 @@ classdef CRunData < handle & CConstants
         
         ImCube
         ImCubeUnProb
+        ImCubeDelProb
         ImKeys
         ReducedKeys
         NofW
@@ -106,7 +109,8 @@ classdef CRunData < handle & CConstants
         Contrast_total
         Contrast_inco
         Contrast_co
-
+        Sthpt = []; % struct with fields Sthpt.fovx(:), Sthpt.fovy(:), Sthpt.thpt(:)
+        
         Ndm    % # of DM's, see ReadDMvCube
         DMvCube
         ProbeModel
@@ -140,9 +144,13 @@ classdef CRunData < handle & CConstants
             % 'rundir_pn' and 'reduced_pn' are always relative to
             % Results_pn
             switch S.runnum,
-                case 603,
+                case 603, % SPC_disc
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run603/';
                     S.XYlimDefault = 22;
+                    
+                    throughput_fn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/Throughput_20171003T122253.mat';
+                    S.Sthpt = load(PathTranslator(throughput_fn));
+
                 case 604,
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
                     S.XYlimDefault = 22;
@@ -156,6 +164,18 @@ classdef CRunData < handle & CConstants
                     S.DrawradiiDefault = [2.6 9.0];
                     S.DrawthetaDefault = 65*[-0.5 0.5]*CConstants.P;
 
+                    S.RminSc    = 2.6; % lam/D
+                    S.RmaxSc    = 9.0;
+                    S.ThminSc   = (90 - 32.5)*CConstants.P;
+                    S.ThmaxSc   = (90 + 32.5)*CConstants.P;
+
+                    pntmp = '/home/dmarx/HCIT/MCB_SPC/hcim_testbed_run606/results/FOVThroughputMap/';
+                    ThptCal_fn = [pntmp 'fov_20181102T110148_Mjk_Thpt.mat'];
+                    % ThptCal_fn = [pntmp 'fov_20181102T110148_Flux_Thpt.mat'];
+                    %S.Sthpt.fovx(:), S.Sthpt.fovy(:), S.Sthpt.thpt(:)
+                    S.Sthpt = load(PathTranslator(ThptCal_fn));
+                    S.Sthpt.ThptCal_fn = ThptCal_fn;
+
                 case 607,
                     S.Results_pn = '/home/dmarx/HCIT/MCB_SPC/hcim_model2_20181021/results/run607/';
                     S.ppl0 = 6.09;
@@ -163,6 +183,11 @@ classdef CRunData < handle & CConstants
                     S.DrawradiiDefault = [2.6 9.0];
                     S.DrawthetaDefault = 65*[-0.5 0.5]*CConstants.P;
                     
+                    S.RminSc    = 2.6; % lam/D
+                    S.RmaxSc    = 9.0;
+                    S.ThminSc   = (90 - 32.5)*CConstants.P;
+                    S.ThmaxSc   = (90 + 32.5)*CConstants.P;
+
                 otherwise
                     error('unrecognized runnum');
             end
@@ -271,38 +296,42 @@ classdef CRunData < handle & CConstants
             %val = CheckOption(sOpt, valDefault, varargin)
             RminSc = CheckOption('RminSc', S.RminSc, varargin{:});
             RmaxSc = CheckOption('RmaxSc', S.RmaxSc, varargin{:});
-                
+            TminSc = CheckOption('TminSc', S.ThminSc, varargin{:});    
+            TmaxSc = CheckOption('TmaxSc', S.ThmaxSc, varargin{:});                
             
-            [x, y, X, Y, R] = CreateGrid(S.ImCubeUnProb{1}, 1./S.ppl0);
+            [x, y, X, Y, R, T] = CreateGrid(S.ImCubeUnProb{1}, 1./S.ppl0);
             bMaskSc = R >= RminSc & R <= RmaxSc;
+            if ~isempty(TminSc) && ~isempty(TmaxSc),
+                bMaskSc = bMaskSc & ...
+                    ( (T >= TminSc & T <= TmaxSc) | (T >= mod2pi(TminSc + pi) & T <= mod2pi(TmaxSc + pi)) );
+                
+                %figure, imageschcit(x, y, bMaskSc), title('Check Scoring Region Mask')
+            end
 
-            %if S.runnum == 603,
-            %Sth = load('Throughput_20171003T122253.mat');
-            cpath = regexp(S.Results_pn,'/','split');
-            irr = find(strcmp('results',cpath));
-            Sth = load(PathTranslator([strjoin({cpath{1:irr}},'/') '/Throughput_20171003T122253.mat']));
+            % resample throughput data to pixels in scoring region
+            if ~isempty(S.Sthpt),
+                if S.runnum == 603, % SPC disc
+                    error('SPC disc throughput data format needs to be reworked');
+                    %                     dxyfudge = 0.9;
+                    %                     rthpt = mean([Sth.src_dy(:).*dxyfudge./Sth.mmperlamD Sth.src_dx(:).*dxyfudge./Sth.mmperlamD],2);
+                    %                     thpt = mean([Sth.thpt_dy(:) Sth.thpt_dx(:)],2);
+                    %                     % normalize to clear region: lam/D > 8.5 & lam/D < 16.2
+                    %                     thpt_norm = mean(thpt(abs(rthpt) >= 8.5 & abs(rthpt) < 16.2));
+                    %                     thpt = thpt./ thpt_norm;
+                    %                     % rthpt, thpt is now a lookup table to throughput for
+                    %                     % cross-section
+                    %                     % make a matrix
+                    %                     Thpt = zeros(size(bMaskSc));
+                    %                     Thpt(bMaskSc) = interp1(rthpt, thpt, R(bMaskSc));
+                end
+                Finterp = scatteredInterpolant(S.Sthpt.fovx(:), S.Sthpt.fovy(:), S.Sthpt.thpt(:));
+                Thpt = ones(size(bMaskSc)); % avoid divide by zero
+                Thpt(bMaskSc) = Finterp(X(bMaskSc), Y(bMaskSc));
 
-            dxyfudge = 0.9;
-            
-            rthpt = mean([Sth.src_dy(:).*dxyfudge./Sth.mmperlamD Sth.src_dx(:).*dxyfudge./Sth.mmperlamD],2);
-            thpt = mean([Sth.thpt_dy(:) Sth.thpt_dx(:)],2);
-            % normalize to clear region: lam/D > 8.5 & lam/D < 16.2
-            thpt_norm = mean(thpt(abs(rthpt) >= 8.5 & abs(rthpt) < 16.2));
-            thpt = thpt./ thpt_norm;
-            % rthpt, thpt is now a lookup table to throughput for
-            % cross-section
-            % make a matrix
-            Thpt = zeros(size(bMaskSc));
-            Thpt(bMaskSc) = interp1(rthpt, thpt, R(bMaskSc));
-
-%             for iwv = 1:S.NofW,
-%                 ImCon{iwv} = S.ImCubeUnProb{iwv};
-%                 iuse = R >= IWA & R <= OWA;
-%                 ImCon{iwv}(~iuse) = 0.0;
-%                 meanNI(iwv) = mean(ImCon{iwv}(iuse));
-%                 ImCon{iwv}(iuse) = ImCon{iwv}(iuse) ./ interp1(rthpt, thpt, R(iuse));
-%                 meancontrast(iwv) = mean(ImCon{iwv}(iuse));
-%             end
+            else
+                Thpt = ones(size(bMaskSc));
+                
+            end
             
             % note: don't like nonzeros(...) because pixels within the dark
             % hole that happen to have zero measured intesnity do not
@@ -310,7 +339,9 @@ classdef CRunData < handle & CConstants
             Contrast.total_lam = zeros(S.NofW,1);
             for iwv = 1:S.NofW,
                 Contrast.total_lam(iwv) = mean(nonzeros( S.ImCube(:,:,S.imgindex(iwv)).*S.bMask ));
-                Contrast.score_lam(iwv) = mean(S.ImCubeUnProb{iwv}(bMaskSc));
+                % NI score region
+                Contrast.score_lam(iwv) = mean(S.ImCubeUnProb{iwv}(bMaskSc)); 
+                % Contrast score region
                 Contrast.contr_lam(iwv) = mean(S.ImCubeUnProb{iwv}(bMaskSc)./Thpt(bMaskSc));
                 
             end
@@ -322,19 +353,14 @@ classdef CRunData < handle & CConstants
                 S.ReadReducedCube;
             end
 
-            % control region
+            % scoring region
             Contrast.inco_lam = zeros(S.NofW,1);
             Contrast.co_lam = zeros(S.NofW,1);
             for iwv = 1:S.Nlamcorr,
-                bPampz = squeeze(S.bPampzero(iwv,:,:));
+                %bPampz = squeeze(S.bPampzero(iwv,:,:));
                 %bMaskUse = ~bPampz & bMaskSc;
+                
                 bMaskUse = bMaskSc;
-                %incinttmp = S.IncInt{iwv};
-                %incinttmp(bPampz) = 0.0;
-                %cohinttmp = S.CohInt{iwv};
-                %cohinttmp(bPampz) = 0.0;
-                %Contrast.inco_lam(iwv) = mean(nonzeros(incinttmp.*S.mdMask));
-                %Contrast.co_lam(iwv)   = mean(nonzeros(cohinttmp.*S.mdMask));
                 Contrast.inco_lam(iwv) = mean(S.IncInt{iwv}(bMaskUse)./Thpt(bMaskUse));
                 Contrast.co_lam(iwv)   = mean(S.CohInt{iwv}(bMaskUse)./Thpt(bMaskUse));
             end
@@ -343,7 +369,7 @@ classdef CRunData < handle & CConstants
             
         end % GetContrast
 
-        function [Excel, sheet] = ContrastReportExcel(S)
+        function [Excel, sheet] = ContrastReportExcel(S, varargin)
             
             if ~isequal(computer, 'PCWIN64'),
                 Excel = [];
@@ -352,38 +378,25 @@ classdef CRunData < handle & CConstants
                 return
             end
 
+            Rmin = CheckOption('RminSc', S.RminSc, varargin{:});
+            Rmax = CheckOption('RmaxSc', S.RmaxSc, varargin{:});
+            
             [Excel, Workbook, Sheets, sheet] = Exlopen;
 
-            Exlsetval(sheet, {'A2','A6'}, [542 554 565 576 588].')
             
-            RminSc = 6.3;
-            RmaxSc = 7.3;
-            col = 'B';
-            Ctmp = S.GetContrast('RminSc',RminSc,'RmaxSc',RmaxSc);
-            Exlsetval(sheet, {[col '2'],[col '6']}, Ctmp.contr_lam(:));
-            Exlsetval(sheet, [col '7'], Ctmp.mean);
+            Exlsetval(sheet, {'A2','A6'}, cellstr(num2str(S.NKTcenter(:)/S.NM,'%.1f')));
+            Exlsetval(sheet, 'A7', 'Mean');
             
-            RminSc = 7.3;
-            RmaxSc = 18.5;
-            col = 'C';
-            Ctmp = S.GetContrast('RminSc',RminSc,'RmaxSc',RmaxSc);
-            Exlsetval(sheet, {[col '2'],[col '6']}, Ctmp.contr_lam(:));
-            Exlsetval(sheet, [col '7'], Ctmp.mean);
-            
-            RminSc = 18.5;
-            RmaxSc = 19.5;
-            col = 'D';
-            Ctmp = S.GetContrast('RminSc',RminSc,'RmaxSc',RmaxSc);
-            Exlsetval(sheet, {[col '2'],[col '6']}, Ctmp.contr_lam(:));
-            Exlsetval(sheet, [col '7'], Ctmp.mean);
-            
-            RminSc = 6.3;
-            RmaxSc = 19.5;
-            col = 'E';
-            Ctmp = S.GetContrast('RminSc',RminSc,'RmaxSc',RmaxSc);
-            Exlsetval(sheet, {[col '2'],[col '6']}, Ctmp.contr_lam(:));
-            Exlsetval(sheet, [col '7'], Ctmp.mean);
+            for irr = 1:length(Rmin),
+                col = num2column(irr+1);
+                Ctmp = S.GetContrast('RminSc',Rmin(irr),'RmaxSc',Rmax(irr));
+                Exlsetval(sheet, [col '1'], [num2str(Rmin(irr),'%.2f') ' - ' num2str(Rmax(irr),'%.2f')]);
+                Exlsetval(sheet, {[col '2'],[col '6']}, Ctmp.contr_lam(:));
+                Exlsetval(sheet, [col '7'], Ctmp.mean);
+                
+            end
 
+            Exlsetval(sheet, 'A8', S.Sthpt.ThptCal_fn);
             
         end % ContrastReportExcel
         
@@ -516,8 +529,9 @@ classdef CRunData < handle & CConstants
                 S.ImCubeUnProb{iwv} = squeeze(S.ImCube(:,:,imnum));
                 for ipr = 1:S.Nppair,
                     imnum = (iwv-1)*(2*S.Nppair+1) + 1 + (2*ipr-1);
-                    ImPrPlus{iwv,ipr} = squeeze(S.ImCube(:,:,imnum));
-                    ImPrMinus{iwv,ipr} = squeeze(S.ImCube(:,:,imnum+1));
+                    ImPrPlus = squeeze(S.ImCube(:,:,imnum));
+                    ImPrMinus = squeeze(S.ImCube(:,:,imnum+1));
+                    S.ImCubeDelProb{iwv,ipr} = ImPrPlus - ImPrMinus;
                 end
             end
             
@@ -1311,9 +1325,29 @@ classdef CRunData < handle & CConstants
         %         function DisplayRadialContrast(S)
         %
         %         end % DisplayRadialContrast
-        
-    end % methods
     
+        function [hfig, hax] = DisplayDelProbes(S, iwv, varargin)
+            
+            if isempty(S.ImCube),
+                S.ReadImageCube;
+            end
+            
+            if ~exist('iwv','var') || isempty(iwv),
+                iwv = 1;
+                warning('wave # not specified, displaying wave #1');
+            end
+            
+            hfig = figure_mxn(1,3);
+            for ii = 1:3,
+                hax(ii) = subplot(1,3,ii);
+                imageschcit(real(log10(S.bMask.*S.ImCubeDelProb{iwv,ii}))), colorbar,
+            end
+        end % DisplayDelProbes
+% 
+%         % 
+%         S.ProbeRes
+    end % methods
+        
 end % classdef
 
 % utilities
