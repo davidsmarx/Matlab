@@ -67,6 +67,7 @@ classdef CGS < handle
                 end % switch bn
             end
             
+            disp(['opening: ' PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits'])]);
             ampinfo = fitsinfo(PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits']));
             
  

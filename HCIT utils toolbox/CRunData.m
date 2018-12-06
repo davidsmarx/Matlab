@@ -93,8 +93,9 @@ classdef CRunData < handle & CConstants
         bMask
         
         ImCube
-        ImCubeUnProb
-        ImCubeDelProb
+        ImCubeUnProb    % {iwv}
+        ImCubeDelProb   % {iwv,ipr}
+        ImCubeSigProb   % {iwv,ipr} = sigtbw  in tbif.task.probes
         ImKeys
         ReducedKeys
         NofW
@@ -532,6 +533,7 @@ classdef CRunData < handle & CConstants
                     ImPrPlus = squeeze(S.ImCube(:,:,imnum));
                     ImPrMinus = squeeze(S.ImCube(:,:,imnum+1));
                     S.ImCubeDelProb{iwv,ipr} = ImPrPlus - ImPrMinus;
+                    S.ImCubeSigProb{iwv,ipr} = 0.5*(ImPrPlus + ImPrMinus) - S.ImCubeUnProb{iwv};
                 end
             end
             
@@ -617,13 +619,13 @@ classdef CRunData < handle & CConstants
                    titlestr = [titlestr ', Wave ' num2str(S.NKTcenter(iwvpl)/S.NM) 'nm'];
                end
                title(titlestr)
-                
-               % overlay circles if requested
-               DrawCircles(ha, drawRadii);
-               DrawThetaLines(ha, drawTheta, drawRadii);
-               
+                               
             end % for each wavelength and subplot
-            
+
+            % overlay circles if requested
+            DrawCircles(ha, drawRadii);
+            DrawThetaLines(ha, drawTheta, drawRadii);
+
             % set each image plot to the same clim
             % auto-clim, unless specific clim requested
             if isempty(climopt),
@@ -666,6 +668,92 @@ classdef CRunData < handle & CConstants
             
         end % DisplayImCubeUnProb(S)
         
+        function [hfig, ha] = DisplayImCubeSigProb(S, varargin)
+            
+            if isempty(S.ImCube),
+                S.ReadImageCube;
+            end
+            
+            % default options and set requested options
+            %  val = CheckOption(sOpt, valDefault, varargin)
+            bPlotLog = CheckOption('bLog', false, varargin{:});
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
+            climopt = CheckOption('clim', [], varargin{:});
+            ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
+            ipro = CheckOption('iprobe', 1:S.Nppair, varargin{:});
+            haxuse = CheckOption('hax', [], varargin{:});
+            
+            [x, y, X, Y, R] = CreateGrid(S.ImCubeSigProb{1,1}, 1./S.ppl0);
+            xlim = dispXYlim*[-1 1]; ylim = xlim;
+            
+            Nlam = length(ilam);
+            Npro = length(ipro);
+            
+            if isempty(haxuse), 
+                hfig = figure_mxn(Npro,Nlam);
+            else
+                if ~isequal(size(haxuse),[Npro, Nlam]),
+                    error('input haxuse must be size Npro, Nlam');
+                end
+                hfig = gcf;
+            end
+            
+            for iwv = 1:Nlam,
+                for ipr = 1:Npro,
+                    iwvpl = ilam(iwv);
+                    iprpl = ipro(ipr);
+                    
+                    if isempty(haxuse),
+                        ha(ipr,iwv) = subplot(Npro,Nlam,(ipr-1)*Nlam + iwv);
+                    else
+                        ha(ipr,iwv) = haxuse(ipr,iwv);
+                        axes(haxuse(ipr,iwv));
+                    end
+                    
+                    if bPlotLog,
+                        error('log plot not implemented');
+                        %imageschcit(x, y, log10(abs(S.ImCubeUnProb{iwvpl}))), axis image,
+                        %colorbartitle('log_{10} Norm Intensity')
+                    else
+                        imageschcit(x, y, S.ImCubeSigProb{iwvpl, iprpl}), axis image,
+                        colorbar
+                    end
+                    clim(ipr,iwv,:) = get(gca,'clim');
+               
+                    set(gca,'xlim',xlim,'ylim',ylim)
+                    xlabel('\lambda/D'), ylabel('\lambda/D')
+                    titlestr = ['Iter #' num2str(S.iter)];
+                    if ~isempty(S.NKTcenter),
+                        titlestr = [titlestr ', Wave ' num2str(S.NKTcenter(iwvpl)/S.NM) 'nm'];
+                    end
+                    titlestr = [titlestr ', Pr #' num2str(iprpl)];
+                    title(titlestr)
+                
+                end % for each probe and subplot
+                
+            end % for each wavelength 
+            
+            % overlay circles on all the axes if requested
+            DrawCircles(ha, drawRadii);
+            DrawThetaLines(ha, drawTheta, drawRadii);
+
+            %             % set each image plot to the same clim
+            %             % auto-clim, unless specific clim requested
+            %             if isempty(climopt),
+            %                 cmaxsort = sort(clim(:),'descend');
+            %                 %set(ha,'clim', [min(clim(:)) cmaxsort(2)]);
+            %                 set(ha,'clim', [max(clim(:,1)) min(clim(:,2))])
+            %             else
+            %                 set(ha,'clim',climopt);
+            %             end
+            if ~isempty(climopt),
+                set(ha,'clim',climopt);
+            end
+            
+        end % DisplayImCubeSigProb
+        
         function [hfig, hax] = DisplayIncInt(S, varargin)
             % [hfig, hax] = DisplayIncInt(S, varargin)
             % options:
@@ -681,7 +769,7 @@ classdef CRunData < handle & CConstants
             
             % options:
             % %  val = CheckOption(sOpt, valDefault, varargin)
-            bLog = CheckOption('blog', true, varargin{:});
+            bLog = CheckOption('bLog', true, varargin{:});
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             clim = CheckOption('clim', [], varargin{:});
@@ -694,7 +782,7 @@ classdef CRunData < handle & CConstants
                 pClim = @(a) [-10 0.99*max(real(log10(a(:))))];
                 cbartitle = 'log_{10} Norm Intensity';
             else
-                pFun  = @(a) (a);
+                pFun  = @(a) (a<0);
                 pClim = @(a) AutoClim(a);
                 cbartitle = 'Norm Intensity';
             end
@@ -1357,6 +1445,8 @@ if isempty(drawRadii),
     return
 end
 
+hax = hax(:);
+
 for iax = 1:length(hax),
     axes(hax(iax));
     hold on
@@ -1374,6 +1464,7 @@ if isempty(drawTheta),
     return
 end
 
+hax = hax(:);
 
 for iax = 1:length(hax),
     axes(hax(iax));
