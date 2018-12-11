@@ -6,6 +6,9 @@ function val = CheckOption(varstring, defaultval, varargin)
 % if varstring is found in varargin{:},
 % the value of the following entry in varargin is returned
 % else the defaultval is returned
+%
+% example:
+% RminSc = CheckOption('RminSc', S.RminSc, varargin{:});
 
 iv = find(strcmp(varargin, varstring));
 

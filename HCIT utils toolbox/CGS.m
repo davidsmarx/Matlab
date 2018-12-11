@@ -18,7 +18,13 @@ classdef CGS < handle
     %    cc = AmpCorrMetric(S)
     %
     %    [hfig, hax] = DisplayAmpPlane(S, ipl)
-    
+    %
+    % properties (some of them):
+    %    cAmpPlanes{1:Num Images}
+    %       % (:,:,1) = measured amplitude
+    %       % (:,:,2) = calculated amplitude
+    %       % (:,:,3) = calculated phase
+
     properties
         
         gsnum 
@@ -91,7 +97,8 @@ classdef CGS < handle
             S.phw_ptt = RemovePTTZ(S.phw_ptt, S.bMask);
             
             % S.E
-            S.E = S.amp .* exp(1i*S.phw_ptt);
+            %S.E = S.amp .* exp(1i*S.phw_ptt);
+            S.E = S.amp .* exp(1i*S.phw);
              
         end % CGS instantiator
         
@@ -132,9 +139,10 @@ classdef CGS < handle
             
         end % rmsPha
         
-        function [hfig, hax] = DisplayGS(S)
+        function [hfig, hax] = DisplayGS(S, varargin)
 
-            xylim = 1.1*max(S.R(S.bMask));
+            pMask = CheckOption('pMask', S.bMask, varargin{:});
+            xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
 
             %hfig = figure;
             %hax = imagescampphase(S.E, x, y, ['gsnum ' num2str(S.gsnum)]);
@@ -145,9 +153,11 @@ classdef CGS < handle
             colorbartitle('Amplitude')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
             title(['gsnum ' num2str(S.gsnum)])
-            
+
+            % bMask is only for phase plot
+            if isempty(pMask), pMask = ones(size(S.E)); end
             hax(2) = subplot(1,2,2);
-            imageschcit(S.x, S.y, angle(S.E))
+            imageschcit(S.x, S.y, pMask.*angle(S.E))
             colorbartitle('Phase (rad)')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
             title(['gsnum ' num2str(S.gsnum) ' rms\phi = ' num2str(S.rmsPha,'%.3f') 'rad'])
@@ -320,6 +330,7 @@ function phw_ptt = RemovePTTZ(phw, bMask)
 Rz = max(R(bMask));
 Z = zernikefit(X(bMask), Y(bMask), phw(bMask), 3, Rz);
 phw_ptt = zeros(size(X));
-phw_ptt(bMask) = phw(bMask) - zernikeval(Z, X(bMask), Y(bMask), Rz);
+%phw_ptt(bMask) = phw(bMask) - zernikeval(Z, X(bMask), Y(bMask), Rz);
+phw_ptt(:) = mod2pi(phw(:) - zernikeval(Z, X(:), Y(:), Rz));
 
 end % RemovePTTZ
