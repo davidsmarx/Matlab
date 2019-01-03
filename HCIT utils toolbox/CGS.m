@@ -205,7 +205,7 @@ classdef CGS < handle
             him = imageschcit(S.x, S.y, angle(S.E.*conj(Sref.E)));
             colorbartitle('Phase (rad)')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
-            set(gca,'clim',AutoClim(get(him,'CData'),'symmetric'))
+            set(gca,'clim',AutoClim(get(him,'CData'),'symmetric',true))
             title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(angle(S.E(S.bMask).*conj(Sref.E(S.bMask)))),'%.3f') 'rad'])
             
             

@@ -37,14 +37,14 @@ end
 imagesc(x,y,Aplot), axis image,...
     title([pwd2titlestr(titlestr) ', Amp']), SetColorbar(strColorbarAmp);
 if ~isempty(xlabelstr), xlabel(xlabelstr), end
-if ~isempty(ylabelstr), xlabel(ylabelstr), end
+if ~isempty(ylabelstr), ylabel(ylabelstr), end
 
 
 hax(2) = subplot(1,2,2);
 imagesc(x,y,angle(A)./pi), axis image, title([pwd2titlestr(titlestr) ', Phase']),...
     colorbartitle('\pi rad') %SetColorbar('\pi radians');
 if ~isempty(xlabelstr), xlabel(xlabelstr), end
-if ~isempty(ylabelstr), xlabel(ylabelstr), end
+if ~isempty(ylabelstr), ylabel(ylabelstr), end
 
 set(hax,'ydir',ydir);
 
