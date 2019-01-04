@@ -15,7 +15,7 @@ function [u2, rn] = fresnel_bessel_propagate(u1,A,lam,z,N,varargin)
 
 [u1p,xn,rn,N,Nf] = ParseInputs(u1,A,lam,z,N,varargin{:});
 % figure, plot(A*xn,abs(u1p),'-o'), grid, title('source beam amplitude')
-disp(['Nf = ' num2str(Nf)]);
+%disp(['Nf = ' num2str(Nf)]);
 
 % apply quadratic phase for propagation
 u1p = u1p.*exp(j.*pi.*rn.^2./(lam.*z));
