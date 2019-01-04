@@ -14,6 +14,8 @@ errmsg = '';
 if length(x) ~= length(response) || length(x) < 3,
     error('input vectors must have three points');
 end
+x = x(:);
+response = response(:);
 
 % use interpolated peak value
 [x, response] = filterdata(~isnan(response) & ~isnan(x),x,response);

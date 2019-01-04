@@ -18,6 +18,8 @@ end
 titlestr = CheckOption('titlestr','',varargin{:});
 bLog = CheckOption('bLog',false,varargin{:});
 ydir = CheckOption('ydir', 'reverse', varargin{:});
+xlabelstr = CheckOption('xlabel', [], varargin{:});
+ylabelstr = CheckOption('ylabel', [], varargin{:});
 
 pos = get(gcf,'position');
 pos(3) = 1.75*pos(3);
@@ -33,10 +35,16 @@ else,
 end
 
 imagesc(x,y,Aplot), axis image,...
-    title(pwd2titlestr(titlestr)), SetColorbar(strColorbarAmp);
+    title([pwd2titlestr(titlestr) ', Amp']), SetColorbar(strColorbarAmp);
+if ~isempty(xlabelstr), xlabel(xlabelstr), end
+if ~isempty(ylabelstr), ylabel(ylabelstr), end
+
+
 hax(2) = subplot(1,2,2);
-imagesc(x,y,angle(A)./pi), axis image, title(pwd2titlestr(titlestr)),...
+imagesc(x,y,angle(A)./pi), axis image, title([pwd2titlestr(titlestr) ', Phase']),...
     colorbartitle('\pi rad') %SetColorbar('\pi radians');
+if ~isempty(xlabelstr), xlabel(xlabelstr), end
+if ~isempty(ylabelstr), ylabel(ylabelstr), end
 
 set(hax,'ydir',ydir);
 

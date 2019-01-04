@@ -36,6 +36,7 @@ classdef CRunData < handle & CConstants
 %
 % [hfig, hax] = DisplayIncInt(S, varargin)
 % options:
+%    'IncIntType', default = 'normal', 'est', 'mix'
 %    'drawradii', default = []
 %    'bLog', default = false
 %    'clim'
@@ -47,6 +48,15 @@ classdef CRunData < handle & CConstants
 %    'bLog' (default = true)
 %    'clim'
 %    'hax'
+%
+% [hfig, haxlist] = DisplayAllInt(S, varargin)
+%    display large table of unprobed, coh int, inc int images
+%
+% [hfig, haxlist] = DisplayIncCohInt(S, varargin)
+%    create large display of:
+%      CohInt
+%      IncInt Estimated
+%      IncInt Mix (not estimated)
 %
 % [hfig, hax] = DisplayDMv(S)
 % [hfig, hax] = DisplayDMv(S, Sref)
@@ -80,6 +90,9 @@ classdef CRunData < handle & CConstants
         
         % results:
         IncInt
+        IncIntEst   % part of inc int where all probeamp > 0
+        IncIntMix   % part of UnProbed Image where any probeamp <= 0
+
         CohInt
         E_t
         E_m
@@ -93,8 +106,9 @@ classdef CRunData < handle & CConstants
         bMask
         
         ImCube
-        ImCubeUnProb
-        ImCubeDelProb
+        ImCubeUnProb    % {iwv}
+        ImCubeDelProb   % {iwv,ipr}
+        ImCubeSigProb   % {iwv,ipr} = sigtbw  in tbif.task.probes
         ImKeys
         ReducedKeys
         NofW
@@ -336,8 +350,9 @@ classdef CRunData < handle & CConstants
             % note: don't like nonzeros(...) because pixels within the dark
             % hole that happen to have zero measured intesnity do not
             % contribute to the mean.
-            Contrast.total_lam = zeros(S.NofW,1);
+            Contrast.total_lam = zeros(1,S.NofW);
             for iwv = 1:S.NofW,
+                % NI total control region
                 Contrast.total_lam(iwv) = mean(nonzeros( S.ImCube(:,:,S.imgindex(iwv)).*S.bMask ));
                 % NI score region
                 Contrast.score_lam(iwv) = mean(S.ImCubeUnProb{iwv}(bMaskSc)); 
@@ -354,14 +369,20 @@ classdef CRunData < handle & CConstants
             end
 
             % scoring region
-            Contrast.inco_lam = zeros(S.NofW,1);
-            Contrast.co_lam = zeros(S.NofW,1);
+            Contrast.inco_lam = zeros(1,S.NofW);
+            Contrast.co_lam = zeros(1,S.NofW);
             for iwv = 1:S.Nlamcorr,
                 %bPampz = squeeze(S.bPampzero(iwv,:,:));
                 %bMaskUse = ~bPampz & bMaskSc;
                 
                 bMaskUse = bMaskSc;
+                % total incoherent
                 Contrast.inco_lam(iwv) = mean(S.IncInt{iwv}(bMaskUse)./Thpt(bMaskUse));
+                % estimated incoherent (those pixels where E was estimated)
+                
+                % Mix incoherent (those pixels where sigtbw < 0, Eest = 0)
+                
+                % coherent
                 Contrast.co_lam(iwv)   = mean(S.CohInt{iwv}(bMaskUse)./Thpt(bMaskUse));
             end
             Contrast.inco_mean = mean(Contrast.inco_lam);
@@ -459,8 +480,14 @@ classdef CRunData < handle & CConstants
                 S.Contrast_inco(iwl) = mean(nonzeros(S.IncInt{iwl}.*S.mdMask));
                 S.Contrast_co(iwl)   = mean(nonzeros(S.CohInt{iwl}.*S.mdMask));
                 
-
-                
+                % if require all probes is true, pixels where abs(CohInt) == 0,
+                % are pixels where probe amp < 0 for at least one probe,
+                % image at this pixel is considered all incoherent. Let's
+                % separate the incoherent into two components:
+                bProbNeg = S.mdMask .* ~( abs(S.CohInt{iwl}) > 0 );
+                S.IncIntEst{iwl} = (~bProbNeg).*S.IncInt{iwl};
+                S.IncIntMix{iwl} =   bProbNeg .*S.IncInt{iwl}; % = unprobed Image at these pixels
+                       
             end % for each wl
             
         end % ReadReducedCube
@@ -532,6 +559,7 @@ classdef CRunData < handle & CConstants
                     ImPrPlus = squeeze(S.ImCube(:,:,imnum));
                     ImPrMinus = squeeze(S.ImCube(:,:,imnum+1));
                     S.ImCubeDelProb{iwv,ipr} = ImPrPlus - ImPrMinus;
+                    S.ImCubeSigProb{iwv,ipr} = 0.5*(ImPrPlus + ImPrMinus) - S.ImCubeUnProb{iwv};
                 end
             end
             
@@ -617,13 +645,13 @@ classdef CRunData < handle & CConstants
                    titlestr = [titlestr ', Wave ' num2str(S.NKTcenter(iwvpl)/S.NM) 'nm'];
                end
                title(titlestr)
-                
-               % overlay circles if requested
-               DrawCircles(ha, drawRadii);
-               DrawThetaLines(ha, drawTheta, drawRadii);
-               
+                               
             end % for each wavelength and subplot
-            
+
+            % overlay circles if requested
+            DrawCircles(ha, drawRadii);
+            DrawThetaLines(ha, drawTheta, drawRadii);
+
             % set each image plot to the same clim
             % auto-clim, unless specific clim requested
             if isempty(climopt),
@@ -666,6 +694,92 @@ classdef CRunData < handle & CConstants
             
         end % DisplayImCubeUnProb(S)
         
+        function [hfig, ha] = DisplayImCubeSigProb(S, varargin)
+            
+            if isempty(S.ImCube),
+                S.ReadImageCube;
+            end
+            
+            % default options and set requested options
+            %  val = CheckOption(sOpt, valDefault, varargin)
+            bPlotLog = CheckOption('bLog', false, varargin{:});
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
+            climopt = CheckOption('clim', [], varargin{:});
+            ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
+            ipro = CheckOption('iprobe', 1:S.Nppair, varargin{:});
+            haxuse = CheckOption('hax', [], varargin{:});
+            
+            [x, y, X, Y, R] = CreateGrid(S.ImCubeSigProb{1,1}, 1./S.ppl0);
+            xlim = dispXYlim*[-1 1]; ylim = xlim;
+            
+            Nlam = length(ilam);
+            Npro = length(ipro);
+            
+            if isempty(haxuse), 
+                hfig = figure_mxn(Npro,Nlam);
+            else
+                if ~isequal(size(haxuse),[Npro, Nlam]),
+                    error('input haxuse must be size Npro, Nlam');
+                end
+                hfig = gcf;
+            end
+            
+            for iwv = 1:Nlam,
+                for ipr = 1:Npro,
+                    iwvpl = ilam(iwv);
+                    iprpl = ipro(ipr);
+                    
+                    if isempty(haxuse),
+                        ha(ipr,iwv) = subplot(Npro,Nlam,(ipr-1)*Nlam + iwv);
+                    else
+                        ha(ipr,iwv) = haxuse(ipr,iwv);
+                        axes(haxuse(ipr,iwv));
+                    end
+                    
+                    if bPlotLog,
+                        error('log plot not implemented');
+                        %imageschcit(x, y, log10(abs(S.ImCubeUnProb{iwvpl}))), axis image,
+                        %colorbartitle('log_{10} Norm Intensity')
+                    else
+                        imageschcit(x, y, S.ImCubeSigProb{iwvpl, iprpl}), axis image,
+                        colorbar
+                    end
+                    clim(ipr,iwv,:) = get(gca,'clim');
+               
+                    set(gca,'xlim',xlim,'ylim',ylim)
+                    xlabel('\lambda/D'), ylabel('\lambda/D')
+                    titlestr = ['Iter #' num2str(S.iter)];
+                    if ~isempty(S.NKTcenter),
+                        titlestr = [titlestr ', Wave ' num2str(S.NKTcenter(iwvpl)/S.NM) 'nm'];
+                    end
+                    titlestr = [titlestr ', Pr #' num2str(iprpl)];
+                    title(titlestr)
+                
+                end % for each probe and subplot
+                
+            end % for each wavelength 
+            
+            % overlay circles on all the axes if requested
+            DrawCircles(ha, drawRadii);
+            DrawThetaLines(ha, drawTheta, drawRadii);
+
+            %             % set each image plot to the same clim
+            %             % auto-clim, unless specific clim requested
+            %             if isempty(climopt),
+            %                 cmaxsort = sort(clim(:),'descend');
+            %                 %set(ha,'clim', [min(clim(:)) cmaxsort(2)]);
+            %                 set(ha,'clim', [max(clim(:,1)) min(clim(:,2))])
+            %             else
+            %                 set(ha,'clim',climopt);
+            %             end
+            if ~isempty(climopt),
+                set(ha,'clim',climopt);
+            end
+            
+        end % DisplayImCubeSigProb
+        
         function [hfig, hax] = DisplayIncInt(S, varargin)
             % [hfig, hax] = DisplayIncInt(S, varargin)
             % options:
@@ -673,6 +787,7 @@ classdef CRunData < handle & CConstants
             %    'bLog' (default = true)
             %    'clim'
             %    'hax'
+            %    'type' (default = 'normal'), 'Est', 'Mix'
             
             if isempty(S.IncInt),
                 S.ReadReducedCube;
@@ -681,20 +796,32 @@ classdef CRunData < handle & CConstants
             
             % options:
             % %  val = CheckOption(sOpt, valDefault, varargin)
-            bLog = CheckOption('blog', true, varargin{:});
+            bLog = CheckOption('bLog', true, varargin{:});
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
+            IncIntType = CheckOption('type', 'normal', varargin{:});
             
             %%%% end options
+
+            switch lower(IncIntType),
+                case 'normal',
+                    plIncInt = S.IncInt;
+                case 'est',
+                    plIncInt = S.IncIntEst;
+                case 'mix',
+                    plIncInt = S.IncIntMix;
+                otherwise,
+                    error(['invalid type: ' IncIntType]);
+            end
             
             if bLog,
-                pFun  = @(a) real(log10(a));
+                pFun  = @(a) real(log10(a)) .* (-1).^imag(log(a)/pi);
                 pClim = @(a) [-10 0.99*max(real(log10(a(:))))];
                 cbartitle = 'log_{10} Norm Intensity';
             else
-                pFun  = @(a) (a);
+                pFun  = @(a) (a<0);
                 pClim = @(a) AutoClim(a);
                 cbartitle = 'Norm Intensity';
             end
@@ -704,10 +831,10 @@ classdef CRunData < handle & CConstants
             xlim = dispXYlim*[-1 1]; ylim = xlim;
 
             if isempty(clim),
-                clim = pClim(pFun([S.IncInt{:}]));
+                clim = pClim(pFun([plIncInt{:}]));
             end
             
-            [x, y] = CreateGrid(S.IncInt{1}, 1./S.ppl0);
+            [x, y] = CreateGrid(plIncInt{1}, 1./S.ppl0);
             % auto-scale
             %Agg = [
             for iwv = 1:S.Nlamcorr,
@@ -720,7 +847,7 @@ classdef CRunData < handle & CConstants
                     axes(haxuse(iwv));
                 end
                 
-                him(iwv) = imageschcit(x, y, pFun(S.IncInt{iwv})); axis image
+                him(iwv) = imageschcit(x, y, pFun(plIncInt{iwv})); axis image
                 xlabel('\lambda / D')
                 ylabel('\lambda / D')
                 %caxis(clim);
@@ -734,36 +861,36 @@ classdef CRunData < handle & CConstants
             
             DrawCircles(hax, drawRadii);
             
-            % radial plot
-            for iwv = 1:S.Nlamcorr,
-                [fovrplot, IncIntrad] = RadialMean(x, y, S.IncInt{iwv}, 128);
-                % remove negative inc int values so we can use log plot
-                IncIntrad(IncIntrad < 1e-11) = 1e-11;
-                qplot{1,iwv} = fovrplot;
-                qplot{2,iwv} = IncIntrad;
-                legstr{iwv} = ' ';
-                if ~isempty(S.NKTcenter), legstr{iwv} = [num2str(S.NKTcenter(iwv)/S.NM) 'nm']; end
-            end
-            figure, semilogy(qplot{:}); 
-            hax(end+1) = gca;
-            grid on
-            set(gca,'xlim',[0 1].*xlim)
-            %set(gca,'ylim',clim)
-
-            xlabel('Radius (\lambda/D)')
-            ylabel('Unmodulated (Norm. Int.)')
-            title(['Inc Int, it#' num2str(S.iter)])
-            
-            if ~isempty(drawRadii),
-                hold on
-                for irad = 1:length(drawRadii),
-                    plot(drawRadii(irad)*[1 1], get(gca,'ylim'), '--r')
-                end
-                hold off
-            end
-            
-            % legend must go after everything is plotted
-            legend(legstr{:},'Location','North')
+            %             % radial plot
+            %             for iwv = 1:S.Nlamcorr,
+            %                 [fovrplot, IncIntrad] = RadialMean(x, y, plIncInt{iwv}, 128);
+            %                 % remove negative inc int values so we can use log plot
+            %                 IncIntrad(IncIntrad < 1e-11) = 1e-11;
+            %                 qplot{1,iwv} = fovrplot;
+            %                 qplot{2,iwv} = IncIntrad;
+            %                 legstr{iwv} = ' ';
+            %                 if ~isempty(S.NKTcenter), legstr{iwv} = [num2str(S.NKTcenter(iwv)/S.NM) 'nm']; end
+            %             end
+            %             figure, semilogy(qplot{:});
+            %             hax(end+1) = gca;
+            %             grid on
+            %             set(gca,'xlim',[0 1].*xlim)
+            %             %set(gca,'ylim',clim)
+            %
+            %             xlabel('Radius (\lambda/D)')
+            %             ylabel('Unmodulated (Norm. Int.)')
+            %             title(['Inc Int, it#' num2str(S.iter)])
+            %
+            %             if ~isempty(drawRadii),
+            %                 hold on
+            %                 for irad = 1:length(drawRadii),
+            %                     plot(drawRadii(irad)*[1 1], get(gca,'ylim'), '--r')
+            %                 end
+            %                 hold off
+            %             end
+            %
+            %             % legend must go after everything is plotted
+            %             legend(legstr{:},'Location','North')
 
         end % DisplayIncInt
                 
@@ -990,37 +1117,37 @@ classdef CRunData < handle & CConstants
             set(hax,'xlim',xlim,'ylim',ylim,'clim',clim);
             
             DrawCircles(hax, drawRadii);
-            
-            % radial plot
-            for iwv = 1:S.Nlamcorr,
-                [fovrplot, CohIntrad] = RadialMean(x, y, S.CohInt{iwv}, 128);
-                % remove negative inc int values so we can use log plot
-                IncIntrad(CohIntrad < 1e-11) = 1e-11;
-                qplot{1,iwv} = fovrplot;
-                qplot{2,iwv} = CohIntrad;
-                legstr{iwv} = ' ';
-                if ~isempty(S.NKTcenter), legstr{iwv} = [num2str(S.NKTcenter(iwv)/S.NM) 'nm']; end
-            end
-            figure, semilogy(qplot{:}); 
-            hax(end+1) = gca;
-            grid on
-            set(gca,'xlim',[0 1].*xlim)
-            %set(gca,'ylim',clim)
-
-            xlabel('Radius (\lambda/D)')
-            ylabel('Modulated (Norm. Int.)')
-            title(['Mod Int, it#' num2str(S.iter)])
-            
-            if ~isempty(drawRadii),
-                hold on
-                for irad = 1:length(drawRadii),
-                    plot(drawRadii(irad)*[1 1], get(gca,'ylim'), '--r')
-                end
-                hold off
-            end
-            
-            % legend must go after everything is plotted
-            legend(legstr{:},'Location','North')
+            %
+            %             % radial plot
+            %             for iwv = 1:S.Nlamcorr,
+            %                 [fovrplot, CohIntrad] = RadialMean(x, y, S.CohInt{iwv}, 128);
+            %                 % remove negative inc int values so we can use log plot
+            %                 IncIntrad(CohIntrad < 1e-11) = 1e-11;
+            %                 qplot{1,iwv} = fovrplot;
+            %                 qplot{2,iwv} = CohIntrad;
+            %                 legstr{iwv} = ' ';
+            %                 if ~isempty(S.NKTcenter), legstr{iwv} = [num2str(S.NKTcenter(iwv)/S.NM) 'nm']; end
+            %             end
+            %             figure, semilogy(qplot{:});
+            %             hax(end+1) = gca;
+            %             grid on
+            %             set(gca,'xlim',[0 1].*xlim)
+            %             %set(gca,'ylim',clim)
+            %
+            %             xlabel('Radius (\lambda/D)')
+            %             ylabel('Modulated (Norm. Int.)')
+            %             title(['Mod Int, it#' num2str(S.iter)])
+            %
+            %             if ~isempty(drawRadii),
+            %                 hold on
+            %                 for irad = 1:length(drawRadii),
+            %                     plot(drawRadii(irad)*[1 1], get(gca,'ylim'), '--r')
+            %                 end
+            %                 hold off
+            %             end
+            %
+            %             % legend must go after everything is plotted
+            %             legend(legstr{:},'Location','North')
             
             
         end % DisplayCohInt
@@ -1063,6 +1190,81 @@ classdef CRunData < handle & CConstants
             set(haxlist,'clim',[-9 -6.5])
 
         end
+        
+        function [hfig, haxlist] = DisplayIncCohInt(S, varargin)
+            %    create large display of:
+            %      CohInt
+            %      IncInt Estimated
+            %      IncInt Mix (not estimated)
+            %
+            %    options:
+            %      'hfig', hfig, display to hfig figure window
+            
+            % defaults that might be different
+            varargin{end+1} = 'bLog'; varargin{end+1} = true;
+            
+            hfig = CheckOption('hfig', [], varargin{:});
+            
+            if isempty(hfig),
+                hfig = figure_mxn(3,S.Nlamcorr);
+            else
+                figure_mxn(hfig, 3, S.Nlamcorr);
+            end
+            
+            haxlist = zeros(3,S.Nlamcorr);
+            
+            % estimated coherent images
+            figure(hfig);
+            for ii = 1:S.Nlamcorr,
+                haxlist(1,ii) = subplot(3,S.Nlamcorr,ii);
+            end
+            S.DisplayCohInt('hax',haxlist(1,:),varargin{:});
+
+            % Incoherent estimated
+            figure(hfig);            
+            for ii = 1:S.Nlamcorr,
+                haxlist(2,ii) = subplot(3,S.Nlamcorr,ii+S.Nlamcorr);
+            end
+
+            S.DisplayIncInt('type','est','hax',haxlist(2,:), varargin{:});
+
+            % Inc Int Mix not estimated
+            figure(hfig);            
+            for ii = 1:S.Nlamcorr,
+                haxlist(3,ii) = subplot(3,S.Nlamcorr,ii+2*S.Nlamcorr);
+            end
+            S.DisplayIncInt('type','mix','hax',haxlist(3,:), varargin{:});
+
+            % make common clim
+            %climlist = get(haxlist,'clim');
+            %set(haxlist,'clim',[min([climlist{:}]) max([climlist{:}])])
+
+            set(haxlist,'clim',[-9 -6.5])
+
+            % Now Add Labels to Each Row!!!
+            posrow1 = get(haxlist(1,1),'Position');
+            haxlab1 = axes('Position',[0.07 posrow1(2)+0.5*posrow1(4) 0.01 0.01]);
+            axis off
+            htlab(1) = text(haxlab1,0,0,'Estimated Modulated');
+            
+            posrow2 = get(haxlist(2,1),'Position');
+            haxlab2 = axes('Position',[0.07 posrow2(2)+0.5*posrow2(4) 0.01 0.01]);
+            axis off
+            htlab(2) = text(haxlab2,0,0,'Estimated Unmodulated');
+            
+            posrow3 = get(haxlist(3,1),'Position');
+            haxlab3 = axes('Position',[0.07 posrow3(2)+0.5*posrow3(4) 0.01 0.01]);
+            axis off
+            htlab(3) = text(haxlab3,0,0,'|Probe Amp| < 0 (no estimate)');
+            
+            set(htlab ...
+                ,'HorizontalAlignment','center' ...
+                ,'Rotation',90 ...
+                ,'FontSize',14 ...
+                ,'Color','r' ...
+                );
+%             
+        end % DisplayIncCohInt
         
         function [hfig, ha] = DisplayEfields(S, iwvplot)
             if ~exist('iwvplot','var') || isempty(iwvplot),
@@ -1357,6 +1559,8 @@ if isempty(drawRadii),
     return
 end
 
+hax = hax(:);
+
 for iax = 1:length(hax),
     axes(hax(iax));
     hold on
@@ -1374,6 +1578,7 @@ if isempty(drawTheta),
     return
 end
 
+hax = hax(:);
 
 for iax = 1:length(hax),
     axes(hax(iax));
