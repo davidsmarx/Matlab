@@ -6,6 +6,7 @@ function [fm, xm, pp, rmsres] = findpeakn(xi,yi,n)
 % yi = vector of values at each abscissa
 % n  = number of sample points around the maximum to use in quadratic fit.
 % The points used are imax + [-n:n]; thus a total of 2*n+1 points are used.
+% default n = 1
 %
 % fm is the value of the peak
 % xm is the location of the peak
@@ -31,6 +32,9 @@ elseif imax == length(yi),
         
     return
 end
+
+% default n
+if ~exist('n','var'), n = 1; end
 
 ii = imax + [-n:n];
 xx = xi(ii) - xi(imax);
