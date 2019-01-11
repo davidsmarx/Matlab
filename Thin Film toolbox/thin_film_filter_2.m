@@ -4,6 +4,8 @@ function [R, T, rr, tt] = thin_film_filter_2(n,d,theta,lam,tetm)
 %     n(1) = index of incident medium
 %     n(N) = index of transmission medium
 %     then length(n) must be >= 2
+%     if n is complex, imag(n) < 0 is absorbing
+%
 % d = thickness of each layer, not counting incident medium or transmission
 %     medium. length(d) = length(n)-2
 % theta = angle of incidence [rad], scalar only
