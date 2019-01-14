@@ -2,12 +2,12 @@ function clim = AutoClim(A, varargin)
 % clim = AutoClim(A, options)
 %
 % options:
-%   'one-sided' (default)
-%   'two-sided'
+%   'one-sided' 
+%   'two-sided' (default)
 %   'symmetric' (i.e. two-sided and symmetric)
 
 % options
-bOnesided = CheckOption('one-sided',true,varargin{:});
+bOnesided = CheckOption('one-sided',false,varargin{:});
 bSymmetric = CheckOption('symmetric',false,varargin{:});
 
 if bOnesided && bSymmetric,
