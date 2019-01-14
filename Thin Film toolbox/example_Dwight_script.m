@@ -33,9 +33,9 @@ A = [
 0.7749	2.43	4.31
 0.7999	2.48	4.38
 ];
-Ni_lam = A(1,:)*UM;
-Ni_n   = A(2,:);
-Ni_k   = A(3,:);
+Ni_lam = A(:,1)*UM;
+Ni_n   = A(:,2);
+Ni_k   = A(:,3);
 
 % calculate response
 lamlist = linspace(522.5, 577.5)'*NM;
