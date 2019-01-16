@@ -22,7 +22,9 @@ else
     hfig = figure;
 end
 
-newpos = get(hfig,'position').*[1 1 n m];
+% standard figure size
+dx = 560; dy = 420;
+newpos = get(hfig,'position').*[1 1 0 0] + [0 0 dx*n dy*m];
 
 % check against screen 
 screenlims = get(0,'ScreenSize');
