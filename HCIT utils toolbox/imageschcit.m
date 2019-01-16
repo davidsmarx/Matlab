@@ -4,6 +4,7 @@ function hout = imageschcit(varargin)
 % hh = imageschcit(x, y, Im, axes property, value, ...)
 %
 % Im can be an array or a fits filename
+% x, y can be vectors size(Im), or offset scalars
 
 cProperties = {};
    
