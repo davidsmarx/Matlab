@@ -12,11 +12,6 @@ function [Imcrop, bMaskcrop] = CropImage(Im, bMask, xycent, xwid, ywid)
 %
 % see also PadImArray
 
-[nimy, nimx] = size(Im);
-
-% ww = max([xwid ywid]);
-% ww = 2*ceil(ww/2); % make sure image size is even
-
 % center to the nearest pixel
 if isempty(xycent), xycent = [0 0]; end
 
