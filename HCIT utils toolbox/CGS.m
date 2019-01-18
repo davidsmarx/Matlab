@@ -28,6 +28,8 @@ classdef CGS < handle
     properties
         
         gsnum 
+        listPupImDir
+        listSrcImDir
         bn 
         amp
         ph
@@ -84,6 +86,14 @@ classdef CGS < handle
             S.phw = fitsread(PathTranslator([bn num2str(gsnum,'%03d') 'phwrap.fits']));
             S.amp_keys = ampinfo.PrimaryData.Keywords;
 
+            % get dir listing of raw camera images
+            S.listPupImDir = dir(PathTranslator(...
+                ['/proj/piaa-data/Data/2019-*-*/dmarx/gsomc_p_' num2str(S.gsnum)]...
+                ));
+            S.listSrcImDir = dir(PathTranslator(...
+                ['/proj/piaa-data/Data/2019-*-*/dmarx/gsomc_s_' num2str(S.gsnum)]...
+                ));
+            
             [S.x, S.y, S.X, S.Y, S.R] = CreateGrid(S.amp);
            
             % S.bMask, S.ampthresh

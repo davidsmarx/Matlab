@@ -12,25 +12,27 @@ function [Imcrop, bMaskcrop] = CropImage(Im, bMask, xycent, xwid, ywid)
 %
 % see also PadImArray
 
-[nimy, nimx] = size(Im);
-
-ww = max([xwid ywid]);
-ww = 2*ceil(ww/2); % make sure image size is even
-
 % center to the nearest pixel
 if isempty(xycent), xycent = [0 0]; end
-x = round(nimx/2+1 + xycent(1)) + (-ww/2:ww/2-1)';
-y = round(nimy/2+1 + xycent(2)) + (-ww/2:ww/2-1)';
 
-% make sure cropping does not go outside image boundary
-x = x( x >= 1 & x <= nimx );
-y = y( y >= 1 & y <= nimy );
+% use CreateGrid instead for consistency with other code
+% x = round(nimx/2+1 + xycent(1)) + (-ww/2:ww/2-1)';
+% y = round(nimy/2+1 + xycent(2)) + (-ww/2:ww/2-1)';
+[x, y] = CreateGrid(Im);
+x = x - xycent(1);
+y = y - xycent(2);
+
+% % make sure cropping does not go outside image boundary
+% x = x( x >= 1 & x <= nimx );
+% y = y( y >= 1 & y <= nimy );
 
 %
-Imcrop = Im(y,x);
+ixuse = x >= -xwid/2 & x < xwid/2;
+iyuse = y >= -ywid/2 & y < ywid/2;
+Imcrop = Im(iyuse, ixuse);
 
 if all(size(bMask) == size(Im)),
-    bMaskcrop = bMask(y,x);
+    bMaskcrop = bMask(iyuse, ixuse);
 else
     bMaskcrop = [];
 end
