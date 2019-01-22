@@ -45,6 +45,7 @@ classdef CGS < handle
         X
         Y
         R
+        T
         
     end % properties
     
@@ -94,7 +95,7 @@ classdef CGS < handle
                 ['/proj/piaa-data/Data/2019-*-*/dmarx/gsomc_s_' num2str(S.gsnum)]...
                 ));
             
-            [S.x, S.y, S.X, S.Y, S.R] = CreateGrid(S.amp);
+            [S.x, S.y, S.X, S.Y, S.R, S.T] = CreateGrid(S.amp);
            
             % S.bMask, S.ampthresh
             [sResult, S.bMask] = AutoMetric(S.amp);
