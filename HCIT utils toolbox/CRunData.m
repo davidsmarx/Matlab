@@ -202,6 +202,25 @@ classdef CRunData < handle & CConstants
                     S.ThminSc   = (90 - 32.5)*CConstants.P;
                     S.ThmaxSc   = (90 + 32.5)*CConstants.P;
 
+                case 608,
+                    S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run608/';
+                    S.ppl0 = 6.13; % MCB SPC from config_MCB_SPC_20181015.py
+                    S.XYlimDefault = 12;
+                    S.DrawradiiDefault = [2.6 9.0];
+                    S.DrawthetaDefault = 65*[-0.5 0.5]*CConstants.P;
+
+                    S.RminSc    = 2.6; % lam/D
+                    S.RmaxSc    = 9.0;
+                    S.ThminSc   = (90 - 32.5)*CConstants.P;
+                    S.ThmaxSc   = (90 + 32.5)*CConstants.P;
+
+                    pntmp = '/home/dmarx/HCIT/MCB_SPC/hcim_testbed_run606/results/FOVThroughputMap/';
+                    ThptCal_fn = [pntmp 'fov_20181102T110148_Mjk_Thpt.mat'];
+                    % ThptCal_fn = [pntmp 'fov_20181102T110148_Flux_Thpt.mat'];
+                    %S.Sthpt.fovx(:), S.Sthpt.fovy(:), S.Sthpt.thpt(:)
+                    S.Sthpt = load(PathTranslator(ThptCal_fn));
+                    S.Sthpt.ThptCal_fn = ThptCal_fn;
+
                 otherwise
                     error('unrecognized runnum');
             end
