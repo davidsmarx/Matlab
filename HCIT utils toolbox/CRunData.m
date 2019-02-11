@@ -501,11 +501,16 @@ classdef CRunData < handle & CConstants
                 
                 % if require all probes is true, pixels where abs(CohInt) == 0,
                 % are pixels where probe amp < 0 for at least one probe,
-                % image at this pixel is considered all incoherent. Let's
-                % separate the incoherent into two components:
+                % image at this pixel is considered all incoherent.
+                % Separate into two components
                 bProbNeg = S.mdMask .* ~( abs(S.CohInt{iwl}) > 0 );
-                S.IncIntEst{iwl} = (~bProbNeg).*S.IncInt{iwl};
-                S.IncIntMix{iwl} =   bProbNeg .*S.IncInt{iwl}; % = unprobed Image at these pixels
+                S.IncIntMix{iwl} = (~bProbNeg).*S.IncInt{iwl}; % inc int = 0 at these points
+                
+                % if probe estimates coherent intensity is larger than
+                % unprobed intensity, inc int is given intensity < 0
+                % have option to just set inc int to zero at these poitns
+                S.IncIntEst{iwl} = S.IncInt{iwl};
+                S.IncIntEst{iwl}(S.IncInt{iwl} <= 0) = eps;
                        
             end % for each wl
             

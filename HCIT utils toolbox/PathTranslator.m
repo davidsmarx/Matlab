@@ -25,10 +25,10 @@ elseif strcmp([A{2} '/' A{3}], 'home/bseo'),
 elseif strcmp([A{2} '/' A{3}], 'home/dmarx'),
     winpath = strjoin({'Y:', A{4:end}}, '\');
     
-elseif isequal([A{2} '/' A{3}],'proj/hcit2')
-    % \\s383-nfs = /proj
-    %winpath = '\\s383-nfs\hcit2'; %
-    winpath = ['Y:\' strjoin({A{5:end}}, '\')]; % A{4} = dmarx
+% elseif isequal([A{2} '/' A{3}],'proj/hcit2')
+%     % \\s383-nfs = /proj
+%     %winpath = '\\s383-nfs\hcit2'; %
+%     winpath = ['Y:\' strjoin({A{5:end}}, '\')]; % A{4} = dmarx
     
 elseif isequal([A{2} '/' A{3}],'proj/hcit')
     % \\s383-nfs = /proj
@@ -40,11 +40,11 @@ elseif isequal([A{2} '/' A{3}],'proj/afta-im')
 
 elseif isequal([A{2} '/' A{3}],'proj/mcb')
     % \\s383-nfs = /proj
-    winpath = '\\muscle4.jpl.nasa.gov\mcb'; %
+    winpath = strjoin({'\\muscle5.jpl.nasa.gov\mcb', A{4:end}}, '\');
 
 elseif isequal([A{2} '/' A{3}],'net/spud-data')
     % mcb camera data
-    winpath = '\\s383-nfs\dmarx\HCIT\ln_spud_data_Data';
+    winpath = 'Y:\HCIT\ln_spud_data_Data';
     A = {A{1:3},A{5:end}}; % remove /Data/
 
 elseif isequal([A{2} '/' A{3}],'net/piaa-data') || isequal([A{2} '/' A{3}],'proj/piaa-data')
