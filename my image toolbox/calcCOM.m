@@ -4,7 +4,7 @@ function com = calcCOM(x, y, im, varargin)
 % com = calcCOM(im)
 %
 % simple function to calculate center of mass
-% usuall input image is a bMask;
+% usual input image is a bMask;
 % default coordinates are 1:nc, 1:nr (i.e. 1-offset)
 
 if nargin == 1,
