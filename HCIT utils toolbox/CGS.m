@@ -74,11 +74,11 @@ classdef CGS < handle
                         bn = '/home/dmarx/HCIT/SPC_disc/gsspc_20171204/reduced/gsspc_';
                     otherwise
                         % do nothing, let bn = bn
-                        disp(bn);
+                        %disp(bn);
                 end % switch bn
             end
             
-            disp(['opening: ' PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits'])]);
+            %disp(['opening: ' PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits'])]);
             ampinfo = fitsinfo(PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits']));
             
  
