@@ -10,6 +10,8 @@ classdef CGS < handle
     %    [hfig, hax] = DisplayGS(S)
     %
     %    [hfig, hax] = DisplayGSrefGS(S, Sref)
+    %          hfig = CheckOption('hfig', figure_mxn(2,2), varargin{:});
+    %          usebMask = CheckOption('usebMask', true, varargin{:});
     %
     %    [Z, rz, pharesidual] = ZernikeFit(S, nz)
     %
@@ -74,11 +76,11 @@ classdef CGS < handle
                         bn = '/home/dmarx/HCIT/MCB_SPC/phaseretrieval/reduced/gsomc_no';
                     otherwise
                         % do nothing, let bn = bn
-                        disp(bn);
+                        %disp(bn);
                 end % switch bn
             end
             
-            disp(['opening: ' PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits'])]);
+            %disp(['opening: ' PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits'])]);
             ampinfo = fitsinfo(PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits']));
             
  
@@ -141,7 +143,7 @@ classdef CGS < handle
             
             S.cAmpPlanes{1} = fitsread(PathTranslator(cmp_fn));
             for ii = 2:NIm,
-                S.cAmpPlanes{ii} = fitsread(cmp_fn,'image',ii-1);
+                S.cAmpPlanes{ii} = fitsread(PathTranslator(cmp_fn),'image',ii-1);
             end
             
         end % ReadAmpImages
@@ -183,12 +185,8 @@ classdef CGS < handle
             % [hfig, hax] = DisplayGSrefGS(S, Sref, options)
 
             % parse options
-            iopt = find(strcmpi('hfig',varargin));
-            if ~isempty(iopt),
-                hfig = varargin{iopt(end)+1};
-            else
-                hfig = figure_mxn(2,2);                
-            end
+            hfig = CheckOption('hfig', figure_mxn(2,2), varargin{:});
+            usebMask = CheckOption('usebMask', true, varargin{:});
             
             figure(hfig);
 
@@ -215,7 +213,12 @@ classdef CGS < handle
             title(['gsnum ' num2str(S.gsnum) ' Amp -  Ref gsnum ' num2str(Sref.gsnum) ' Amp'])
             
             hax(4) = subplot(2,2,4);
-            him = imageschcit(S.x, S.y, angle(S.E.*conj(Sref.E)));
+            if usebMask,
+                dpha = S.bMask .* angle(S.E.*conj(Sref.E));
+            else
+                dpha = angle(S.E.*conj(Sref.E));
+            end            
+            him = imageschcit(S.x, S.y, dpha);
             colorbartitle('Phase (rad)')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
             set(gca,'clim',AutoClim(get(him,'CData'),'symmetric',true))

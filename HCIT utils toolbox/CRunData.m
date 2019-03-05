@@ -622,6 +622,48 @@ classdef CRunData < handle & CConstants
             
         end % DisplayImCubeImage
         
+        function [hfig, hax] = DisplaySingleImage(S, Im, varargin)
+            % generic dipslay an image using the standard format for this
+            % run, etc.
+            
+            % default options and set requested options
+            %  val = CheckOption(sOpt, valDefault, varargin)
+            bPlotLog = CheckOption('bLog', false, varargin{:});
+            sTitle = CheckOption('title', '', varargin{:});
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
+            climopt = CheckOption('clim', [], varargin{:});
+            %haxuse = CheckOption('hax', [], varargin{:});
+            
+            [x, y, X, Y, R] = CreateGrid(Im, 1./S.ppl0);
+            xlim = dispXYlim*[-1 1]; ylim = xlim;
+
+            hfig = figure;
+            if bPlotLog,
+                imageschcit(x, y, log10(abs(Im))), axis image,
+                colorbartitle('log_{10} Norm Intensity')
+            else
+                imageschcit(x, y, Im), axis image,
+                colorbartitle('Norm Intensity (linear)')
+            end
+            title(['Iteration #' num2str(S.iter) sTitle])
+            
+            hax = gca;
+            
+            set(hax,'xlim',xlim,'ylim',ylim)
+            xlabel('\lambda/D'), ylabel('\lambda/D')
+            
+            if ~isempty(climopt)
+                set(hax,'clim',climopt)
+            end
+            
+            % overlay circles if requested
+            DrawCircles(hax, drawRadii);
+            DrawThetaLines(hax, drawTheta, drawRadii);
+
+        end % DisplayImCubeImage
+
         function [hfig, ha] = DisplayImCubeUnProb(S, varargin)
             
             if isempty(S.ImCube),
