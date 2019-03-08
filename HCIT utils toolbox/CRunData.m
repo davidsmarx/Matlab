@@ -205,6 +205,7 @@ classdef CRunData < handle & CConstants
                 case 608,
                     S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run608/';
                     S.ppl0 = 6.13; % MCB SPC from config_MCB_SPC_20181015.py
+                    %S.ppl0 = 3.628; % IFS value
                     S.XYlimDefault = 12;
                     S.DrawradiiDefault = [2.6 9.0];
                     S.DrawthetaDefault = 65*[-0.5 0.5]*CConstants.P;
@@ -1365,7 +1366,7 @@ classdef CRunData < handle & CConstants
             % equalize the clim range
             E_t_b = E_t(S.bMask);
             set(ha(1),'clim', AutoClim(abs(E_t_b)))
-            set(ha(2:3), 'clim', AutoClim([real(E_t_b); imag(E_t_b)],'two-sided','symmetric'))
+            set(ha(2:3), 'clim', AutoClim([real(E_t_b); imag(E_t_b)],'one-sided',false,'symmetric',true))
 
             ha(end+1) = subplot(2,3,4); imageschcit(x,y,abs(E_m)), axis image, colorbar,
             title([sRI ', |E_m|, wave #' num2str(iwvplot)])
@@ -1380,7 +1381,7 @@ classdef CRunData < handle & CConstants
             % equalize the clim range
             E_m_b = E_m(S.bMask);
             set(ha(4),'clim', AutoClim(abs(E_m_b)))
-            set(ha(5:6), 'clim', AutoClim([real(E_m_b); imag(E_m_b)], 'two-sided','symmetric'))
+            set(ha(5:6), 'clim', AutoClim([real(E_m_b); imag(E_m_b)], 'one-sided',false,'symmetric',true))
 
             for iha = 1:length(ha), xlabel(ha(iha), '\lambda/D'), ylabel(ha(iha),'\lambda/D'), end
             
@@ -1451,17 +1452,17 @@ classdef CRunData < handle & CConstants
                 ha(1,iwv) = subplot(Nplr, S.NofW, ipu);
                 him = imageschcit(x,y, S.ImCubeUnProb{iwv}-Sref.ImCubeUnProb{iwv}); colorbar
                 title([sRI ', \Delta UnPr Int, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
-                climI(iwv,:) = AutoClim(get(him,'CData'),'symmetric');
+                climI(iwv,:) = AutoClim(get(him,'CData'),'symmetric',true);
 
                 ha(2,iwv) = subplot(Nplr, S.NofW, ipr);
                 him = imageschcit(x,y,squeeze(real(dE(iwv,:,:)))); colorbar
                 title([sRI ', real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
-                climE(ipr,:) = AutoClim(get(him,'CData'),'symmetric');
+                climE(ipr,:) = AutoClim(get(him,'CData'),'symmetric',true);
                 
                 ha(3,iwv) = subplot(Nplr, S.NofW, ipi);
                 him = imageschcit(x,y,squeeze(imag(dE(iwv,:,:)))); colorbar
                 title([sRI ', imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
-                climE(ipi,:) = AutoClim(get(him,'CData'),'symmetric');
+                climE(ipi,:) = AutoClim(get(him,'CData'),'symmetric',true);
 
                 ha(4,iwv) = subplot(Nplr, S.NofW, ipf);
                 [xf, yf] = CreateGrid(Epup{iwv});
