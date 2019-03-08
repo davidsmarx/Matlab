@@ -74,6 +74,8 @@ classdef CGS < handle
                         bn = '/home/dmarx/HCIT/SPC_disc/gsspc_20171204/reduced/gsspc_';
                     case 'mcb_spc'
                         bn = '/home/dmarx/HCIT/MCB_SPC/phaseretrieval/reduced/gsomc_no';
+                    case 'mcb_hlc'
+                        bn = '/proj/mcb/data/dB_PR_Kern/gsomc_no00';
                     otherwise
                         % do nothing, let bn = bn
                         %disp(bn);
