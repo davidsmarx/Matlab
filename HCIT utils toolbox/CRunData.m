@@ -1116,6 +1116,11 @@ classdef CRunData < handle & CConstants
                 title(['wave #' num2str(iwvplot) ', it ' num2str(S.iter) ', Measure Probe #' num2str(ip)])
             end
 
+            climall = get(ha,'clim');
+            if bLog, climmin = -9; else, climmin = 0; end
+            clim = [climmin max([climall{:}])];
+            set(ha,'clim',clim)
+            
         end % DisplayProbeCube
         
         function [hfig, hax] = DisplayCohInt(S, varargin)
@@ -1387,7 +1392,10 @@ classdef CRunData < handle & CConstants
             
         end % DisplayEfields
         
-        function [hfig, ha] = DisplayDEfields(S, Sref, hfig)
+        function [hfig, ha] = DisplayDEfields(S, Sref, varargin)
+            
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            hfig = CheckOption('hfig', [], varargin{:});
             
             if isempty(S.E_t),
                 S.ReadReducedCube;
@@ -1407,7 +1415,6 @@ classdef CRunData < handle & CConstants
             
             [nw, nr, nc] = size(S.E_t);
             
-            xlimlamD = 22*[-1 1];
             sRI = ['run #' num2str(S.runnum) ', iter #' num2str(S.iter) '--' num2str(Sref.iter)];
             
             %             E_t = squeeze(S.E_t(iwvplot,:,:));
@@ -1417,7 +1424,7 @@ classdef CRunData < handle & CConstants
             % middle row = imag(DE_t)
             % bottom row = UnProbInt - UnProbInt(ref)
             Nplr = 4;
-            if exist('hfig','var') && isa(hfig,'matlab.ui.Figure'),
+            if isa(hfig,'matlab.ui.Figure'),
                 figure(hfig)
             else,
                 hfig = figure_mxn(Nplr,S.NofW);
@@ -1474,7 +1481,7 @@ classdef CRunData < handle & CConstants
             end
             set(ha(1,:),'clim',median(climI))
             set(ha(2:3,:),'clim',median(climE))
-            set(ha(1:3,:),'xlim',xlimlamD,'ylim',xlimlamD);
+            set(ha(1:3,:),'xlim',dispXYlim*[-1 1],'ylim',dispXYlim*[-1 1]);
             
         end % DisplayDEfields
 
