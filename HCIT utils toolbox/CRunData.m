@@ -204,7 +204,8 @@ classdef CRunData < handle & CConstants
 
                 case 608,
                     S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run608/';
-                    S.ppl0 = 6.13; % MCB SPC from config_MCB_SPC_20181015.py
+                    %S.ppl0 = 6.13; % MCB SPC from config_MCB_SPC_20181015.py
+                    S.ppl0 = 3.628;
                     S.XYlimDefault = 12;
                     S.DrawradiiDefault = [2.6 9.0];
                     S.DrawthetaDefault = 65*[-0.5 0.5]*CConstants.P;
