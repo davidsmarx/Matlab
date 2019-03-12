@@ -160,6 +160,8 @@ classdef CGS < handle
 
             pMask = CheckOption('pMask', S.bMask, varargin{:});
             xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
+            climph = CheckOption('climph', [], varargin{:});
+            phplot = CheckOption('phplot', 'angleE', varargin{:}); % other choice = 'phw_ptt'
 
             %hfig = figure;
             %hax = imagescampphase(S.E, x, y, ['gsnum ' num2str(S.gsnum)]);
@@ -172,11 +174,25 @@ classdef CGS < handle
             title(['gsnum ' num2str(S.gsnum)])
 
             % bMask is only for phase plot
+            % check options for what to plot
+            switch phplot
+                case 'angleE'
+                    ph = angle(S.E);
+                case 'phw_ptt'
+                    ph = S.phw_ptt;
+                otherwise
+                    error(['phplot ' phplot ' not a valid choice']);
+            end
+            
             if isempty(pMask), pMask = ones(size(S.E)); end
             hax(2) = subplot(1,2,2);
-            imageschcit(S.x, S.y, pMask.*angle(S.E))
+            imageschcit(S.x, S.y, pMask.*ph)
             colorbartitle('Phase (rad)')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
+            if isempty(climph),
+                climph = AutoClim(ph, 'symmetric', true);
+            end
+            set(gca,'clim',climph)
             title(['gsnum ' num2str(S.gsnum) ' rms\phi = ' num2str(S.rmsPha,'%.3f') 'rad'])
             
             
