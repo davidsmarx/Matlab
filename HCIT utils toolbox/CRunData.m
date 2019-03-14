@@ -1086,6 +1086,7 @@ classdef CRunData < handle & CConstants
 
             [x, y] = CreateGrid(S.ProbeModel{1,1}, 1./S.ppl0);
             
+            % plot a cross-section to compare model & measure
             ip = 1;
             figure, plot(y, [abs(S.ProbeModel{iwvplot,ip}(:,x==0)), ...
                     S.ProbeMeasAmp{iwvplot,ip}(:,x==0)].^2), grid
@@ -1094,25 +1095,27 @@ classdef CRunData < handle & CConstants
             title(['Cross Section, it ' num2str(S.iter) ', Wave #' num2str(iwvplot) ', Measure Probe #' num2str(ip)])
 
             if bLog,
-                ImModel = real(log10(abs(S.ProbeModel{iwvplot,ip}).^2));
-                ImMeasure = real(log10(S.ProbeMeasAmp{iwvplot,ip}.^2));
+                funPlot = @(Ep) real(log10( Ep.^2 ));
+                %                 ImModel = real(log10(abs(S.ProbeModel{iwvplot,ip}).^2));
+                %                 ImMeasure = real(log10(S.ProbeMeasAmp{iwvplot,ip}.^2));
                 sctitle = 'log_{10} Norm Intensity';
             else
-                ImModel = abs(S.ProbeModel{iwvplot,ip}).^2;
-                ImMeasure = S.ProbeMeasAmp{iwvplot,ip}.^2;
+                funPlot = @(Ep) Ep.^2;
+                %                 ImModel = abs(S.ProbeModel{iwvplot,ip}).^2;
+                %                 ImMeasure = S.ProbeMeasAmp{iwvplot,ip}.^2;
                 sctitle = 'Linear Norm Intensity';
             end
                 
             hfig = figure_mxn(2,S.Nppair);
             for ip = 1:S.Nppair,
                 ha(ip) = subplot(2,S.Nppair,ip);
-                imageschcit(x,y,ImModel), axis image, colorbartitle(sctitle)
+                imageschcit(x,y, funPlot(abs(S.ProbeModel{iwvplot,ip}))), axis image, colorbartitle(sctitle)
                 set(gca,'xlim',dispXYlim*[-1 1],'ylim',dispXYlim*[-1 1])
                 xlabel('\lambda / D'), ylabel('\lambda / D')
                 title(['wave #' num2str(iwvplot) ', it ' num2str(S.iter) ', Model Probe #' num2str(ip)])
                 
                 ha(S.Nppair+ip) = subplot(2,S.Nppair,S.Nppair+ip);
-                imageschcit(x,y,ImMeasure), axis image, colorbartitle(sctitle)
+                imageschcit(x,y, funPlot(S.ProbeMeasAmp{iwvplot,ip})), axis image, colorbartitle(sctitle)
                 set(gca,'xlim',dispXYlim*[-1 1],'ylim',dispXYlim*[-1 1])
                 xlabel('\lambda / D'), ylabel('\lambda / D')
                 title(['wave #' num2str(iwvplot) ', it ' num2str(S.iter) ', Measure Probe #' num2str(ip)])
