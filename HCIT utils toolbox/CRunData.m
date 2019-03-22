@@ -207,6 +207,7 @@ classdef CRunData < handle & CConstants
 
                     S.ppl0 = 6.13; % MCB SPC from config_MCB_SPC_20181015.py
                     %S.ppl0 = 3.628; % IFS value
+                    % starting itnum 854, defined in ReducedKeys
 
                     S.XYlimDefault = 12;
                     S.DrawradiiDefault = [2.6 9.0];
@@ -285,6 +286,10 @@ classdef CRunData < handle & CConstants
                 finfo = fitsinfo(S.Reduced_fn);
                 S.ReducedKeys = finfo.PrimaryData.Keywords;
             end
+            
+            % useful parameters from ReducedKeys
+            ppl0tmp = FitsGetKeywordVal(S.ReducedKeys,'ppl0');
+            if ~isempty(ppl0tmp), S.ppl0 = ppl0tmp; end
             
             % number of probes, and images per wavelength if probed
             % from lyotserver_IFS.py
@@ -1244,6 +1249,7 @@ classdef CRunData < handle & CConstants
             
             % defaults that might be different
             varargin{end+1} = 'bLog'; varargin{end+1} = true;
+            varargin{end+1} = 'clim'; varargin{end+1} = [-9 -6.5];
             
             hfig = figure_mxn(3,S.Nlamcorr);
             haxlist = zeros(3,S.Nlamcorr);
@@ -1273,9 +1279,8 @@ classdef CRunData < handle & CConstants
             % make common clim
             %climlist = get(haxlist,'clim');
             %set(haxlist,'clim',[min([climlist{:}]) max([climlist{:}])])
-
-            set(haxlist,'clim',[-9 -6.5])
-
+            %set(haxlist,'clim',[-9 -6.5])
+            
         end
         
         function [hfig, haxlist] = DisplayIncCohInt(S, varargin)
@@ -1353,61 +1358,159 @@ classdef CRunData < handle & CConstants
 %             
         end % DisplayIncCohInt
         
-        function [hfig, ha] = DisplayEfields(S, iwvplot)
-            if ~exist('iwvplot','var') || isempty(iwvplot),
-                warning('wavelength # not specified, plotting wave #1');
-                iwvplot = 1;
-            end
-            
+        function [hfig, hax] = DisplayEfields(S, varargin)
+            % [hfig, ha] = DisplayEfields(S)
+            % 
+            % testbed measured E fields
+            % amp, real, imag x each wavelength
+                        
             if isempty(S.E_t),
                 S.ReadReducedCube;
             end
             
-            xlimlamD = 22*[-1 1];
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            hfig = CheckOption('hfig', [], varargin{:});
+            clim = CheckOption('clim', [], varargin{:});
+
+            % title
             sRI = ['run #' num2str(S.runnum) ', iter #' num2str(S.iter)];
             
-            E_t = squeeze(S.E_t(iwvplot,:,:));
-            E_m = squeeze(S.E_m(iwvplot,:,:));
+            %
+            [nw, nr, nc] = size(S.E_t);
+            if nw ~= S.NofW, error('size E_t does not match'); end
+            [x, y] = CreateGrid([nc nr], 1./S.ppl0);
 
-            hfig = figure_mxn(2,3);
-            [x, y] = CreateGrid(E_t, 1./S.ppl0);
+            %
+            Nplr = 3; % # of rows
+            if isa(hfig,'matlab.ui.Figure'), figure(hfig)
+            else, hfig = figure_mxn(Nplr,S.NofW);
+            end
+            hax = zeros(Nplr, S.NofW);
             
-            ha = [];
-            ha(end+1) = subplot(2,3,1); imageschcit(x,y,abs(E_t)), axis image, colorbar,
-            title([sRI ', |E_t|, wave #' num2str(iwvplot)])
-            set(gca,'xlim',xlimlamD,'ylim',xlimlamD);
-            ha(end+1) = subplot(2,3,2); imageschcit(x,y,real(E_t)), axis image, colorbar,
-            title([sRI ', real(E_t), wave #' num2str(iwvplot)])
-            set(gca,'xlim',xlimlamD,'ylim',xlimlamD);
-            ha(end+1) = subplot(2,3,3); imageschcit(x,y,imag(E_t)), axis image, colorbar,
-            title([sRI ', imag(E_t), wave #' num2str(iwvplot)])
-            set(gca,'xlim',xlimlamD,'ylim',xlimlamD);
+            % first row is amplitude
+            for iwv = 1:S.NofW,
+                hax(1,iwv) = subplot(Nplr,S.NofW,iwv);
+                imageschcit(x, y, abs(squeeze(S.E_t(iwv,:,:)))), colorbar
+                title(['Amp, Wave#' num2str(iwv) ', ' sRI])
+            end
             
-            % equalize the clim range
-            E_t_b = E_t(S.bMask);
-            set(ha(1),'clim', AutoClim(abs(E_t_b)))
-            set(ha(2:3), 'clim', AutoClim([real(E_t_b); imag(E_t_b)],'one-sided',false,'symmetric',true))
-
-            ha(end+1) = subplot(2,3,4); imageschcit(x,y,abs(E_m)), axis image, colorbar,
-            title([sRI ', |E_m|, wave #' num2str(iwvplot)])
-            set(gca,'xlim',xlimlamD,'ylim',xlimlamD);
-            ha(end+1) = subplot(2,3,5); imageschcit(x,y,real(E_m)), axis image, colorbar,
-            title([sRI ', real(E_m), wave #' num2str(iwvplot)])
-            set(gca,'xlim',xlimlamD,'ylim',xlimlamD);
-            ha(end+1) = subplot(2,3,6); imageschcit(x,y,imag(E_m)), axis image, colorbar,
-            title([sRI ', imag(E_m), wave #' num2str(iwvplot)])
-            set(gca,'xlim',xlimlamD,'ylim',xlimlamD);
-
-            % equalize the clim range
-            E_m_b = E_m(S.bMask);
-            set(ha(4),'clim', AutoClim(abs(E_m_b)))
-            set(ha(5:6), 'clim', AutoClim([real(E_m_b); imag(E_m_b)], 'one-sided',false,'symmetric',true))
-
-            for iha = 1:length(ha), xlabel(ha(iha), '\lambda/D'), ylabel(ha(iha),'\lambda/D'), end
+            % second row is real part
+            for iwv = 1:S.NofW,
+                hax(2,iwv) = subplot(Nplr, S.NofW, S.NofW + iwv);
+                imageschcit(x, y, real(squeeze(S.E_t(iwv,:,:)))), colorbar
+                title(['Real, Wave#' num2str(iwv) ', ' sRI])
+            end
+            
+            % third row is imag part
+            for iwv = 1:S.NofW,
+                hax(3,iwv) = subplot(Nplr, S.NofW, 2*S.NofW + iwv);
+                imageschcit(x, y, imag(squeeze(S.E_t(iwv,:,:)))), colorbar
+                title(['Imag, Wave#' num2str(iwv) ', ' sRI])
+            end
+                        
+            % xlim, ylim
+            xlim = dispXYlim*[-1 1]; ylim = xlim;
+            set(hax,'xlim',xlim,'ylim',ylim)
+            
+            % clim
+            if isempty(clim),
+                Euse = S.E_t(abs(S.E_t(:)) > 0);
+                aclim = AutoClim(abs(Euse), 'one-sided', true);
+                clim  = AutoClim([real(Euse) imag(Euse)], 'symmetric', true);
+            else
+                aclim = [0 clim(2)];                
+            end
+            set(hax(1,:),'clim',aclim)  % abs plots
+            set(hax(2:3,:),'clim',clim) % real, imag plots
+            
             
         end % DisplayEfields
-        
+
         function [hfig, ha] = DisplayDEfields(S, Sref, varargin)
+            % [hfig, ha] = DisplayDEfields(S, Sref, varargin)
+            % 4 x NofW, dE_t real, imag, dE_m real, imag
+            
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            hfig = CheckOption('hfig', [], varargin{:});
+            clim = CheckOption('clim', [], varargin{:});
+            
+            if isempty(S.E_t),
+                S.ReadReducedCube;
+            end
+
+            if isempty(Sref.E_t),
+                Sref.ReadReducedCube;
+            end
+
+            [nw, nr, nc] = size(S.E_t);
+            
+            sRI = ['run #' num2str(S.runnum) ', iter #' num2str(S.iter) '--' num2str(Sref.iter)];
+            
+            % top row = real(DE_t)
+            % 2nd row = imag(DE_t)
+            % 3rd row = real(DE_m)
+            % 4ty row = imag(DE_m)
+
+            Nplr = 4;
+            if isa(hfig,'matlab.ui.Figure'),
+                figure(hfig)
+            else,
+                hfig = figure_mxn(Nplr,S.NofW);
+            end
+            [x, y] = CreateGrid([nc nr], 1./S.ppl0);
+            ha = zeros(Nplr,S.NofW);
+            %
+            dE_t = S.E_t - Sref.E_t;
+            dE_m = S.E_m - Sref.E_m;
+                        
+            climE = zeros(2*S.NofW,2);
+            for iwv = 1:S.NofW,
+                % subplot #
+                iptr = iwv+0*S.NofW;
+                ipti = iwv+1*S.NofW;
+                ipmr = iwv+2*S.NofW;
+                ipmi = iwv+3*S.NofW;
+                
+                % change in unprobed image intensity
+                ha(1,iwv) = subplot(Nplr, S.NofW, iptr);
+                imageschcit(x,y,squeeze(real(dE_t(iwv,:,:)))); colorbar
+                title([sRI ', real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                
+                ha(2,iwv) = subplot(Nplr, S.NofW, ipti);
+                imageschcit(x,y,squeeze(imag(dE_t(iwv,:,:)))); colorbar
+                title([sRI ', imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+
+                ha(3,iwv) = subplot(Nplr, S.NofW, ipmr);
+                imageschcit(x,y,squeeze(real(dE_m(iwv,:,:)))); colorbar
+                title([sRI ',Model: real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                
+                ha(4,iwv) = subplot(Nplr, S.NofW, ipmi);
+                imageschcit(x,y,squeeze(imag(dE_m(iwv,:,:)))); colorbar
+                title([sRI ',Model: imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+
+            end
+
+            % xlim, ylim
+            xlim = dispXYlim*[-1 1]; ylim = xlim;
+            set(ha,'xlim',xlim,'ylim',ylim)
+
+            % clim
+            if isempty(clim),
+                dEtmp = [dE_t dE_m];
+                dEuse = dEtmp(abs(dEtmp(:)) > 0);
+                clim = AutoClim([real(dEuse) imag(dEuse)],'symmetric',true);
+                %set(ha,'clim',median(climE))
+            else
+                %set(ha,'clim',clim)
+            end
+            set(ha,'clim',clim)
+            
+        end % DisplayDEfields
+
+
+        function [hfig, ha] = DisplayDEold(S, Sref, varargin)
+            % [hfig, ha] = DisplayDE(S, Sref, varargin)
+            % old version
             
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
@@ -1498,7 +1601,7 @@ classdef CRunData < handle & CConstants
             set(ha(2:3,:),'clim',median(climE))
             set(ha(1:3,:),'xlim',dispXYlim*[-1 1],'ylim',dispXYlim*[-1 1]);
             
-        end % DisplayDEfields
+        end % DisplayDE
 
         function DisplayPampzero(S)
             

@@ -1,4 +1,4 @@
-function [width, rmax, xmax, errmsg] = fwhm(x,response)
+function [width, rmax, xmax, xhalf, errmsg] = fwhm(x,response)
 % [width, rmax, xm] = fwhm(x,response)
 % 
 % width = fwhm
@@ -99,6 +99,7 @@ end
 % end
 
 width = x2 - x1;
+xhalf = [x1, x2];
 
 if isnan(width),
     keyboard;
