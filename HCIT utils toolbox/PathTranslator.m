@@ -25,10 +25,10 @@ elseif strcmp([A{2} '/' A{3}], 'home/bseo'),
 elseif strcmp([A{2} '/' A{3}], 'home/dmarx'),
     winpath = strjoin({'Y:', A{4:end}}, '\');
     
-% elseif isequal([A{2} '/' A{3}],'proj/hcit2')
-%     % \\s383-nfs = /proj
-%     %winpath = '\\s383-nfs\hcit2'; %
-%     winpath = ['Y:\' strjoin({A{5:end}}, '\')]; % A{4} = dmarx
+elseif isequal([A{2} '/' A{3}],'proj/hcit2')
+    % \\s383-nfs = /proj
+    %winpath = '\\s383-nfs\hcit2'; %
+    winpath = ['Y:\' strjoin({A{5:end}}, '\')]; % A{4} = dmarx
     
 elseif isequal([A{2} '/' A{3}],'proj/hcit')
     % \\s383-nfs = /proj

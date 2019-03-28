@@ -8,7 +8,7 @@ function [fm, xm, ym] = findpeak2(f01,f10,f11,f12,f21)
 %      f10 f11 f12
 %          f21
 % if input is a single matrix A, then findpeak2 fits the peak to the
-% max2d(A)
+% max2d(A) and the four pixels around it.
 %
 % fm is the value of the peak
 % xm and ym is the location of the peak (w.r.t. the location of f11)

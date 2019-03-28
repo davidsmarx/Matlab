@@ -139,6 +139,8 @@ classdef CRunData < handle & CConstants
         DrawradiiDefault = [];
         DrawthetaDefault = [];
 
+        Sppt;
+        
         debug = false;
         
     end % properties
@@ -1737,9 +1739,32 @@ classdef CRunData < handle & CConstants
                 imageschcit(real(log10(S.bMask.*S.ImCubeDelProb{iwv,ii}))), colorbar,
             end
         end % DisplayDelProbes
-% 
-%         % 
-%         S.ProbeRes
+
+        function Sppt = GenerateReportPpt(S, varargin)
+        
+            Sppt = CheckOption('Sppt', S.Sppt, varargin{:});
+            ppt_fn = CheckOption('fn', '', varargin{:});
+            
+            if isempty(Sppt)
+                Sppt = Cppt(ppt_fn);
+            end
+            
+            hfig = S.DisplayAllInt;
+            set(hfig,'Position',0.6*get(hfig,'Position'));
+            Sppt.CopyFigNewSlide(hfig);
+            
+            hfig = S.DisplayProbeAmp;
+            set(hfig,'Position',0.6*get(hfig,'Position'));
+            Sppt.CopyFigNewSlide(hfig);
+            
+            hfig = S.DisplayEfields;
+            set(hfig,'Position',0.6*get(hfig,'Position'));
+            Sppt.CopyFigNewSlide(hfig);
+            
+            S.Sppt = Sppt;
+            
+        end % GenerateReportPpt
+        
     end % methods
         
 end % classdef
