@@ -311,7 +311,9 @@ classdef CRunData < handle & CConstants
                fn = FitsGetKeywordVal(S.ImKeys, ['C' num2str(iwv-1) 'P0J0']) ;
                if isempty(fn) || ~exist(PathTranslator(fn),'file'),
                    warning(['cannot open ' fn]);
-                   continue
+                   %continue
+                   % hack for now
+                   fn = ['/home/dmarx/ln_mcb_data/IFS/images/' fn];
                end
                finfo = fitsinfo(PathTranslator(fn));
                if ~isempty(FitsGetKeywordVal(finfo.PrimaryData.Keywords,'NKTLOWER')),
@@ -1248,6 +1250,10 @@ classdef CRunData < handle & CConstants
         
         function [hfig, haxlist] = DisplayAllInt(S, varargin)
             % display large table of unprobed, coh int, inc int images
+            % uses:
+            % S.DisplayImCubeUnProb
+            % S.DisplayCohInt
+            % S.DisplayIncInt
             
             % defaults that might be different
             varargin{end+1} = 'bLog'; varargin{end+1} = true;
@@ -1764,6 +1770,8 @@ classdef CRunData < handle & CConstants
             S.Sppt = Sppt;
             
         end % GenerateReportPpt
+        
+        
         
     end % methods
         
