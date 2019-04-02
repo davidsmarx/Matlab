@@ -1451,6 +1451,7 @@ classdef CRunData < handle & CConstants
             end
 
             [nw, nr, nc] = size(S.E_t);
+            if nw ~= S.NofW, error(['number of wavelengths inconsistent']); end
             
             sRI = ['run #' num2str(S.runnum) ', iter #' num2str(S.iter) '--' num2str(Sref.iter)];
             
@@ -1514,6 +1515,75 @@ classdef CRunData < handle & CConstants
             set(ha,'clim',clim)
             
         end % DisplayDEfields
+
+        function [hfig, ha] = DisplayCEfields(S, Sref, varargin)
+            % [hfig, ha] = DisplayCEfields(S, Sref, varargin)
+            % correlation metrics DE_t .* conj(DE_m)
+            
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            hfig = CheckOption('hfig', [], varargin{:});
+            clim = CheckOption('clim', [], varargin{:});
+            
+            if isempty(S.E_t),
+                S.ReadReducedCube;
+            end
+
+            if isempty(Sref.E_t),
+                Sref.ReadReducedCube;
+            end
+
+            [nw, nr, nc] = size(S.E_t);
+            if nw ~= S.NofW, error(['number of wavelengths inconsistent']); end
+
+            % title string
+            sRI = ['run #' num2str(S.runnum) ', iter #' num2str(S.iter) '--' num2str(Sref.iter)];
+            
+
+            Nplr = 2;
+            if isa(hfig,'matlab.ui.Figure'),
+                figure(hfig)
+            else,
+                hfig = figure_mxn(Nplr,S.NofW);
+            end
+            [x, y] = CreateGrid([nc nr], 1./S.ppl0);
+            ha = zeros(Nplr,S.NofW);
+            %
+            dE_t = S.E_t - Sref.E_t;
+            dE_m = S.E_m - Sref.E_m;
+            CE   = dE_t .* conj(dE_m);
+            
+            for iwv = 1:S.NofW,
+                % subplot #
+                iamppl = iwv+0*S.NofW;
+                iphapl = iwv+1*S.NofW;
+                
+                % amplitude of projection
+                ha(1,iwv) = subplot(Nplr, S.NofW, iamppl);
+                imageschcit(x,y,squeeze(abs(CE(iwv,:,:)))); colorbar
+                title([sRI ', |dE_m''dE_t|, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                
+                ha(2,iwv) = subplot(Nplr, S.NofW, iphapl);
+                imageschcit(x,y,squeeze(angle(CE(iwv,:,:))/pi)); 
+                title([sRI ', \angle{dE_m''dE_t}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                colorbartitle('Phase (\pi rad)')
+                % circular colormap for phase plots
+                colormap(ha(2,iwv), hsv) %phasemap) % hsv also works
+                set(ha(2,iwv),'clim',[-1 1]) % pi radians
+                
+            end
+
+            % xlim, ylim
+            xlim = dispXYlim*[-1 1]; ylim = xlim;
+            set(ha,'xlim',xlim,'ylim',ylim)
+
+            % clim for abs plots
+            if isempty(clim),
+                CEuse = CE(abs(CE(:)) > 0);
+                clim = AutoClim(abs(CEuse),'one-sided',true);
+            end
+            set(ha(1,:),'clim',clim)
+            
+        end % DisplayCEfields
 
 
         function [hfig, ha] = DisplayDEold(S, Sref, varargin)
