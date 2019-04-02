@@ -1632,10 +1632,12 @@ classdef CRunData < handle & CConstants
             
         end % DisplayPampzero
 
-        function [hfig, hax] = DisplayDMv(S, varargin)
-            % [hfig, hax] = S.DisplayDMv
-            % [hfig, hax] = S.DisplayDMv(Sref)
-            % [hfig, hax] = S.DisplayDMv(refDM1v_fits, refDM2v_fits)
+        function [hfig, hax] = DisplayDMv(S, dmvref, varargin)
+            % [hfig, hax] = S.DisplayDMv([], varargin)
+            % [hfig, hax] = S.DisplayDMv(Sref, varargin)
+            % [hfig, hax] = S.DisplayDMv({refDM1v_fits, refDM2v_fits}, varargin)
+
+            if nargin < 2, dmvref = []; end
             
             if isempty(S.DMvCube)
                 S.ReadDMvCube;
@@ -1652,17 +1654,23 @@ classdef CRunData < handle & CConstants
                     ', ' num2str(rmsDMv(idm),'%.4f') 'V rms'];
             end
 
-            switch length(varargin),
-                case 0,
-                    refDMv = [];
-                    strRefDM = [];
+            % is there a reference DMv
+            refDMv = [];
+            strRefDM = [];
 
-                case 1,
-                    if ~isa(varargin{1},'CRunData'),
-                        error('usage');
-                    end
+            if ~isempty(dmvref),
+                if isa(dmvref, 'cell')
+                    [refDM1v_fn, refDM2v_fn] = deal(dmvref{:});
                     
-                    Sref = varargin{1};
+                    refDMv{1} = fitsread(PathTranslator(refDM1v_fn));
+                    aatmp = regexp(refDM1v_fn, '/', 'split');
+                    strRefDM{1} = pwd2titlestr(aatmp{end});
+                                                    
+                    refDMv{2} = fitsread(PathTranslator(refDM2v_fn));
+                    aatmp = regexp(refDM2v_fn, '/', 'split');
+                    strRefDM{2} = pwd2titlestr(aatmp{end});
+                elseif isa(dmvref, 'CRunData')
+                    Sref = dmvref;
                     if isempty(Sref.DMvCube)
                         Sref.ReadDMvCube;
                     end
@@ -1672,28 +1680,11 @@ classdef CRunData < handle & CConstants
                         strRefDM{idm} = ['it#' num2str(Sref.iter) ', DM' num2str(idm)];
                     end
                     
-                case 2,
-                    [refDM1v_fn, refDM2v_fn] = deal(varargin{1:2});
+                end % if isa(dmvref
+                
+            end % if ~isempty(dmvref)
                     
-                    refDMv{1} = fitsread(PathTranslator(refDM1v_fn));
-                    aatmp = regexp(refDM1v_fn, '/', 'split');
-                    strRefDM{1} = pwd2titlestr(aatmp{end});
-                                                    
-                    refDMv{2} = fitsread(PathTranslator(refDM2v_fn));
-                    aatmp = regexp(refDM2v_fn, '/', 'split');
-                    strRefDM{2} = pwd2titlestr(aatmp{end});
-
-
-                otherwise %else
-                    error('usage');
-                    
-            end % switch nargin
-
-            if isempty(refDMv),
-                Nr = 1;
-            else
-                Nr = 2;
-            end
+            Nr = 1 + ~isempty(refDMv);
             hfig = figure_mxn(Nr,S.Ndm);
             
             for idm = 1:S.Ndm,

@@ -84,10 +84,12 @@ function [hax, hh] = ImageReIm(x, y, Im)
     hax(1) = subplot(1,2,1);
     hh(1) = imagesc(x, y, real(Im));
     axis image
+    title('Real')
     
     hax(2) = subplot(1,2,2);
     hh(2) = imagesc(x, y, imag(Im));
     axis image
+    title('Imag')
     
     set(hax,'ydir','normal');
 
