@@ -151,8 +151,9 @@ classdef CRunData < handle & CConstants
     %   Image: probecube
     
     methods
-        function S = CRunData(runnum, iter, sOptin)
-
+        function S = CRunData(runnum, iter, sOptin, varargin)
+            % S = CRunData(runnum, iter, sOptin, varargin)
+            
             S.runnum = runnum;
             S.iter = iter;
 
@@ -232,10 +233,11 @@ classdef CRunData < handle & CConstants
             end
 
             % replace default values with given options
-            if ~exist('sOptin','var'), sOptin = struct(); end
-            ffields = fieldnames(sOptin);
-            for ii = 1:length(ffields),
-                S.(ffields{ii}) = sOptin.(ffields{ii});
+            if exist('sOptin','var') && isa(sOptin,'struct'),
+                ffields = fieldnames(sOptin);
+                for ii = 1:length(ffields),
+                    S.(ffields{ii}) = sOptin.(ffields{ii});
+                end
             end
      
             % build paths and filenames for the data
@@ -325,6 +327,13 @@ classdef CRunData < handle & CConstants
             
             S.lambda = S.NKTcenter;
             
+            % if requested in varargin, run methods right away
+            for icom = 1:length(varargin),
+                if any(strcmpi(varargin{icom}, methods(S)))
+                    S.(varargin{icom})(varargin{icom+1:end});
+                end
+            end
+                
         end % function CRunData
         
         function Contrast = GetContrast(S, varargin)

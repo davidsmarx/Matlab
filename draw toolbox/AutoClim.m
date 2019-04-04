@@ -7,6 +7,24 @@ function clim = AutoClim(A, varargin)
 %   'symmetric' [false] or true (i.e. two-sided and symmetric)
 %
 % A can be any dimensions, only A(:) is used
+% A can be an axes handle
+
+switch class(A)
+    case 'matlab.graphics.axis.Axes',
+        hax = A;
+        hh = get(hax,'Children');
+        hIm = hh( strcmpi(get(hh,'type'), 'image') );
+        if ~isa(hIm, 'matlab.graphics.primitive.Image'),
+            error('cannot interpret input A');
+        end        
+        A = get(hIm,'CData');
+        
+    case 'double'
+        % do nothing
+        
+    otherwise
+        A = double(A);
+end
 
 % options
 bOnesided = CheckOption('one-sided',false,varargin{:});
