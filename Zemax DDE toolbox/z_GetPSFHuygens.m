@@ -1,9 +1,11 @@
 function [Field, headerinfo] = z_GetPSFHuygens(varargin)
-% [PSF, parmsstruct] = z_GetPSFHuygens(zchan)
-% [PSF, parmsstruct] = z_GetPSFHuygens(textfilename)
-% [PSF, parmsstruct] = z_GetPSFHuygens(zchan, textfilename)
-% [PSF, parmsstruct] = z_GetPSFHuygens
+% [PSF, parmsstruct] = z_GetPSFHuygens(zchan, options)
+% [PSF, parmsstruct] = z_GetPSFHuygens(options)
 % 
+% options:
+%     'textfilename', textfilename
+%     'settingsfilename', settingsfilename ( .cfg )
+%
 % calls ZEMAX FFT PSF analysis
 % the settings are the default settings for the lens
 %
@@ -37,7 +39,7 @@ function [Field, headerinfo] = z_GetPSFHuygens(varargin)
 %    ReferenceCoord = [x0, y0]
 
 % validate inputs
-[zchan, textfilename] = ValidateInputs(varargin{:});
+[zchan, textfilename, settingsfilename, settingsflag] = ValidateInputs(varargin{:});
 
 if ~isempty(zchan),
     % call ZEMAX to do the analysis
@@ -45,11 +47,6 @@ if ~isempty(zchan),
     % zemax three-letter code for this analysis
     typecode = 'Hps';
     
-    % file for zemax settings
-    settingsfilename = [pwd '\' typecode 'Settings.cfg'];
-    % flag determines use/save settings. see discussion in "GetTextFile" in Zemax manual
-    settingsflag = '0'; % 0 => use default settings, and save the settings used to settingsfilename
-
     % make the call
     cmdstr =...
         ['GetTextFile, ' textfilename ', ' typecode ', ' settingsfilename ', ' settingsflag];
@@ -61,6 +58,9 @@ end
 
 % get the image data from the textfile
 [Field, headerinfo] = ReadAnalysisTxt(textfilename);
+headerinfo.textfilename = textfilename;
+headerinfo.settingsfilename = settingsfilename;
+headerinfo.settingsflag = settingsflag;
 
 end
 
@@ -108,6 +108,16 @@ while ~feof(fid),
 
             case 'huygens',
                 headerinfo.Datatype = ltmp;
+
+            case 'configuration',
+                headerinfo.Configuraton = str2double(wordparse{1}([2 4]));
+                % a couple of blank lines, then wavelength and field point
+                ltmp = fgetl(fid);
+                ltmp = fgetl(fid);
+                ltmp = fgetl(fid);
+                ctmp = textscan(ltmp,'%s');
+                headerinfo.wave = str2double(ctmp{1}{1})*UM;
+                headerinfo.fieldpoint = str2double(ctmp{1}(4:5))*MM;
                 
             case 'data',
                 switch lower(wordparse{1}{2})
@@ -134,13 +144,22 @@ while ~feof(fid),
                         atmp = sscanf(ltmp,'Center point is: %d, %d');
                         headerinfo.Center.ir = atmp(1);
                         headerinfo.Center.ic = atmp(2);
-                    case 'coordinates:'
-                        headerinfo.ReferenceCoord =...
-                            sscanf(ltmp,'Center coordinates: %f, %f');
+                    case 'coordinates'
+                        headerinfo.CenterCoords = str2double(wordparse{1}(4:5));
+
                 end
 
+            case 'centroid'
+                switch lower(wordparse{1}{2})
+                    case 'offset'
+                        headerinfo.CentroidOffset = str2double(wordparse{1}(4:5));
+                    case 'coordinates:'
+                        headerinfo.CentroidCoords = str2double(wordparse{1}(3:4));
+                end
+                
             case 'values',
                 % now read data
+                headerinfo.Values = ltmp;
                 ltmp = fgetl(fid); % blank line before data
                 % read the data
                 Field = fscanf(fid,'%e',headerinfo.NxNyImage)';
@@ -167,33 +186,34 @@ fclose(fid);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [zchan, textfilename] = ValidateInputs(varargin)
-% [Field, parmsstruct] = z_GetPOPAnalysis(zchan)
-% [Field, parmsstruct] = z_GetPOPAnalysis(textfilename)
-% [Field, parmsstruct] = z_GetPOPAnalysis(zchan, textfilename)
+function [zchan, textfilename, settingsfilename, settingsflag] = ValidateInputs(varargin)
+% [Field, parmsstruct] = z_GetPOPAnalysis(zchan, options)
+% [Field, parmsstruct] = z_GetPOPAnalysis(options)
 
-switch(nargin),
-    case 0,
-        [filename, pathname, fi] = uigetfile({'*.txt'},'Select POP Analysis');
-        if isequal(filename,0),
-            textfilename = [];
-        else,
-            textfilename = [pathname filename];
-        end
-        zchan = [];
-    case 1,
-        if isstr(varargin{1}),
-            textfilename = varargin{1};
-            zchan = [];
-        else
-            zchan = varargin{1};
-            textfilename = [pwd '\popanalysis.txt'];
-        end
-    case 2,
-        zchan = varargin{1};
-        textfilename = varargin{2};
-    otherwise,
-        error('usage: [Field, parmsstruct] = z_GetPOPAnalysis(zchan, textfilename)');
+zchan = [];
+if isa(varargin{1},'double'),
+    zchan = varargin{1};
 end
+
+textfilename = CheckOption('textfilename', [pwd '\PSFHuygens.txt'], varargin{:});
+settingsfilename = CheckOption('settingsfilename', '', varargin{:});
+
+if isempty(settingsfilename),
+    settingsfilename = [pwd '\Settings.cfg'];
+    settingsflag = '0'; % 0 => use default settings, and save the settings used to settingsfilename, see p. 634
+else
+    settingsflag = '1'; % 1 => use settings in settingsfilename
+end
+
+% switch(nargin),
+%     case 0,
+%         [filename, pathname, fi] = uigetfile({'*.txt'},'Select PSFHuygens Analysis');
+%         if isequal(filename,0),
+%             textfilename = [];
+%         else,
+%             textfilename = [pathname filename];
+%         end
+%         zchan = [];
+% end
 
 end % ValidateInputs

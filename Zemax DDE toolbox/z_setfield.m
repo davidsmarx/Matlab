@@ -1,10 +1,12 @@
 function retval = z_setfield(zchan, varargin)
-% status = z_setwave(zchan, field_struct)
-% status = z_setwave(zchan, n, xf, yf, wgt, vdx, vdy, vcx, vcy, van)
-% status = z_setwave(zchan, 0, type, number, normalization)
+% status = z_setfield(zchan, field_struct)
+% status = z_setfield(zchan, n, xf, yf, wgt, vdx, vdy, vcx, vcy, van)
+% status = z_setfield(zchan, 0, type, number, normalization)
 %
 % field_struct has fields n, xf, yf, wgt, vdx, vdy, vcx, vcy, van
 %                      or n=0, type, number, normalization
+%
+% xf, yf in [m]
 %
 % If the value for n is zero, then the field type, total number of fields,
 % and field normalization type is set to the new values. The field type is
