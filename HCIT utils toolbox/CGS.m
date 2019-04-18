@@ -1,8 +1,15 @@
 classdef CGS < handle
     % S = CGS(gsnum, bn)
     %
-    % default:
-    %   bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/'
+    % bn choices, or specify:
+    %                     case 'dst'
+    %                         bn = '/proj/dst/data/dB_PR/gsdst_';
+    %                     case 'spc_disc'
+    %                         bn = '/home/dmarx/HCIT/SPC_disc/gsspc_20171204/reduced/gsspc_';
+    %                     case 'mcb_spc'
+    %                         bn = '/home/dmarx/HCIT/MCB_SPC/phaseretrieval/reduced/gsomc_no';
+    %                     case 'mcb_hlc'
+    %                         bn = '/proj/mcb/data/dB_PR_Kern/gsomc_no00';
     %
     % read reduced results from gs phase retrieval
     %
