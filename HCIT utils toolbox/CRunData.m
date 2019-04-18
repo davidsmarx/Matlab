@@ -1820,22 +1820,42 @@ classdef CRunData < handle & CConstants
         
             Sppt = CheckOption('Sppt', S.Sppt, varargin{:});
             ppt_fn = CheckOption('fn', '', varargin{:});
+            Sref = CheckOption('ref', [], varargin{:});
             
             if isempty(Sppt)
                 Sppt = Cppt(ppt_fn);
             end
             
+            function CopyFigSlide(hfig)
+                set(hfig,'Position',0.6*get(hfig,'Position'));
+                Sppt.CopyFigNewSlide(hfig);
+            end
+            
             hfig = S.DisplayAllInt;
-            set(hfig,'Position',0.6*get(hfig,'Position'));
-            Sppt.CopyFigNewSlide(hfig);
+            CopyFigSlide(hfig);
             
             hfig = S.DisplayProbeAmp;
-            set(hfig,'Position',0.6*get(hfig,'Position'));
-            Sppt.CopyFigNewSlide(hfig);
+            CopyFigSlide(hfig);
             
             hfig = S.DisplayEfields;
-            set(hfig,'Position',0.6*get(hfig,'Position'));
-            Sppt.CopyFigNewSlide(hfig);
+            CopyFigSlide(hfig);
+                        
+            % Displays that require a reference
+            if ~isempty(Sref)
+                if isnumeric(Sref),
+                    Sref = CRunData(S.runnum, Sref);
+                end
+                
+                hfig = S.DisplayDEfields(Sref);
+                CopyFigSlide(hfig);
+                
+                hfig = S.DisplayCEfields(Sref);
+                CopyFigSlide(hfig);
+                
+                hfig = S.DisplayDMv(Sref);
+                CopyFigSlide(hfig);
+                
+            end % if reference
             
             S.Sppt = Sppt;
             
