@@ -36,6 +36,14 @@ if bOnesided && bSymmetric,
     bOnesided = false;
 end
 
+% check
+if isempty(A),
+    error('AutoClim: input is empty');
+end
+if range(A(:)) <= eps*mean(abs(A(:))),
+    error('AutoClim: range is 0');
+end
+
 % for complex numbers, sort sorts the abs()
 asort = sort(A(:),'ascend');
 amax = asort(ceil(0.99*length(asort)));

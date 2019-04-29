@@ -655,9 +655,14 @@ classdef CRunData < handle & CConstants
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
             climopt = CheckOption('clim', [], varargin{:});
+            xcoff = CheckOption('xcoff', 0, varargin{:}); % star offset, pixels
+            ycoff = CheckOption('ycoff', 0, varargin{:}); % star offset, pixels
             %haxuse = CheckOption('hax', [], varargin{:});
             
-            [x, y, X, Y, R] = CreateGrid(Im, 1./S.ppl0);
+            [x, y] = CreateGrid(Im, 1./S.ppl0);
+            x = x - xcoff/S.ppl0;
+            y = y - ycoff/S.ppl0;
+            
             xlim = dispXYlim*[-1 1]; ylim = xlim;
 
             hfig = figure;

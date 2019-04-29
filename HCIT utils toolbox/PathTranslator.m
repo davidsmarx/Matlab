@@ -11,7 +11,7 @@ winpath = '';
 
 A = regexp(s383path,'/','split');
 
-if length(A) < 2,
+if length(A) <= 2,
     winpath = s383path;
     return
 end
