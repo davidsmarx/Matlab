@@ -104,6 +104,7 @@ classdef CRunData < handle & CConstants
         
         mdMask
         bMask
+        bMaskSc
         
         ImCube
         ImCubeUnProb    % {iwv}
@@ -345,23 +346,6 @@ classdef CRunData < handle & CConstants
                 S.ReadImageCube;
             end
 
-            % parse options
-            % default values from the class
-            %val = CheckOption(sOpt, valDefault, varargin)
-            RminSc = CheckOption('RminSc', S.RminSc, varargin{:});
-            RmaxSc = CheckOption('RmaxSc', S.RmaxSc, varargin{:});
-            TminSc = CheckOption('TminSc', S.ThminSc, varargin{:});    
-            TmaxSc = CheckOption('TmaxSc', S.ThmaxSc, varargin{:});                
-            
-            [x, y, X, Y, R, T] = CreateGrid(S.ImCubeUnProb{1}, 1./S.ppl0);
-            bMaskSc = R >= RminSc & R <= RmaxSc;
-            if ~isempty(TminSc) && ~isempty(TmaxSc),
-                bMaskSc = bMaskSc & ...
-                    ( (T >= TminSc & T <= TmaxSc) | (T >= mod2pi(TminSc + pi) & T <= mod2pi(TmaxSc + pi)) );
-                
-                %figure, imageschcit(x, y, bMaskSc), title('Check Scoring Region Mask')
-            end
-
             % resample throughput data to pixels in scoring region
             if ~isempty(S.Sthpt),
                 if S.runnum == 603, % SPC disc
@@ -379,25 +363,25 @@ classdef CRunData < handle & CConstants
                     %                     Thpt(bMaskSc) = interp1(rthpt, thpt, R(bMaskSc));
                 end
                 Finterp = scatteredInterpolant(S.Sthpt.fovx(:), S.Sthpt.fovy(:), S.Sthpt.thpt(:));
-                Thpt = ones(size(bMaskSc)); % avoid divide by zero
-                Thpt(bMaskSc) = Finterp(X(bMaskSc), Y(bMaskSc));
+                Thpt = ones(size(S.bMaskSc)); % avoid divide by zero
+                Thpt(S.bMaskSc) = Finterp(X(S.bMaskSc), Y(S.bMaskSc));
 
             else
-                Thpt = ones(size(bMaskSc));
+                Thpt = ones(size(S.bMaskSc));
                 
             end
             
             % note: don't like nonzeros(...) because pixels within the dark
             % hole that happen to have zero measured intesnity do not
             % contribute to the mean.
-            Contrast.total_lam = zeros(1,S.NofW);
+            Contrast.cntl_lam = zeros(1,S.NofW);
             for iwv = 1:S.NofW,
                 % NI total control region
-                Contrast.total_lam(iwv) = mean(nonzeros( S.ImCube(:,:,S.imgindex(iwv)).*S.bMask ));
-                % NI score region
-                Contrast.score_lam(iwv) = mean(S.ImCubeUnProb{iwv}(bMaskSc)); 
+                Contrast.cntl_lam(iwv) = mean(nonzeros( S.ImCube(:,:,S.imgindex(iwv)).*S.bMask ));
+                % NI total score region
+                Contrast.score_lam(iwv) = mean(S.ImCubeUnProb{iwv}(S.bMaskSc)); 
                 % Contrast score region
-                Contrast.contr_lam(iwv) = mean(S.ImCubeUnProb{iwv}(bMaskSc)./Thpt(bMaskSc));
+                Contrast.contr_lam(iwv) = mean(S.ImCubeUnProb{iwv}(S.bMaskSc)./Thpt(S.bMaskSc));
                 
             end
             Contrast.mean = mean(Contrast.contr_lam);
@@ -415,14 +399,16 @@ classdef CRunData < handle & CConstants
                 %bPampz = squeeze(S.bPampzero(iwv,:,:));
                 %bMaskUse = ~bPampz & bMaskSc;
                 
-                bMaskUse = bMaskSc;
+                bMaskUse = S.bMaskSc;
                 % total incoherent
+                Contrast.inco_lam_NI(iwv) = mean(S.IncInt{iwv}(bMaskUse));
                 Contrast.inco_lam(iwv) = mean(S.IncInt{iwv}(bMaskUse)./Thpt(bMaskUse));
                 % estimated incoherent (those pixels where E was estimated)
                 
                 % Mix incoherent (those pixels where sigtbw < 0, Eest = 0)
                 
                 % coherent
+                Contrast.co_lam_NI(iwv) = mean(S.CohInt{iwv}(bMaskUse));
                 Contrast.co_lam(iwv)   = mean(S.CohInt{iwv}(bMaskUse)./Thpt(bMaskUse));
             end
             Contrast.inco_mean = mean(Contrast.inco_lam);
@@ -537,7 +523,7 @@ classdef CRunData < handle & CConstants
             
         end % ReadReducedCube
         
-        function S = ReadMaskCube(S)
+        function S = ReadMaskCube(S, varargin)
             
             % 1st slice is mask of control region (md)
             % next nlamcorr * 2 slices are real and imag occulter transmission profile
@@ -547,6 +533,24 @@ classdef CRunData < handle & CConstants
             % 1st slice is mask of control region, i.e. model.band[ilam0].md
             S.mdMask = squeeze(MaskCubeData(:,:,1));
             S.bMask  = S.mdMask > 0;
+            
+            % let's create score mask as well
+            % default values from the class
+            %val = CheckOption(sOpt, valDefault, varargin)
+            RminSc = CheckOption('RminSc', S.RminSc, varargin{:});
+            RmaxSc = CheckOption('RmaxSc', S.RmaxSc, varargin{:});
+            TminSc = CheckOption('TminSc', S.ThminSc, varargin{:});    
+            TmaxSc = CheckOption('TmaxSc', S.ThmaxSc, varargin{:});                
+            
+            [x, y, X, Y, R, T] = CreateGrid(S.ImCubeUnProb{1}, 1./S.ppl0);
+            S.bMaskSc = R >= RminSc & R <= RmaxSc;
+            if ~isempty(TminSc) && ~isempty(TmaxSc),
+                S.bMaskSc = S.bMaskSc & ...
+                    ( (T >= TminSc & T <= TmaxSc) | (T >= mod2pi(TminSc + pi) & T <= mod2pi(TmaxSc + pi)) );
+                
+                %figure, imageschcit(x, y, bMaskSc), title('Check Scoring Region Mask')
+            end
+            
             
             
         end % ReadMaskCube
@@ -705,6 +709,9 @@ classdef CRunData < handle & CConstants
             if isempty(S.ImCubeUnProb),
                 S.ReadImageCube;
             end
+            if isempty(S.bMask),
+                S.ReadMaskCube;
+            end
             
             % default options and set requested options
             %  val = CheckOption(sOpt, valDefault, varargin)
@@ -765,17 +772,18 @@ classdef CRunData < handle & CConstants
             end
 
             % radial plot
-            Nr = 128;
+            Nr = ceil(min([128 length(R)/4]));
             re = linspace(0, dispXYlim, Nr+1)';
             S.IntRad = cell(S.NofW,1);
             legstr = cell(1,S.NofW);
             for iwv = 1:S.NofW,
                 Itmp = zeros(Nr,1);
                 for ir = 1:Nr,
-                    Itmp(ir) = mean(S.ImCubeUnProb{iwv}(R > re(ir) & R <= re(ir+1)));
+                    % including S.bMask applies theta (bowtie) limits
+                    Itmp(ir) = mean(S.ImCubeUnProb{iwv}(R > re(ir) & R <= re(ir+1) & S.bMask));
                 end % for ir
                 S.IntRad{iwv} = Itmp;
-                legstr{iwv} = ['Wave #' num2str(iwv)];
+                legstr{iwv} = [num2str(S.NKTcenter(iwv)/S.NM,'%.1f') 'nm'];
             end % for iwv
         
             S.rplot = mean([re(1:end-1) re(2:end)],2); % radii midway between edges
@@ -1274,7 +1282,7 @@ classdef CRunData < handle & CConstants
             varargin{end+1} = 'clim'; varargin{end+1} = [-9 -6.5];
             
             hfig = figure_mxn(3,S.Nlamcorr);
-            haxlist = zeros(3,S.Nlamcorr);
+            %haxlist = zeros(3,S.Nlamcorr);
             
             % unprobed images
             figure(hfig);
@@ -1302,6 +1310,31 @@ classdef CRunData < handle & CConstants
             %climlist = get(haxlist,'clim');
             %set(haxlist,'clim',[min([climlist{:}]) max([climlist{:}])])
             %set(haxlist,'clim',[-9 -6.5])
+
+            % add text 'Modulated' and 'Unmodulated' to each row
+            % Modulated:
+            ylpos = get(get(haxlist(2,1),'YLabel'),'Position');
+            ht = text(haxlist(2,1), ylpos(1) - 2, ylpos(2), 'Modulated' ...
+                , 'Rotation',90 ...
+                ,'HorizontalAlignment','center' ...
+                ,'VerticalAlignment','top' ...
+                ,'VerticalAlignment','bottom' ...
+                ... ,'Position', ylpos - [2 0 0] ...
+                ,'FontSize', 18 ...
+                ,'Color','b' ...
+                ,'FontWeight','bold' ...
+                );
+            ylpos = get(get(haxlist(3,1),'YLabel'),'Position');
+            ht = text(haxlist(3,1), ylpos(1) - 2, ylpos(2), 'UnModulated' ...
+                , 'Rotation',90 ...
+                ,'HorizontalAlignment','center' ...
+                ,'VerticalAlignment','top' ...
+                ,'VerticalAlignment','bottom' ...
+                ... ,'Position', ylpos - [2 0 0] ...
+                ,'FontSize', 18 ...
+                ,'Color','b' ...
+                ,'FontWeight','bold' ...
+                );
             
         end
         
@@ -1542,6 +1575,11 @@ classdef CRunData < handle & CConstants
                 S.ReadReducedCube;
             end
 
+            % validate Sref
+            if ~isa(Sref, 'CRunData'),
+                Sref = CRunData(S.runnum, Sref);
+            end
+            
             if isempty(Sref.E_t),
                 Sref.ReadReducedCube;
             end
