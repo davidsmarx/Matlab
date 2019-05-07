@@ -348,6 +348,9 @@ classdef CRunData < handle & CConstants
 
             % resample throughput data to pixels in scoring region
             if ~isempty(S.Sthpt),
+
+                [x, y, X, Y, R, T] = CreateGrid(S.bMaskSc, 1./S.ppl0);
+
                 if S.runnum == 603, % SPC disc
                     error('SPC disc throughput data format needs to be reworked');
                     %                     dxyfudge = 0.9;
@@ -542,7 +545,7 @@ classdef CRunData < handle & CConstants
             TminSc = CheckOption('TminSc', S.ThminSc, varargin{:});    
             TmaxSc = CheckOption('TmaxSc', S.ThmaxSc, varargin{:});                
             
-            [x, y, X, Y, R, T] = CreateGrid(S.ImCubeUnProb{1}, 1./S.ppl0);
+            [x, y, X, Y, R, T] = CreateGrid(S.bMask, 1./S.ppl0);
             S.bMaskSc = R >= RminSc & R <= RmaxSc;
             if ~isempty(TminSc) && ~isempty(TmaxSc),
                 S.bMaskSc = S.bMaskSc & ...
@@ -1311,8 +1314,19 @@ classdef CRunData < handle & CConstants
             %set(haxlist,'clim',[min([climlist{:}]) max([climlist{:}])])
             %set(haxlist,'clim',[-9 -6.5])
 
-            % add text 'Modulated' and 'Unmodulated' to each row
+            % add text 'UnProbed', 'Modulated' and 'Unmodulated' to each row
             % Modulated:
+            ylpos = get(get(haxlist(1,1),'YLabel'),'Position');
+            ht = text(haxlist(1,1), ylpos(1) - 2, ylpos(2), 'UnProbed' ...
+                , 'Rotation',90 ...
+                ,'HorizontalAlignment','center' ...
+                ,'VerticalAlignment','top' ...
+                ,'VerticalAlignment','bottom' ...
+                ... ,'Position', ylpos - [2 0 0] ...
+                ,'FontSize', 18 ...
+                ,'Color','b' ...
+                ,'FontWeight','bold' ...
+                );
             ylpos = get(get(haxlist(2,1),'YLabel'),'Position');
             ht = text(haxlist(2,1), ylpos(1) - 2, ylpos(2), 'Modulated' ...
                 , 'Rotation',90 ...
