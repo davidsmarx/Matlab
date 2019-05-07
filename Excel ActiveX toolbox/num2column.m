@@ -2,20 +2,27 @@ function strCol = num2column(num)
 % column = num2column(num)
 
 if num <= 0, error('column starts with 1'); end
-if num == 1, strCol = 'A'; return, end
+%if num == 1, strCol = 'A'; return, end
 
 % number of digits
 ndig = ceil(log(num)/log(26));
 
-numrem = num-1;
-for ii = 1:ndig,
-    bb = (26.^(ndig-ii));
-    column(ii) = floor((numrem)/bb);
-    numrem = rem((numrem),bb);
-    sCol(ii) = 'A' + column(ii);
+numrem = num;
+
+% ones-place
+column = rem(numrem - 1, 26) + 1;
+sCol = 'A' + column - 1;
+numrem = floor((numrem - column) / 26);
+
+% higher digits
+while numrem > 0,
+    thiscolumn = rem(numrem - 1, 26) + 1;
+    column = [thiscolumn column];
+    sCol = ['A' + thiscolumn - 1, sCol];
+    numrem = floor((numrem - thiscolumn) / 26);
 end
 
-disp(column);
+%disp(column);
 
 % 
 % first = floor((num-1)/26);
