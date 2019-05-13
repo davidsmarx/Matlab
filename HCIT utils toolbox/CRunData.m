@@ -110,6 +110,7 @@ classdef CRunData < handle & CConstants
         ImCubeUnProb    % {iwv}
         ImCubeDelProb   % {iwv,ipr}
         ImCubeSigProb   % {iwv,ipr} = sigtbw  in tbif.task.probes
+        ImCubeContrast  % {iwv} = ImCubUnProb / Thpt
         ImKeys
         ReducedKeys
         NofW
@@ -188,8 +189,8 @@ classdef CRunData < handle & CConstants
                     S.ThmaxSc   = (90 + 32.5)*CConstants.P;
 
                     pntmp = '/home/dmarx/HCIT/MCB_SPC/hcim_testbed_run606/results/FOVThroughputMap/';
-                    ThptCal_fn = [pntmp 'fov_20181102T110148_Mjk_Thpt.mat'];
-                    % ThptCal_fn = [pntmp 'fov_20181102T110148_Flux_Thpt.mat'];
+                    %ThptCal_fn = [pntmp 'fov_20181102T110148_Mjk_Thpt.mat'];
+                    ThptCal_fn = [pntmp 'fov_20181102T110148_FluxHM_Thpt.mat'];
                     %S.Sthpt.fovx(:), S.Sthpt.fovy(:), S.Sthpt.thpt(:)
                     S.Sthpt = load(PathTranslator(ThptCal_fn));
                     S.Sthpt.ThptCal_fn = ThptCal_fn;
@@ -384,7 +385,8 @@ classdef CRunData < handle & CConstants
                 % NI total score region
                 Contrast.score_lam(iwv) = mean(S.ImCubeUnProb{iwv}(S.bMaskSc)); 
                 % Contrast score region
-                Contrast.contr_lam(iwv) = mean(S.ImCubeUnProb{iwv}(S.bMaskSc)./Thpt(S.bMaskSc));
+                S.ImCubeContrast{iwv} = S.ImCubeUnProb{iwv}./Thpt;
+                Contrast.contr_lam(iwv) = mean(S.ImCubeContrast{iwv}(S.bMaskSc));
                 
             end
             Contrast.mean = mean(Contrast.contr_lam);
@@ -416,7 +418,12 @@ classdef CRunData < handle & CConstants
             end
             Contrast.inco_mean = mean(Contrast.inco_lam);
             Contrast.co_mean = mean(Contrast.co_lam);
+
+            % radial plot of contrast            
+            [hfigrad, harad] = S.DisplayRadialPlot(S.ImCubeContrast, ...
+                'ylabel', 'Contrast', 'dispradlim', [0 max(R(S.bMaskSc))]);
             
+
         end % GetContrast
 
         function [Excel, sheet] = ContrastReportExcel(S, varargin)
@@ -697,6 +704,61 @@ classdef CRunData < handle & CConstants
 
         end % DisplayImCubeImage
 
+        function [hfig, ha, rplot, IntRad] = DisplayRadialPlot(S, ImCube, varargin)
+            % [hfig, ha, rplot, IntRad] = DisplayRadialPlot(S, ImCube, varargin)
+            % generic routine for radial plot of intensity or contrast
+            % ImCube is cell array (1 x NofW)
+            % e.g. ImCubeUnProbe, ImCubeUnProbe/Thrpt
+            %      ImCubeCohInt, ImCubeIncInt
+            %
+            % output rplot, IntRad = radius, radial intensity data
+
+            [x, y, X, Y, R] = CreateGrid(ImCube{1}, 1./S.ppl0);
+
+            Nr = CheckOption('nr', ceil(min([128 length(R)/4])), varargin{:}); % # of radial sample pts
+            dispRadlim = CheckOption('dispradlim', [0 S.XYlimDefault], varargin{:});
+            drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            strYlabel = CheckOption('ylabel', 'Average Normalized Intensity', varargin{:});
+            
+            re = linspace(dispRadlim(1), dispRadlim(2), Nr+1)';
+            IntRad = cell(S.NofW,1);
+            legstr = cell(1,S.NofW);
+            for iwv = 1:S.NofW,
+                Itmp = zeros(Nr,1);
+                for ir = 1:Nr,
+                    % including S.bMask applies theta (bowtie) limits
+                    Itmp(ir) = mean(ImCube{iwv}(R > re(ir) & R <= re(ir+1) & S.bMask));
+                end % for ir
+                IntRad{iwv} = Itmp;
+                legstr{iwv} = [num2str(S.NKTcenter(iwv)/S.NM,'%.1f') 'nm'];
+            end % for iwv
+        
+            rplot = mean([re(1:end-1) re(2:end)],2); % radii midway between edges
+            hfig = figure;
+            hl = semilogy(rplot, [IntRad{:}]);
+            hold on
+            hl = semilogy(rplot, mean([IntRad{:}],2), '-k');
+            
+            ha = get(hl,'Parent');
+            grid on
+            
+            if ~isempty(drawRadii),
+                ylim = get(gca,'ylim');
+                hold on
+                for irad = 1:length(drawRadii),
+                    plot(drawRadii(irad)*[1 1], ylim, '--r')
+                end
+                hold off
+            end
+
+            xlabel('Radius (\lambda/D)')
+            ylabel(strYlabel)
+            legend(legstr{:}, 'Mean', 'location','north')
+            title(['Iter #' num2str(S.iter)])
+
+            
+        end % DisplayRadialPlot
+        
         function [hfig, ha] = DisplayImCubeUnProb(S, varargin)
             % [hfig, ha] = DisplayImCubeUnProb(S, ...)
             % default options and set requested options
@@ -775,38 +837,89 @@ classdef CRunData < handle & CConstants
             end
 
             % radial plot
-            Nr = ceil(min([128 length(R)/4]));
-            re = linspace(0, dispXYlim, Nr+1)';
-            S.IntRad = cell(S.NofW,1);
-            legstr = cell(1,S.NofW);
-            for iwv = 1:S.NofW,
-                Itmp = zeros(Nr,1);
-                for ir = 1:Nr,
-                    % including S.bMask applies theta (bowtie) limits
-                    Itmp(ir) = mean(S.ImCubeUnProb{iwv}(R > re(ir) & R <= re(ir+1) & S.bMask));
-                end % for ir
-                S.IntRad{iwv} = Itmp;
-                legstr{iwv} = [num2str(S.NKTcenter(iwv)/S.NM,'%.1f') 'nm'];
-            end % for iwv
-        
-            S.rplot = mean([re(1:end-1) re(2:end)],2); % radii midway between edges
-            figure, semilogy(S.rplot, [S.IntRad{:}]), grid
-            if ~isempty(drawRadii),
-                ylim = get(gca,'ylim');
-                hold on
-                for irad = 1:length(drawRadii),
-                    plot(drawRadii(irad)*[1 1], ylim, '--r')
-                end
-                hold off
-            end
-
-            xlabel('Radius (\lambda/D)')
-            ylabel('Average Normalized Intensity')
-            legend(legstr{:},'location','north')
-            title(['Iter #' num2str(S.iter)])
+            [hfigrad, harad] = S.DisplayRadialPlot(S.ImCubeUnProb);
             
         end % DisplayImCubeUnProb(S)
         
+        function [hfig, ha] = DisplayImCubeContrast(S, varargin)
+            % [hfig, ha] = DisplayImCubeContrast(S, ...)
+            % default options and set requested options
+            %             bPlotLog = CheckOption('bLog', false, varargin{:});
+            %             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            %             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
+            %             climopt = CheckOption('clim', [], varargin{:});
+            %             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
+            %             haxuse = CheckOption('hax', [], varargin{:});
+            %
+            
+            if isempty(S.ImCubeContrast),
+                S.GetContrast;
+            end
+            if isempty(S.bMask),
+                S.ReadMaskCube;
+            end
+            
+            % default options and set requested options
+            %  val = CheckOption(sOpt, valDefault, varargin)
+            bPlotLog = CheckOption('bLog', false, varargin{:});
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
+            climopt = CheckOption('clim', [], varargin{:});
+            ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
+            haxuse = CheckOption('hax', [], varargin{:});
+            
+            [x, y, X, Y, R] = CreateGrid(S.ImCubeContrast{1}, 1./S.ppl0);
+            xlim = dispXYlim*[-1 1]; ylim = xlim;
+            
+            Nlam = length(ilam);
+            
+            if isempty(haxuse), hfig = figure_mxn(1,Nlam); else hfig = gcf; end
+            for iwv = 1:Nlam,
+                iwvpl = ilam(iwv);
+                if isempty(haxuse),
+                    ha(iwv) = subplot(1,Nlam,iwv);
+                else
+                    ha(iwv) = haxuse(iwv);
+                    axes(haxuse(iwv));
+                end
+                
+                if bPlotLog,
+                    imageschcit(x, y, log10(abs(S.ImCubeContrast{iwvpl}.*S.bMaskSc))), axis image,
+                    colorbartitle('log_{10} Contrast')
+                else
+                    imageschcit(x, y, S.ImCubeContrast{iwvpl}.*S.bMaskSc), axis image,
+                    colorbartitle('Contrast')
+                end
+               clim(iwv,:) = get(gca,'clim');
+               
+               set(gca,'xlim',xlim,'ylim',ylim)
+               xlabel('\lambda/D'), ylabel('\lambda/D')
+               titlestr = ['Iter #' num2str(S.iter)];
+               if ~isempty(S.NKTcenter),
+                   titlestr = [titlestr ', Wave ' num2str(S.NKTcenter(iwvpl)/S.NM) 'nm'];
+               end
+               title(titlestr)
+                               
+            end % for each wavelength and subplot
+
+            % overlay circles if requested
+            DrawCircles(ha, drawRadii);
+            DrawThetaLines(ha, drawTheta, drawRadii);
+
+            % set each image plot to the same clim
+            % auto-clim, unless specific clim requested
+            if isempty(climopt),
+                cmaxsort = sort(clim(:),'descend');
+                %set(ha,'clim', [min(clim(:)) cmaxsort(2)]);
+                set(ha,'clim', [max(clim(:,1)) min(clim(:,2))])
+            else
+                set(ha,'clim',climopt);
+            end
+
+        end % DisplayImCubeContrast(S)
+
         function [hfig, ha] = DisplayImCubeSigProb(S, varargin)
             
             if isempty(S.ImCube),
@@ -1874,6 +1987,11 @@ classdef CRunData < handle & CConstants
         end % DisplayDelProbes
 
         function Sppt = GenerateReportPpt(S, varargin)
+            % Sppt = GenerateReportPpt(S, varargin)
+            %
+            %      Sppt = CheckOption('Sppt', S.Sppt, varargin{:});
+            %      ppt_fn = CheckOption('fn', '', varargin{:});
+            %      Sref = CheckOption('ref', [], varargin{:});
         
             Sppt = CheckOption('Sppt', S.Sppt, varargin{:});
             ppt_fn = CheckOption('fn', '', varargin{:});
