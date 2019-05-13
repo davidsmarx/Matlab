@@ -719,18 +719,21 @@ classdef CRunData < handle & CConstants
             dispRadlim = CheckOption('dispradlim', [0 S.XYlimDefault], varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             strYlabel = CheckOption('ylabel', 'Average Normalized Intensity', varargin{:});
+            plotRequired = CheckOption('plotrequired', [], varargin{:}); % [r(:) contrast(:)]
+            plotiwv = CheckOption('plotiwv', 1:S.NofW, varargin{:});
             
             re = linspace(dispRadlim(1), dispRadlim(2), Nr+1)';
-            IntRad = cell(S.NofW,1);
-            legstr = cell(1,S.NofW);
-            for iwv = 1:S.NofW,
+            IntRad = cell(length(plotiwv),1);
+            legstr = cell(1,length(plotiwv));
+            for iiwv = 1:length(plotiwv),
+                iwv = plotiwv(iiwv);
                 Itmp = zeros(Nr,1);
                 for ir = 1:Nr,
                     % including S.bMask applies theta (bowtie) limits
                     Itmp(ir) = mean(ImCube{iwv}(R > re(ir) & R <= re(ir+1) & S.bMask));
                 end % for ir
-                IntRad{iwv} = Itmp;
-                legstr{iwv} = [num2str(S.NKTcenter(iwv)/S.NM,'%.1f') 'nm'];
+                IntRad{iiwv} = Itmp;
+                legstr{iiwv} = [num2str(S.NKTcenter(iwv)/S.NM,'%.1f') 'nm'];
             end % for iwv
         
             rplot = mean([re(1:end-1) re(2:end)],2); % radii midway between edges
@@ -738,6 +741,15 @@ classdef CRunData < handle & CConstants
             hl = semilogy(rplot, [IntRad{:}]);
             hold on
             hl = semilogy(rplot, mean([IntRad{:}],2), '-k');
+            legstr{end+1} = 'Mean';
+            set(hl,'LineWidth',2);
+            
+            % add plot of contrast requirement, if provided
+            if ~isempty(plotRequired),
+                hl = semilogy(plotRequired(:,1), plotRequired(:,2), '--r');
+                set(hl,'LineWidth',2);
+                legstr{end+1} = 'Requirement';
+            end %
             
             ha = get(hl,'Parent');
             grid on
@@ -753,7 +765,7 @@ classdef CRunData < handle & CConstants
 
             xlabel('Radius (\lambda/D)')
             ylabel(strYlabel)
-            legend(legstr{:}, 'Mean', 'location','north')
+            legend(legstr{:}, 'location','north')
             title(['Iter #' num2str(S.iter)])
 
             
@@ -867,7 +879,7 @@ classdef CRunData < handle & CConstants
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
             climopt = CheckOption('clim', [], varargin{:});
-            ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
+            ilam = CheckOption('ilam', 1:S.NofW, varargin{:}); % which wavelengths to plot
             haxuse = CheckOption('hax', [], varargin{:});
             
             [x, y, X, Y, R] = CreateGrid(S.ImCubeContrast{1}, 1./S.ppl0);
@@ -918,6 +930,21 @@ classdef CRunData < handle & CConstants
                 set(ha,'clim',climopt);
             end
 
+            % quick hack to plot total mean in one plot
+            figure,
+            ImMean = zeros(size(S.ImCubeContrast{1}));
+            for iwv = 1:S.NofW,
+                ImMean = ImMean + S.ImCubeContrast{iwv};
+            end
+            ImMean = ImMean ./ S.NofW;
+            imageschcit(x, y, log10(abs(ImMean.*S.bMaskSc))), axis image,
+            xlabel('\lambda/D'), ylabel('\lambda/D')
+            colorbartitle('log_{10} Contrast')
+            DrawCircles(gca, drawRadii);
+            DrawThetaLines(gca, drawTheta, drawRadii);
+            set(gca,'clim',get(ha(1),'clim'))
+            title('Mean Contrast Full Band')
+            
         end % DisplayImCubeContrast(S)
 
         function [hfig, ha] = DisplayImCubeSigProb(S, varargin)
@@ -1963,11 +1990,6 @@ classdef CRunData < handle & CConstants
             %
         end % DisplayDMv
         
-        %
-        %         function DisplayRadialContrast(S)
-        %
-        %         end % DisplayRadialContrast
-    
         function [hfig, hax] = DisplayDelProbes(S, iwv, varargin)
             
             if isempty(S.ImCube),
