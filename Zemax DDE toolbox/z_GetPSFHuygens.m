@@ -145,16 +145,16 @@ while ~feof(fid),
                         headerinfo.Center.ir = atmp(1);
                         headerinfo.Center.ic = atmp(2);
                     case 'coordinates'
-                        headerinfo.CenterCoords = str2double(wordparse{1}(4:5));
+                        headerinfo.CenterCoords = str2double(wordparse{1}(4:5))*MM;
 
                 end
 
             case 'centroid'
                 switch lower(wordparse{1}{2})
                     case 'offset'
-                        headerinfo.CentroidOffset = str2double(wordparse{1}(4:5));
+                        headerinfo.CentroidOffset = str2double(wordparse{1}(4:5))*MM;
                     case 'coordinates:'
-                        headerinfo.CentroidCoords = str2double(wordparse{1}(3:4));
+                        headerinfo.CentroidCoords = str2double(wordparse{1}(3:4))*MM;
                 end
                 
             case 'values',

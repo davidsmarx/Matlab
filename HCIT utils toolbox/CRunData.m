@@ -687,7 +687,7 @@ classdef CRunData < handle & CConstants
                 imageschcit(x, y, Im), axis image,
                 colorbartitle('Norm Intensity (linear)')
             end
-            title(['Iteration #' num2str(S.iter) sTitle])
+            title(sTitle)
             
             hax = gca;
             
@@ -721,6 +721,7 @@ classdef CRunData < handle & CConstants
             strYlabel = CheckOption('ylabel', 'Average Normalized Intensity', varargin{:});
             plotRequired = CheckOption('plotrequired', [], varargin{:}); % [r(:) contrast(:)]
             plotiwv = CheckOption('plotiwv', 1:S.NofW, varargin{:});
+            strTitle = CheckOption('title', ['Iter #' num2str(S.iter)], varargin{:});
             
             re = linspace(dispRadlim(1), dispRadlim(2), Nr+1)';
             IntRad = cell(length(plotiwv),1);
@@ -766,7 +767,7 @@ classdef CRunData < handle & CConstants
             xlabel('Radius (\lambda/D)')
             ylabel(strYlabel)
             legend(legstr{:}, 'location','north')
-            title(['Iter #' num2str(S.iter)])
+            title(strTitle)
 
             
         end % DisplayRadialPlot
