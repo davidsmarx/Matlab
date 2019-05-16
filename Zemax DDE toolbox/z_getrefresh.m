@@ -7,7 +7,7 @@ function status = z_getrefresh(zchan)
 % stored copy of the server.
 
 if nargin == 0, disp('usage: status = z_getrefresh(zchan)'); return, end
-if isempty(zhcan),
+if isempty(zchan),
     error('zchan cannot be empty');
 end
 
