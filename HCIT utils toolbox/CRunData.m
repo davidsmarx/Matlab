@@ -553,7 +553,7 @@ classdef CRunData < handle & CConstants
             TmaxSc = CheckOption('TmaxSc', S.ThmaxSc, varargin{:});                
             
             [x, y, X, Y, R, T] = CreateGrid(S.bMask, 1./S.ppl0);
-            S.bMaskSc = R >= RminSc & R <= RmaxSc;
+            S.bMaskSc = S.bMask & (R >= RminSc & R <= RmaxSc);
             if ~isempty(TminSc) && ~isempty(TmaxSc),
                 S.bMaskSc = S.bMaskSc & ...
                     ( (T >= TminSc & T <= TmaxSc) | (T >= mod2pi(TminSc + pi) & T <= mod2pi(TmaxSc + pi)) );
@@ -875,7 +875,7 @@ classdef CRunData < handle & CConstants
             
             % default options and set requested options
             %  val = CheckOption(sOpt, valDefault, varargin)
-            bPlotLog = CheckOption('bLog', false, varargin{:});
+            bPlotLog = CheckOption('bLog', true, varargin{:});
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
