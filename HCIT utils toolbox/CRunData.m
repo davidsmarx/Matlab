@@ -704,7 +704,7 @@ classdef CRunData < handle & CConstants
 
         end % DisplayImCubeImage
 
-        function [hfig, ha, rplot, IntRad] = DisplayRadialPlot(S, ImCube, varargin)
+        function [hfig, ha, hl, rplot, IntRad] = DisplayRadialPlot(S, ImCube, varargin)
             % [hfig, ha, rplot, IntRad] = DisplayRadialPlot(S, ImCube, varargin)
             % generic routine for radial plot of intensity or contrast
             % ImCube is cell array (1 x NofW)
@@ -741,14 +741,14 @@ classdef CRunData < handle & CConstants
             hfig = figure;
             hl = semilogy(rplot, [IntRad{:}]);
             hold on
-            hl = semilogy(rplot, mean([IntRad{:}],2), '-k');
+            hl(end+1) = semilogy(rplot, mean([IntRad{:}],2), '-k');
             legstr{end+1} = 'Mean';
-            set(hl,'LineWidth',2);
+            set(hl(end),'LineWidth',2);
             
             % add plot of contrast requirement, if provided
             if ~isempty(plotRequired),
-                hl = semilogy(plotRequired(:,1), plotRequired(:,2), '--r');
-                set(hl,'LineWidth',2);
+                hl(end+1) = semilogy(plotRequired(:,1), plotRequired(:,2), '--r');
+                set(hl(end),'LineWidth',2);
                 legstr{end+1} = 'Requirement';
             end %
             
