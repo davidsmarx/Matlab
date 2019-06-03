@@ -111,6 +111,8 @@ classdef CRunData < handle & CConstants
         ImCubeDelProb   % {iwv,ipr}
         ImCubeSigProb   % {iwv,ipr} = sigtbw  in tbif.task.probes
         ImCubeContrast  % {iwv} = ImCubUnProb / Thpt
+        ImCubeCohContrast
+        ImCubeIncContrast
         ImKeys
         ReducedKeys
         NofW
@@ -350,7 +352,14 @@ classdef CRunData < handle & CConstants
             if isempty(S.ImCube),
                 S.ReadImageCube;
             end
+            
+            if isempty(S.CohInt),
+                S.ReadReducedCube;
+            end
 
+            % options
+            % bMask
+            
             % resample throughput data to pixels in scoring region
             if ~isempty(S.Sthpt),
 
@@ -371,11 +380,11 @@ classdef CRunData < handle & CConstants
                     %                     Thpt(bMaskSc) = interp1(rthpt, thpt, R(bMaskSc));
                 end
                 Finterp = scatteredInterpolant(S.Sthpt.fovx(:), S.Sthpt.fovy(:), S.Sthpt.thpt(:));
-                Thpt = ones(size(S.bMaskSc)); % avoid divide by zero
-                Thpt(S.bMaskSc) = Finterp(X(S.bMaskSc), Y(S.bMaskSc));
+                S.Sthpt.ThptSc = ones(size(S.bMaskSc)); % avoid divide by zero
+                S.Sthpt.ThptSc(S.bMaskSc) = Finterp(X(S.bMaskSc), Y(S.bMaskSc));
 
             else
-                Thpt = ones(size(S.bMaskSc));
+                S.Sthpt.ThptSc = ones(size(S.bMaskSc));
                 
             end
             
@@ -388,8 +397,11 @@ classdef CRunData < handle & CConstants
                 Contrast.cntl_lam(iwv) = mean(nonzeros( S.ImCube(:,:,S.imgindex(iwv)).*S.bMask ));
                 % NI total score region
                 Contrast.score_lam(iwv) = mean(S.ImCubeUnProb{iwv}(S.bMaskSc)); 
-                % Contrast score region
-                S.ImCubeContrast{iwv} = S.ImCubeUnProb{iwv}./Thpt;
+                % Contrast score region, Modulated & Unmodulated as
+                % contrast
+                S.ImCubeContrast{iwv} = S.ImCubeUnProb{iwv}./S.Sthpt.ThptSc;
+                S.ImCubeCohContrast{iwv} = S.CohInt{iwv}./S.Sthpt.ThptSc;
+                S.ImCubeIncContrast{iwv} = S.IncInt{iwv}./S.Sthpt.ThptSc;
                 Contrast.contr_lam(iwv) = mean(S.ImCubeContrast{iwv}(S.bMaskSc));
                 
             end
@@ -397,10 +409,6 @@ classdef CRunData < handle & CConstants
 
             % mean coherent and incoherent contrast
             
-            if isempty(S.CohInt),
-                S.ReadReducedCube;
-            end
-
             % scoring region
             Contrast.inco_lam = zeros(1,S.NofW);
             Contrast.co_lam = zeros(1,S.NofW);
@@ -411,14 +419,14 @@ classdef CRunData < handle & CConstants
                 bMaskUse = S.bMaskSc;
                 % total incoherent
                 Contrast.inco_lam_NI(iwv) = mean(S.IncInt{iwv}(bMaskUse));
-                Contrast.inco_lam(iwv) = mean(S.IncInt{iwv}(bMaskUse)./Thpt(bMaskUse));
+                Contrast.inco_lam(iwv) = mean(S.IncInt{iwv}(bMaskUse)./S.Sthpt.ThptSc(bMaskUse));
                 % estimated incoherent (those pixels where E was estimated)
                 
                 % Mix incoherent (those pixels where sigtbw < 0, Eest = 0)
                 
                 % coherent
                 Contrast.co_lam_NI(iwv) = mean(S.CohInt{iwv}(bMaskUse));
-                Contrast.co_lam(iwv)   = mean(S.CohInt{iwv}(bMaskUse)./Thpt(bMaskUse));
+                Contrast.co_lam(iwv)   = mean(S.CohInt{iwv}(bMaskUse)./S.Sthpt.ThptSc(bMaskUse));
             end
             Contrast.inco_mean = mean(Contrast.inco_lam);
             Contrast.co_mean = mean(Contrast.co_lam);
@@ -558,6 +566,8 @@ classdef CRunData < handle & CConstants
             
             [x, y, X, Y, R, T] = CreateGrid(S.bMask, 1./S.ppl0);
             S.bMaskSc = S.bMask & (R >= RminSc & R <= RmaxSc);
+            %S.bMaskSc = (R >= RminSc & R <= RmaxSc);
+            
             if ~isempty(TminSc) && ~isempty(TmaxSc),
                 S.bMaskSc = S.bMaskSc & ...
                     ( (T >= TminSc & T <= TmaxSc) | (T >= mod2pi(TminSc + pi) & T <= mod2pi(TmaxSc + pi)) );
@@ -661,9 +671,21 @@ classdef CRunData < handle & CConstants
             
         end % DisplayImCubeImage
         
-        function [hfig, hax] = DisplaySingleImage(S, Im, varargin)
+        function [hfig, hax, x, y] = DisplaySingleImage(S, Im, varargin)
+            % S.DisplaySingleImage(Im, options)
+            %
             % generic dipslay an image using the standard format for this
             % run, etc.
+            %
+            % default options and set requested options
+            %             bPlotLog = CheckOption('bLog', false, varargin{:});
+            %             sTitle = CheckOption('title', '', varargin{:});
+            %             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            %             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
+            %             climopt = CheckOption('clim', [], varargin{:});
+            %             xcoff = CheckOption('xcoff', 0, varargin{:}); % star offset, pixels
+            %             ycoff = CheckOption('ycoff', 0, varargin{:}); % star offset, pixels
             
             % default options and set requested options
             %  val = CheckOption(sOpt, valDefault, varargin)
@@ -708,7 +730,7 @@ classdef CRunData < handle & CConstants
 
         end % DisplayImCubeImage
 
-        function [hfig, ha, rplot, IntRad] = DisplayRadialPlot(S, ImCube, varargin)
+        function [hfig, ha, hl, rplot, IntRad] = DisplayRadialPlot(S, ImCube, varargin)
             % [hfig, ha, rplot, IntRad] = DisplayRadialPlot(S, ImCube, varargin)
             % generic routine for radial plot of intensity or contrast
             % ImCube is cell array (1 x NofW)
@@ -722,41 +744,51 @@ classdef CRunData < handle & CConstants
             Nr = CheckOption('nr', ceil(min([128 length(R)/4])), varargin{:}); % # of radial sample pts
             dispRadlim = CheckOption('dispradlim', [0 S.XYlimDefault], varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            bMaskUse = CheckOption('bMask', S.bMask, varargin{:});
             strYlabel = CheckOption('ylabel', 'Average Normalized Intensity', varargin{:});
             plotRequired = CheckOption('plotrequired', [], varargin{:}); % [r(:) contrast(:)]
-            plotiwv = CheckOption('plotiwv', 1:S.NofW, varargin{:});
+            iplot = CheckOption('iplot', 1:S.NofW, varargin{:});
+            legstr = CheckOption('legstr', [], varargin{:});
             strTitle = CheckOption('title', ['Iter #' num2str(S.iter)], varargin{:});
+            bPlotMean = CheckOption('plotmean', true, varargin{:});
+            
             
             re = linspace(dispRadlim(1), dispRadlim(2), Nr+1)';
-            IntRad = cell(length(plotiwv),1);
-            legstr = cell(1,length(plotiwv));
-            for iiwv = 1:length(plotiwv),
-                iwv = plotiwv(iiwv);
+            IntRad = cell(length(iplot),1);
+            legstrwv = cell(1,length(iplot));
+            for iiwv = 1:length(iplot),
+                iwv = iplot(iiwv);
                 Itmp = zeros(Nr,1);
                 for ir = 1:Nr,
                     % including S.bMask applies theta (bowtie) limits
-                    Itmp(ir) = mean(ImCube{iwv}(R > re(ir) & R <= re(ir+1) & S.bMask));
+                    Itmp(ir) = mean(ImCube{iwv}(R > re(ir) & R <= re(ir+1) & bMaskUse));
                 end % for ir
                 IntRad{iiwv} = Itmp;
-                legstr{iiwv} = [num2str(S.NKTcenter(iwv)/S.NM,'%.1f') 'nm'];
+                legstrwv{iiwv} = [num2str(S.NKTcenter(iwv)/S.NM,'%.1f') 'nm'];
             end % for iwv
-        
+            
+            if isempty(legstr), legstr = legstrwv; end
+            
             rplot = mean([re(1:end-1) re(2:end)],2); % radii midway between edges
             hfig = figure;
             hl = semilogy(rplot, [IntRad{:}]);
+            ha = gca;
             hold on
-            hl = semilogy(rplot, mean([IntRad{:}],2), '-k');
-            legstr{end+1} = 'Mean';
-            set(hl,'LineWidth',2);
+            
+            % add plot of mean
+            if bPlotMean,
+                hl(end+1) = semilogy(rplot, mean([IntRad{:}],2), '-k');
+                legstr{end+1} = 'Mean';
+                set(hl(end),'LineWidth',2);
+            end
             
             % add plot of contrast requirement, if provided
             if ~isempty(plotRequired),
-                hl = semilogy(plotRequired(:,1), plotRequired(:,2), '--r');
-                set(hl,'LineWidth',2);
+                hl(end+1) = semilogy(plotRequired(:,1), plotRequired(:,2), '--r');
+                set(hl(end),'LineWidth',2);
                 legstr{end+1} = 'Requirement';
             end %
             
-            ha = get(hl,'Parent');
             grid on
             
             if ~isempty(drawRadii),
@@ -1329,9 +1361,9 @@ classdef CRunData < handle & CConstants
                 S.ReadReducedCube;
             end
             
-            for iwv = 1:S.Nlamcorr,
-                CohInt{iwv} = abs(squeeze(S.E_t(iwv,:,:))).^2;
-            end
+            %             for iwv = 1:S.Nlamcorr,
+            %                 CohInt{iwv} = abs(squeeze(S.E_t(iwv,:,:))).^2;
+            %             end
 
             % options:
             % %  val = CheckOption(sOpt, valDefault, varargin)
@@ -1358,10 +1390,10 @@ classdef CRunData < handle & CConstants
             xlim = dispXYlim*[-1 1]; ylim = xlim;
 
             if isempty(clim),
-                clim = pClim(pFun([CohInt{:}]));
+                clim = pClim(pFun([S.CohInt{:}]));
             end
             
-            [x, y] = CreateGrid(CohInt{1}, 1./S.ppl0);
+            [x, y] = CreateGrid(S.CohInt{1}, 1./S.ppl0);
 
             for iwv = 1:S.Nlamcorr,
                 if isempty(haxuse),
@@ -1371,7 +1403,7 @@ classdef CRunData < handle & CConstants
                     axes(haxuse(iwv));
                 end
               
-                him(iwv) = imageschcit(x, y, pFun(CohInt{iwv})); axis image
+                him(iwv) = imageschcit(x, y, pFun(S.CohInt{iwv})); axis image
                 xlabel('\lambda / D')
                 ylabel('\lambda / D')
                 %caxis(clim);
@@ -1386,7 +1418,7 @@ classdef CRunData < handle & CConstants
             %
             %             % radial plot
             %             for iwv = 1:S.Nlamcorr,
-            %                 [fovrplot, CohIntrad] = RadialMean(x, y, S.CohInt{iwv}, 128);
+            %                 [fovrplot, S.CohIntrad] = RadialMean(x, y, S.S.CohInt{iwv}, 128);
             %                 % remove negative inc int values so we can use log plot
             %                 IncIntrad(CohIntrad < 1e-11) = 1e-11;
             %                 qplot{1,iwv} = fovrplot;
