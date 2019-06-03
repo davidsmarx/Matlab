@@ -230,6 +230,10 @@ classdef CRunData < handle & CConstants
                     S.Sthpt = load(PathTranslator(ThptCal_fn));
                     S.Sthpt.ThptCal_fn = ThptCal_fn;
 
+                case 001,
+                    S.Results_pn = '/home/dmarx/HCIT/MCB/hcim_model2_run001/results/run001/';
+                    
+                    
                 otherwise
                     error('unrecognized runnum');
             end
