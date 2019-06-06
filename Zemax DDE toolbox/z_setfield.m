@@ -13,8 +13,9 @@ function retval = z_setfield(zchan, varargin)
 % 0 for angle, 1 for object height, 2 for paraxial image height, and 3 for
 % real image height. The field normalization type is 0 for radial and 1 for
 % rectangular.
+%
 
-global MM;
+global MM P;
 
 switch length(varargin)
     case 0,
@@ -42,8 +43,19 @@ end
 if n == 0,
     cmdstr = sprintf('SetField, 0, %d, %d, %d',type,number,normalization);
 else
+    % get type for units
+    [type, nn, field_max_xy, norm_method] = z_getfield(zchan);
+    switch type
+        case 0
+            units = P;
+        case {1, 2}
+            units = MM;
+        otherwise
+            error(['type ' num2str(type) ' not implemented']);
+    end            
+    
     cmdstr = sprintf('SetField, %d, %f, %f, %f, %f, %f, %f, %f, %f',...
-        n, xf/MM, yf/MM, wgt, vdx, vdy, vcx, vcy, van);
+        n, xf/units, yf/units, wgt, vdx, vdy, vcx, vcy, van);
 end
 
 retval = sscanf(ddereq(zchan,cmdstr,[1 1]),'%f,',[1 inf]);
