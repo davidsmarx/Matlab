@@ -8,8 +8,12 @@ function [xfield, yfield, weight, vdx, vdy, vcx, vcy, van] =...
 %
 % [type, nn, field_max_xy, norm_method] = z_getfield(zchan)
 %
-% type: 0 => angle in degrees, 1 => object height, 2 => paraxial image
-%    height
+% type: 0 => angle in degrees,
+%       1 => object height,
+%       2 => paraxial image
+%       3 => real image height
+%       4 => theodolite angles
+%
 % nn = number of field points currently defined
 % field_max_xy = [x y] = normalization radius used to calculate [hx hy]
 % norm_method = 'radial' or 'rectangular'
@@ -37,7 +41,8 @@ switch nargin,
                 norm_method = 'rectangular';
         end
         % the outputs:
-        [xfield, yfield, weight, vdx] = deal(type, number, [max_x max_y]*MM, norm_method);
+        [xfield, yfield, weight, vdx] = ...
+            deal(type, number, ApplyUnits([max_x max_y], type), norm_method);
         
     case 2,
 
