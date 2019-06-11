@@ -67,7 +67,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [Field, headerinfo] = ReadAnalysisTxt(textfilename)
 
-global NM UM MM;
+global NM UM MM P;
 
 fid = fopen(textfilename,'rt');
 if fid == -1, error(['error opening text file ' textfilename]); end
@@ -118,6 +118,7 @@ while ~feof(fid),
                 ctmp = textscan(ltmp,'%s');
                 headerinfo.wave = str2double(ctmp{1}{1})*UM;
                 headerinfo.fieldpoint = str2double(ctmp{1}(4:5))*MM;
+                headerinfo.fieldpointUnits = 'm';
                 
             case 'data',
                 switch lower(wordparse{1}{2})
@@ -171,6 +172,13 @@ while ~feof(fid),
                     case 'deg.',
                         atmp = sscanf(ltmp,'%f to %f');
                         headerinfo.Wavelength = atmp;
+                    case '(deg).'
+                        % 0.5700 µm at -0.5083, -0.3553 (deg).
+                        headerinfo.Wavelegnth = str2double(wordparse{1}{1})*UM;
+                        headerinfo.fieldpoint = str2double(wordparse{1}(end-2:end-1))*P;
+                        headerinfo.fieldpointUnits = 'rad';
+                        
+                        
                 end
 
         end % switch
