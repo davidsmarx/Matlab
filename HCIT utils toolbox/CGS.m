@@ -84,6 +84,24 @@ classdef CGS < handle
                 switch lower(bn),
                     case 'dst'
                         bn = '/proj/dst/data/dB_PR/gsdst_';
+                        if gsnum <= 284,
+                            year = '2019';
+                            uname = 'bseo';
+                        elseif gsnum <= 334,
+                            year = '2019';
+                            uname = 'bseo';
+                        else
+                            year = '2019';
+                            uname = 'dmarx';
+                        end
+                        
+                        S.listPupImDir = dir(PathTranslator(...
+                            ['/proj/piaa-data/Data/' year '-*-*/' uname '/gsdst_p_' num2str(gsnum,'%04d') '/*.fits'] ...
+                            ));
+                        S.listSrcImDir = dir(PathTranslator(...
+                            ['/proj/piaa-data/Data/' year '-*-*/' uname '/gsdst_s_' num2str(gsnum,'%04d') '/*.fits'] ...
+                            ));
+                       
                     case 'spc_disc'
                         bn = '/home/dmarx/HCIT/SPC_disc/gsspc_20171204/reduced/gsspc_';
                     case 'mcb_spc'
