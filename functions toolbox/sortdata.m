@@ -2,10 +2,12 @@ function varargout = sortdata(cellA,varargin)
 % varargout = sortdata(A,varargin)
 %
 % [a, b, c, ...] = sortdata({A, B, C, ...}, varargin)
+% [a, b, c, ..., isort] = sortdata(...)
 %
 % sort A:
 % [a, isort] = sort(a, ...), and apply sort order
 % b = B(isort); c = C(isort); ...
+%
 %
 % varargin are optional arguments passed to sort(a, ...)
 %
