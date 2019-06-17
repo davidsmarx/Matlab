@@ -406,8 +406,10 @@ classdef CGS < handle
             % choose measured or calculated
             if strcmp(plMeasOrCalc, 'meas'),
                 funCamp = @(A) squeeze(A(:,:,1));
+                strLabel = 'Measured';
             elseif strcmp(plMeasOrCalc, 'calc')
                 funCamp = @(A) squeeze(A(:,:,2));
+                strLabel = 'Calculated';
             else
                 error(['Unknown Option image: ' plMeasOrCalc]);
             end
@@ -445,7 +447,18 @@ classdef CGS < handle
                 end
 
             end % for 
-            
+
+            % add the label
+            w = 2;
+            ha = annotation('textbox', [0.5-0.5*w 0.5 w 0.01] ...
+                ,'String', strLabel ...
+                ,'HorizontalAlignment','center' ...
+                ,'VerticalAlignment','middle' ...
+                ,'FitBoxToText','on','LineStyle','-' ...
+                ,'EdgeColor','r','LineWidth',2 ...
+                ,'FontSize', 24, 'FontWeight', 'bold' ...
+                ,'Color','k' ...
+                );
             
         end % DisplayAllAmpCamera
         
