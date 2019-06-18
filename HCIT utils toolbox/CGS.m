@@ -118,16 +118,18 @@ classdef CGS < handle
                         % get dir listing of raw camera images
                         if gsnum >= 843,
                             year = '2019';
+                            gsbn = 'gsttb';
                         elseif gsnum >= 806,
                             year = '2018';
+                            gsbn = 'gsomc';
                         else
                             error('which year is this?');
                         end
                         S.listPupImDir = dir(PathTranslator(...
-                            ['/proj/piaa-data/Data/' year '-*-*/bseo/gsomc_p_' num2str(gsnum,'%04d') '/*.fits']...
+                            ['/proj/piaa-data/Data/' year '-*-*/bseo/' gsbn '_p_' num2str(gsnum,'%04d') '/*.fits']...
                             ));
                         S.listSrcImDir = dir(PathTranslator(...
-                            ['/proj/piaa-data/Data/' year '-*-*/bseo/gsomc_s_' num2str(gsnum,'%04d') '/*.fits']...
+                            ['/proj/piaa-data/Data/' year '-*-*/bseo/' gsbn '_s_' num2str(gsnum,'%04d') '/*.fits']...
                             ));
                     case 'ttb_hlc'
                         bn = '/proj/mcb/data/dB_PR_Kern/gsomc_no00';
