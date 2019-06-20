@@ -219,7 +219,14 @@ classdef CGS < handle
         end % rmsPha
         
         function [hfig, hax] = DisplayGS(S, varargin)
-
+            % [hfig, hax] = DisplayGS(S, varargin)
+            %
+            % pMask = CheckOption('pMask', S.bMask, varargin{:});
+            % xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
+            % climph = CheckOption('climph', [], varargin{:});
+            % phplot = CheckOption('phplot', 'angleE', varargin{:}); %
+            % other choice = 'phw_ptt', 'ph', 'phw'
+            
             pMask = CheckOption('pMask', S.bMask, varargin{:});
             xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             climph = CheckOption('climph', [], varargin{:});
@@ -242,6 +249,10 @@ classdef CGS < handle
                     ph = angle(S.E);
                 case 'phw_ptt'
                     ph = S.phw_ptt;
+                case 'ph'
+                    ph = S.ph;
+                case 'phw'
+                    ph = S.phw;
                 otherwise
                     error(['phplot ' phplot ' not a valid choice']);
             end
@@ -360,8 +371,12 @@ classdef CGS < handle
             
         end % AmpCorrMetric
         
-        function [hax] = DisplayAmpPlane(S, ipl, varargin)
-            % [hfig, hax] = DisplayAmpPlane(S, ipl)
+        function [hfig, hax] = DisplayAmpPlane(S, ipl, varargin)
+            % [hfig, hax] = DisplayAmpPlane(S, list_ipl)
+            %
+            % compare camera and estimated
+            % options:
+            %   Option('value', 'amp' (default), 'intensity'
             
             if isempty(S.cAmpPlanes), S.ReadAmpImages; end
             
@@ -376,13 +391,18 @@ classdef CGS < handle
             if strcmp(plAmpOrInt, 'amp')
                 funPlot = @(A, icc) squeeze(A(:,:,icc));
             elseif strcmp(plAmpOrInt, 'intensity')
-                funPlot = @(A, icc) squeeze(A(:,:,icc)).^2;
+                funPlot = @(A, icc) log10(squeeze(A(:,:,icc)).^2);
             end
-                
-            hax(1) = subplot(1,2,1);
-            imageschcit(funPlot(S.cAmpPlanes{ipl},1)), title('Camera')
-            hax(2) = subplot(1,2,2);
-            imageschcit(funPlot(S.cAmpPlanes{ipl},2)), title('Estimated')
+            
+            Nplanes = length(ipl);
+            hfig = figure_mxn(2, Nplanes);
+            hax = zeros(2, Nplanes);
+            for iipl = 1:Nplanes,
+                hax(1,iipl) = subplot(2,Nplanes,iipl);
+                imageschcit(funPlot(S.cAmpPlanes{ipl(iipl)},1)), title(['Camera, ipl = ' num2str(ipl(iipl))])
+                hax(2,iipl) = subplot(2,Nplanes,Nplanes + iipl);
+                imageschcit(funPlot(S.cAmpPlanes{ipl(iipl)},2)), title(['Estimated, ipl = ' num2str(ipl(iipl))])
+            end
             
         end % DisplayAmpPlane
         
