@@ -235,6 +235,9 @@ classdef CRunData < handle & CConstants
                 case 001,
                     S.Results_pn = '/home/dmarx/HCIT/MCB/hcim_model2_run001/results/run001/';
                     
+                    S.XYlimDefault = 10;
+                    S.DrawradiiDefault = [3.0 9.0];
+
                     
                 otherwise
                     error('unrecognized runnum');
