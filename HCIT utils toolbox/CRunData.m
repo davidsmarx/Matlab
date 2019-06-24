@@ -172,13 +172,13 @@ classdef CRunData < handle & CConstants
                     throughput_fn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/Throughput_20171003T122253.mat';
                     S.Sthpt = load(PathTranslator(throughput_fn));
 
-                case 604,
+                case 604, % SPC_disc
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
                     S.XYlimDefault = 22;
-                case 0
+                case 0 % DST
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run000/';
                     S.XYlimDefault = 12;
-                case 606,
+                case 606, % MCB-SPC
                     S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run606/';
                     S.ppl0 = 6.09; % MCB SPC from config_MCB_SPC_20181015.py
                     S.XYlimDefault = 12;
@@ -197,7 +197,7 @@ classdef CRunData < handle & CConstants
                     S.Sthpt = load(PathTranslator(ThptCal_fn));
                     S.Sthpt.ThptCal_fn = ThptCal_fn;
 
-                case 607,
+                case 607, % MCB-SPC model 2
                     S.Results_pn = '/home/dmarx/HCIT/MCB_SPC/hcim_model2_20181021/results/run607/';
                     S.ppl0 = 6.09;
                     S.XYlimDefault = 12;
@@ -209,7 +209,7 @@ classdef CRunData < handle & CConstants
                     S.ThminSc   = (90 - 32.5)*CConstants.P;
                     S.ThmaxSc   = (90 + 32.5)*CConstants.P;
 
-                case 608,
+                case 608, % MCB-SPC-IFS
                     S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run608/';
 
                     S.ppl0 = 6.13; % MCB SPC from config_MCB_SPC_20181015.py
