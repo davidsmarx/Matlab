@@ -274,10 +274,25 @@ classdef CGS < handle
 
         function [hfig, hax] = DisplayGSrefGS(S, Sref, varargin)
             % [hfig, hax] = DisplayGSrefGS(S, Sref, options)
-
+            %
+            % options:
+            %    ('hfig', figure_mxn(2,2), varargin{:});
+            %    ('usebMask', true, varargin{:});
+            %    ('phplot', 'angleE', (default) 'phw_ptt'
+            
             % parse options
             hfig = CheckOption('hfig', figure_mxn(2,2), varargin{:});
             usebMask = CheckOption('usebMask', true, varargin{:});
+            phplot = CheckOption('phplot', 'angleE', varargin{:}); % other choice = 'phw_ptt'
+            
+            switch phplot
+                case 'angleE'
+                    funPhPl = @(S) angle(S.E);
+                case 'phw_ptt'
+                    funPhPl = @(S) S.phw_ptt;
+                otherwise
+                    error(['unknown phplot option: ' phplot]);
+            end
             
             figure(hfig);
 
@@ -292,7 +307,7 @@ classdef CGS < handle
             title(['gsnum ' num2str(S.gsnum)])
             
             hax(2) = subplot(2,2,2);
-            imageschcit(S.x, S.y, angle(S.E))
+            imageschcit(S.x, S.y, funPhPl(S))
             colorbartitle('Phase (rad)')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
             title(['gsnum ' num2str(S.gsnum)])
@@ -304,11 +319,10 @@ classdef CGS < handle
             title(['gsnum ' num2str(S.gsnum) ' Amp -  Ref gsnum ' num2str(Sref.gsnum) ' Amp'])
             
             hax(4) = subplot(2,2,4);
+            dpha = mod2pi(funPhPl(S) - funPhPl(Sref));
             if usebMask,
-                dpha = S.bMask .* angle(S.E.*conj(Sref.E));
-            else
-                dpha = angle(S.E.*conj(Sref.E));
-            end            
+                dpha = S.bMask .* dpha;
+            end
             him = imageschcit(S.x, S.y, dpha);
             colorbartitle('Phase (rad)')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
