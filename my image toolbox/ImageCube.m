@@ -8,7 +8,7 @@ function [hfig, sUserData] = ImageCube(imgCube, listI, varargin)
 % fImageDisplay = CheckOption('fImageDisplay', @imageschcit, varargin{:});
 % clim = CheckOption('clim', [], varargin{:});
 % cmap = CheckOption('colormap', 'gray', varargin{:});
-% fTitleStr = CheckOption('fTitleStr', @(ii) ['ii = ' num2str(listI(ii))], varargin{:});
+% fTitleStr = CheckOption('fTitleStr', @(isl) ['slice #' num2str(isl) '; Label ' num2str(listI(isl))], varargin{:});
 
 % check options
 hfig = CheckOption('hfig', [], varargin{:});
