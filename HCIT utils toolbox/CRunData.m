@@ -175,9 +175,19 @@ classdef CRunData < handle & CConstants
                 case 604, % SPC_disc
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
                     S.XYlimDefault = 22;
+                
                 case 0 % DST
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run000/';
                     S.XYlimDefault = 12;
+                case 10 % DST with BMC50.B DM at dm1
+                    S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run010/';
+                    S.XYlimDefault = 12;
+                    S.DrawradiiDefault = [3.0 9.0];
+                    
+                    S.RminSc    = 3.0; % lam/D
+                    S.RmaxSc    = 9.0;
+
+                    
                 case 606, % MCB-SPC
                     S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run606/';
                     S.ppl0 = 6.09; % MCB SPC from config_MCB_SPC_20181015.py
@@ -326,13 +336,14 @@ classdef CRunData < handle & CConstants
                    warning(['cannot open ' fn]);
                    %continue
                    % hack for now
-                   fn = ['/home/dmarx/ln_mcb_data/IFS/images/' fn];
-               end
-               finfo = fitsinfo(PathTranslator(fn));
-               if ~isempty(FitsGetKeywordVal(finfo.PrimaryData.Keywords,'NKTLOWER')),
-                   S.NKTlower(iwv) = FitsGetKeywordVal(finfo.PrimaryData.Keywords,'NKTLOWER')*S.NM;
-                   S.NKTupper(iwv) = FitsGetKeywordVal(finfo.PrimaryData.Keywords,'NKTUPPER')*S.NM;
-                   S.NKTcenter(iwv) = mean([S.NKTlower(iwv) S.NKTupper(iwv)]);
+                   %fn = ['/home/dmarx/ln_mcb_data/IFS/images/' fn];
+               else
+                   finfo = fitsinfo(PathTranslator(fn));
+                   if ~isempty(FitsGetKeywordVal(finfo.PrimaryData.Keywords,'NKTLOWER')),
+                       S.NKTlower(iwv) = FitsGetKeywordVal(finfo.PrimaryData.Keywords,'NKTLOWER')*S.NM;
+                       S.NKTupper(iwv) = FitsGetKeywordVal(finfo.PrimaryData.Keywords,'NKTUPPER')*S.NM;
+                       S.NKTcenter(iwv) = mean([S.NKTlower(iwv) S.NKTupper(iwv)]);
+                   end
                end
             end
             
