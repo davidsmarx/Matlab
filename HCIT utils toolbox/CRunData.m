@@ -183,10 +183,17 @@ classdef CRunData < handle & CConstants
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run010/';
                     S.XYlimDefault = 12;
                     S.DrawradiiDefault = [3.0 9.0];
+                    S.DrawthetaDefault = 180*[-0.5 0.5]*CConstants.P;
                     
                     S.RminSc    = 3.0; % lam/D
                     S.RmaxSc    = 9.0;
+                    S.ThminSc   = (90 - 90)*CConstants.P;
+                    S.ThmaxSc   = (90 + 90)*CConstants.P;
 
+                    % overwritten if camera image is found
+                    S.NKTupper = [533.5, 555.5, 577.5]*S.NM;
+                    S.NKTlower = [522.5, 544.5, 566.5]*S.NM;
+                    S.NKTcenter = mean([S.NKTupper; S.NKTlower]);
                     
                 case 606, % MCB-SPC
                     S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run606/';
