@@ -5,6 +5,8 @@ function sOut = GenerateEFCReport(runnum, listItnum, sDisplayFun, varargin)
 %
 % create figures S.(sDisplayFun) for each iteration in listItnum
 % and copy to a PowerPoint presentation
+% 
+% 
 
 mlock   
 persistent Sppt;
