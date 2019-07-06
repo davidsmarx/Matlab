@@ -424,7 +424,7 @@ classdef CGS < handle
             % hax = DisplayAllPlanes(S, options)
             % options:
             %   'image': 'meas' (default) or 'calc'
-            %   'value': 'amp' (default) or 'intensity' or 'phase' (meas only)
+            %   'value': 'amp' (default) or 'intensity' or 'phase' (calc only)
             %   'blog':  false (default) or true
             
             % each hdu is N x N x 3
@@ -485,7 +485,7 @@ classdef CGS < handle
             end % for 
 
             % add the label
-            w = 2;
+            w = 0.2;
             ha = annotation('textbox', [0.5-0.5*w 0.5 w 0.01] ...
                 ,'String', strLabel ...
                 ,'HorizontalAlignment','center' ...
