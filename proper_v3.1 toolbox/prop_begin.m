@@ -5,9 +5,6 @@
 %   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 %   Original IDL version by John Krist
 %   Matlab translation by Gary Gutt
-
-
-function bm = prop_begin(diam, wl, np, varargin)
 %        bm = prop_begin(diam, wl, np, varargin)
 % Initialize variables for PROPER routines.  This routine must be called
 % before any other PROPER routines in order to initialize required
@@ -30,6 +27,7 @@ function bm = prop_begin(diam, wl, np, varargin)
 % 2014 Apr 18  gmg  Matlab translation
 % 2017 Feb 14  gmg  Revised for keyword/value for optional inputs
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function bm = prop_begin(diam, wl, np, varargin)
 
 % beam structure:
 % bm.diam     = initial beam diameter (m)

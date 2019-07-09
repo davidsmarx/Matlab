@@ -5,9 +5,7 @@
 %   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 %   Original IDL version by John Krist
 %   Matlab translation by Gary Gutt
-
-
-function [bm, map] = prop_psd_errormap(bm, resf, clp, fple, varargin)
+%
 %        [bm, map] = prop_psd_errormap(bm, resf, clp, fple, varargin)
 % Create a realization of a two-dimensional surface, wavefront, or
 % amplitude error map for a specified power-spectral-density (PSD)
@@ -128,6 +126,7 @@ function [bm, map] = prop_psd_errormap(bm, resf, clp, fple, varargin)
 %                   Changed rng to use different seed each time
 %                   prop_psd_errormap.m is run
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function [bm, map] = prop_psd_errormap(bm, resf, clp, fple, varargin)
 
   global print_it
 % Set default values of input parameters

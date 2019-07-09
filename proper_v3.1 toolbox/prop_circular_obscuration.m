@@ -5,9 +5,6 @@
 %   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 %   Original IDL version by John Krist
 %   Matlab translation by Gary Gutt
-
-
-function bm = prop_circular_obscuration(bm, ra, varargin)
 %        bm = prop_circular_obscuration(bm, ra, varargin)
 % Multiplies the wavefront in bm by a circular obscuration
 %
@@ -28,6 +25,7 @@ function bm = prop_circular_obscuration(bm, ra, varargin)
 % 2014 Sep 02  gmg  Changed prop_shift_center call to allow odd size arrays
 % 2017 Mar 06  gmg  Revised for keyword/value for optional inputs
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function bm = prop_circular_obscuration(bm, ra, varargin)
 
 % Set default values of input parameters
   cx   = 0.0;                   % aperture center to beam center X
