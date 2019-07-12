@@ -5,7 +5,8 @@ function [x, y, X, Y, R, T] = CreateGrid(Ima, dx, dy, varargin)
 % [x, y, X, Y, R, T] = CreateGrid([Ny, Nx], [dx, dy])
 % dx (optional)
 % dy (optional)
-% [...] = CreateGrid(N, dx, dy, 'origin','lowerleft')
+% options:
+%    'origin', 'center' (default), '0-offset', '1-offset'
 
 OriginLoc = CheckOption('origin','center',varargin{:});
 
@@ -34,9 +35,12 @@ switch OriginLoc
     case 'center',
         x = dx * (ceil(-nx/2):ceil(nx/2-1))';
         y = dy * (ceil(-ny/2):ceil(ny/2-1))';
-    case 'lowerleft',
+    case {'lowerleft', '0-offset'}
         x = (0:nx-1)'*dx;
         y = (0:ny-1)'*dy;
+    case '1-offset'
+        x = (1:nx)'*dx;
+        y = (1:ny)'*dy;
     otherwise
         error(['unknown origin option: ' OriginLoc]);
 end

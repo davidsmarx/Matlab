@@ -10,6 +10,8 @@ classdef CGS < handle
     %                         bn = '/home/dmarx/HCIT/MCB_SPC/phaseretrieval/reduced/gsomc_no';
     %                     case 'mcb_hlc'
     %                         bn = '/proj/mcb/data/dB_PR_Kern/gsomc_no00';
+    %                     case 'ttb_hlc'
+    %                         bn = '/proj/mcb/data/dB_PR_Kern/gsomc_no00';
     %
     % read reduced results from gs phase retrieval
     %
@@ -27,6 +29,11 @@ classdef CGS < handle
     %    cc = AmpCorrMetric(S)
     %
     %    [hfig, hax] = DisplayAmpPlane(S, ipl)
+    %
+    % hax = DisplayAllPlanes(S, options)
+    %      options:
+    %         'image': 'meas' (default) or 'calc'
+    %         'value': 'amp' (default) or 'intensity'
     %
     % properties (some of them):
     %    cAmpPlanes{1:Num Images}
@@ -77,6 +84,24 @@ classdef CGS < handle
                 switch lower(bn),
                     case 'dst'
                         bn = '/proj/dst/data/dB_PR/gsdst_';
+                        if gsnum <= 284,
+                            year = '2019';
+                            uname = 'bseo';
+                        elseif gsnum <= 334,
+                            year = '2019';
+                            uname = 'bseo';
+                        else
+                            year = '2019';
+                            uname = 'dmarx';
+                        end
+                        
+                        S.listPupImDir = dir(PathTranslator(...
+                            ['/proj/piaa-data/Data/' year '-*-*/' uname '/gsdst_p_' num2str(gsnum,'%04d') '/*.fits'] ...
+                            ));
+                        S.listSrcImDir = dir(PathTranslator(...
+                            ['/proj/piaa-data/Data/' year '-*-*/' uname '/gsdst_s_' num2str(gsnum,'%04d') '/*.fits'] ...
+                            ));
+                       
                     case 'spc_disc'
                         bn = '/home/dmarx/HCIT/SPC_disc/gsspc_20171204/reduced/gsspc_';
                     case 'mcb_spc'
@@ -91,12 +116,36 @@ classdef CGS < handle
                     case 'mcb_hlc'
                         bn = '/proj/mcb/data/dB_PR_Kern/gsomc_no00';
                         % get dir listing of raw camera images
+                        if gsnum >= 843,
+                            year = '2019';
+                            gsbn = 'gsttb';
+                        elseif gsnum >= 806,
+                            year = '2018';
+                            gsbn = 'gsomc';
+                        else
+                            error('which year is this?');
+                        end
                         S.listPupImDir = dir(PathTranslator(...
-                            ['/proj/piaa-data/Data/2018-*-*/bseo/gsomc_p_' num2str(gsnum,'%04d') '/*.fits']...
+                            ['/proj/piaa-data/Data/' year '-*-*/bseo/' gsbn '_p_' num2str(gsnum,'%04d') '/*.fits']...
                             ));
                         S.listSrcImDir = dir(PathTranslator(...
-                            ['/proj/piaa-data/Data/2018-*-*/bseo/gsomc_s_' num2str(gsnum,'%04d') '/*.fits']...
+                            ['/proj/piaa-data/Data/' year '-*-*/bseo/' gsbn '_s_' num2str(gsnum,'%04d') '/*.fits']...
                             ));
+                    case 'ttb_hlc'
+                        bn = '/proj/mcb/data/dB_PR_Kern/gsomc_no00';
+                        % get dir listing of raw camera images
+                        if gsnum >= 843,
+                            year = '2019';
+                        else
+                            error('which year is this?');
+                        end
+                        S.listPupImDir = dir(PathTranslator(...
+                            ['/proj/piaa-data/Data/' year '-*-*/bseo/gsttb_p_' num2str(gsnum,'%04d') '/*.fits']...
+                            ));
+                        S.listSrcImDir = dir(PathTranslator(...
+                            ['/proj/piaa-data/Data/' year '-*-*/bseo/gsttb_s_' num2str(gsnum,'%04d') '/*.fits']...
+                            ));
+                        
                     otherwise
                         % do nothing, let bn = bn
                         %disp(bn);
@@ -170,7 +219,14 @@ classdef CGS < handle
         end % rmsPha
         
         function [hfig, hax] = DisplayGS(S, varargin)
-
+            % [hfig, hax] = DisplayGS(S, varargin)
+            %
+            % pMask = CheckOption('pMask', S.bMask, varargin{:});
+            % xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
+            % climph = CheckOption('climph', [], varargin{:});
+            % phplot = CheckOption('phplot', 'angleE', varargin{:}); %
+            % other choice = 'phw_ptt', 'ph', 'phw'
+            
             pMask = CheckOption('pMask', S.bMask, varargin{:});
             xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             climph = CheckOption('climph', [], varargin{:});
@@ -193,6 +249,10 @@ classdef CGS < handle
                     ph = angle(S.E);
                 case 'phw_ptt'
                     ph = S.phw_ptt;
+                case 'ph'
+                    ph = S.ph;
+                case 'phw'
+                    ph = S.phw;
                 otherwise
                     error(['phplot ' phplot ' not a valid choice']);
             end
@@ -214,10 +274,25 @@ classdef CGS < handle
 
         function [hfig, hax] = DisplayGSrefGS(S, Sref, varargin)
             % [hfig, hax] = DisplayGSrefGS(S, Sref, options)
-
+            %
+            % options:
+            %    ('hfig', figure_mxn(2,2), varargin{:});
+            %    ('usebMask', true, varargin{:});
+            %    ('phplot', 'angleE', (default) 'phw_ptt'
+            
             % parse options
             hfig = CheckOption('hfig', figure_mxn(2,2), varargin{:});
             usebMask = CheckOption('usebMask', true, varargin{:});
+            phplot = CheckOption('phplot', 'angleE', varargin{:}); % other choice = 'phw_ptt'
+            
+            switch phplot
+                case 'angleE'
+                    funPhPl = @(S) angle(S.E);
+                case 'phw_ptt'
+                    funPhPl = @(S) S.phw_ptt;
+                otherwise
+                    error(['unknown phplot option: ' phplot]);
+            end
             
             figure(hfig);
 
@@ -232,7 +307,7 @@ classdef CGS < handle
             title(['gsnum ' num2str(S.gsnum)])
             
             hax(2) = subplot(2,2,2);
-            imageschcit(S.x, S.y, angle(S.E))
+            imageschcit(S.x, S.y, funPhPl(S))
             colorbartitle('Phase (rad)')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
             title(['gsnum ' num2str(S.gsnum)])
@@ -244,11 +319,10 @@ classdef CGS < handle
             title(['gsnum ' num2str(S.gsnum) ' Amp -  Ref gsnum ' num2str(Sref.gsnum) ' Amp'])
             
             hax(4) = subplot(2,2,4);
+            dpha = mod2pi(funPhPl(S) - funPhPl(Sref));
             if usebMask,
-                dpha = S.bMask .* angle(S.E.*conj(Sref.E));
-            else
-                dpha = angle(S.E.*conj(Sref.E));
-            end            
+                dpha = S.bMask .* dpha;
+            end
             him = imageschcit(S.x, S.y, dpha);
             colorbartitle('Phase (rad)')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
@@ -311,37 +385,83 @@ classdef CGS < handle
             
         end % AmpCorrMetric
         
-        function [hax] = DisplayAmpPlane(S, ipl)
-            % [hfig, hax] = DisplayAmpPlane(S, ipl)
+        function [hfig, hax] = DisplayAmpPlane(S, ipl, varargin)
+            % [hfig, hax] = DisplayAmpPlane(S, list_ipl)
+            %
+            % compare camera and estimated
+            % options:
+            %   Option('value', 'amp' (default), 'intensity'
             
             if isempty(S.cAmpPlanes), S.ReadAmpImages; end
+            
+            plAmpOrInt = CheckOption('value', 'amp', varargin{:});
             
             % each hdu is N x N x 3
             % (:,:,1) = measured amplitude
             % (:,:,2) = calculated amplitude
             % (:,:,3) = calculated phase
 
-            hax(1) = subplot(1,2,1);
-            imageschcit(squeeze(S.cAmpPlanes{ipl}(:,:,1))), title('Camera')
-            hax(2) = subplot(1,2,2);
-            imageschcit(squeeze(S.cAmpPlanes{ipl}(:,:,2))), title('Estimated')
+             % choose amp or intensity
+            if strcmp(plAmpOrInt, 'amp')
+                funPlot = @(A, icc) squeeze(A(:,:,icc));
+            elseif strcmp(plAmpOrInt, 'intensity')
+                funPlot = @(A, icc) log10(squeeze(A(:,:,icc)).^2);
+            end
+            
+            Nplanes = length(ipl);
+            hfig = figure_mxn(2, Nplanes);
+            hax = zeros(2, Nplanes);
+            for iipl = 1:Nplanes,
+                hax(1,iipl) = subplot(2,Nplanes,iipl);
+                imageschcit(funPlot(S.cAmpPlanes{ipl(iipl)},1)), title(['Camera, ipl = ' num2str(ipl(iipl))])
+                hax(2,iipl) = subplot(2,Nplanes,Nplanes + iipl);
+                imageschcit(funPlot(S.cAmpPlanes{ipl(iipl)},2)), title(['Estimated, ipl = ' num2str(ipl(iipl))])
+            end
             
         end % DisplayAmpPlane
         
-        function hax = DisplayAllAmpCamera(S, varargin)
-            % hax = DisplayAllAmpCamera(S, options)
+        function hax = DisplayAllPlanes(S, varargin)
+            % hax = DisplayAllPlanes(S, options)
             % options:
-            %   'image', 'amp' (default) or 'intensity'
+            %   'image': 'meas' (default) or 'calc'
+            %   'value': 'amp' (default) or 'intensity' or 'phase' (calc only)
+            %   'blog':  false (default) or true
             
+            % each hdu is N x N x 3
+            % (:,:,1) = measured amplitude
+            % (:,:,2) = calculated amplitude
+            % (:,:,3) = calculated phase
+
             if isempty(S.cAmpPlanes), S.ReadAmpImages; end
 
             % parse options
-            plAmpOrInt = 'amp'; % default
-            iopt = find(strcmpi('image',varargin));
-            if ~isempty(iopt),
-                plAmpOrInt = varargin{iopt(end)+1};
+            plMeasOrCalc = CheckOption('image', 'meas', varargin{:});
+            plAmpOrInt = CheckOption('value', 'amp', varargin{:});
+            bLog = CheckOption('blog', false, varargin{:});
+
+            % choose measured or calculated
+            if strcmp(plMeasOrCalc, 'meas'),
+                funCamp = @(A) squeeze(A(:,:,1));
+                strLabel = 'Measured';
+            elseif strcmp(plMeasOrCalc, 'calc')
+                funCamp = @(A) squeeze(A(:,:,2));
+                strLabel = 'Calculated';
+            else
+                error(['Unknown Option image: ' plMeasOrCalc]);
+            end
+            
+            % choose amp or intensity
+            if strcmp(plAmpOrInt, 'amp')
+                funPlot = @(A) funCamp(A);
+            elseif strcmp(plAmpOrInt, 'intensity')
+                funPlot = @(A) funCamp(A).^2;
+            elseif strcmp(plAmpOrInt, 'phase')
+                funPlot = @(A) squeeze(A(:,:,3));
+            else
+                error(['Unknown Option value: ' plAmpOrInt]);
             end
 
+            
             Ni = length(S.cAmpPlanes);
             Nc = ceil(Ni/2);
             Nr = 2;
@@ -351,19 +471,30 @@ classdef CGS < handle
             for ii = 1:Ni,
                 hax(ii) = subplot(Nr, Nc, ii);
                 
-                switch lower(plAmpOrInt),
-                    case 'amp'
-                        Im = squeeze(S.cAmpPlanes{ii}(:,:,1));
-                        
-                    case 'intensity'
-                        Im = squeeze(S.cAmpPlanes{ii}(:,:,1)).^2;
-            
+                Im = funPlot(S.cAmpPlanes{ii});
+
+                if bLog,
+                    Imlog = log10(Im);
+                    imageschcit(Imlog)
+                    set(gca,'clim',[-4 0] + max(Imlog(:)))
+                    
+                else
+                    imageschcit(Im)
                 end
-                
-                imageschcit(Im)
 
             end % for 
-            
+
+            % add the label
+            w = 0.2;
+            ha = annotation('textbox', [0.5-0.5*w 0.5 w 0.01] ...
+                ,'String', strLabel ...
+                ,'HorizontalAlignment','center' ...
+                ,'VerticalAlignment','middle' ...
+                ,'FitBoxToText','on','LineStyle','-' ...
+                ,'EdgeColor','r','LineWidth',2 ...
+                ,'FontSize', 24, 'FontWeight', 'bold' ...
+                ,'Color','k' ...
+                );
             
         end % DisplayAllAmpCamera
         

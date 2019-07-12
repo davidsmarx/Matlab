@@ -172,13 +172,30 @@ classdef CRunData < handle & CConstants
                     throughput_fn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/Throughput_20171003T122253.mat';
                     S.Sthpt = load(PathTranslator(throughput_fn));
 
-                case 604,
+                case 604, % SPC_disc
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
                     S.XYlimDefault = 22;
-                case 0
+                
+                case 0 % DST
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run000/';
                     S.XYlimDefault = 12;
-                case 606,
+                case 10 % DST with BMC50.B DM at dm1
+                    S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run010/';
+                    S.XYlimDefault = 12;
+                    S.DrawradiiDefault = [3.0 9.0];
+                    S.DrawthetaDefault = 180*[-0.5 0.5]*CConstants.P;
+                    
+                    S.RminSc    = 3.0; % lam/D
+                    S.RmaxSc    = 9.0;
+                    S.ThminSc   = (90 - 90)*CConstants.P;
+                    S.ThmaxSc   = (90 + 90)*CConstants.P;
+
+                    % overwritten if camera image is found
+                    S.NKTupper = [533.5, 555.5, 577.5]*S.NM;
+                    S.NKTlower = [522.5, 544.5, 566.5]*S.NM;
+                    S.NKTcenter = mean([S.NKTupper; S.NKTlower]);
+                    
+                case 606, % MCB-SPC
                     S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run606/';
                     S.ppl0 = 6.09; % MCB SPC from config_MCB_SPC_20181015.py
                     S.XYlimDefault = 12;
@@ -197,7 +214,7 @@ classdef CRunData < handle & CConstants
                     S.Sthpt = load(PathTranslator(ThptCal_fn));
                     S.Sthpt.ThptCal_fn = ThptCal_fn;
 
-                case 607,
+                case 607, % MCB-SPC model 2
                     S.Results_pn = '/home/dmarx/HCIT/MCB_SPC/hcim_model2_20181021/results/run607/';
                     S.ppl0 = 6.09;
                     S.XYlimDefault = 12;
@@ -209,7 +226,7 @@ classdef CRunData < handle & CConstants
                     S.ThminSc   = (90 - 32.5)*CConstants.P;
                     S.ThmaxSc   = (90 + 32.5)*CConstants.P;
 
-                case 608,
+                case 608, % MCB-SPC-IFS
                     S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run608/';
 
                     S.ppl0 = 6.13; % MCB SPC from config_MCB_SPC_20181015.py
@@ -232,6 +249,13 @@ classdef CRunData < handle & CConstants
                     S.Sthpt = load(PathTranslator(ThptCal_fn));
                     S.Sthpt.ThptCal_fn = ThptCal_fn;
 
+                case 001,
+                    S.Results_pn = '/home/dmarx/HCIT/MCB/hcim_model2_run001/results/run001/';
+                    
+                    S.XYlimDefault = 10;
+                    S.DrawradiiDefault = [3.0 9.0];
+
+                    
                 otherwise
                     error('unrecognized runnum');
             end
@@ -319,13 +343,14 @@ classdef CRunData < handle & CConstants
                    warning(['cannot open ' fn]);
                    %continue
                    % hack for now
-                   fn = ['/home/dmarx/ln_mcb_data/IFS/images/' fn];
-               end
-               finfo = fitsinfo(PathTranslator(fn));
-               if ~isempty(FitsGetKeywordVal(finfo.PrimaryData.Keywords,'NKTLOWER')),
-                   S.NKTlower(iwv) = FitsGetKeywordVal(finfo.PrimaryData.Keywords,'NKTLOWER')*S.NM;
-                   S.NKTupper(iwv) = FitsGetKeywordVal(finfo.PrimaryData.Keywords,'NKTUPPER')*S.NM;
-                   S.NKTcenter(iwv) = mean([S.NKTlower(iwv) S.NKTupper(iwv)]);
+                   %fn = ['/home/dmarx/ln_mcb_data/IFS/images/' fn];
+               else
+                   finfo = fitsinfo(PathTranslator(fn));
+                   if ~isempty(FitsGetKeywordVal(finfo.PrimaryData.Keywords,'NKTLOWER')),
+                       S.NKTlower(iwv) = FitsGetKeywordVal(finfo.PrimaryData.Keywords,'NKTLOWER')*S.NM;
+                       S.NKTupper(iwv) = FitsGetKeywordVal(finfo.PrimaryData.Keywords,'NKTUPPER')*S.NM;
+                       S.NKTcenter(iwv) = mean([S.NKTlower(iwv) S.NKTupper(iwv)]);
+                   end
                end
             end
             
