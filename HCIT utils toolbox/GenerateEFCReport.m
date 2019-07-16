@@ -14,6 +14,7 @@ persistent Sppt;
 % options
 ppt_fn = CheckOption('pptfn', '', varargin{:});
 figheight = CheckOption('figheight', 700, varargin{:}); % for ppt display
+save_pn = CheckOption('save_pn', ['./' sDisplayFun '/'], varargin{:}); % is ~ispc
 
 % list of CRunData methods where the first argument is a reference
 % iteration:
@@ -31,8 +32,11 @@ catch
 end
 
 % open PowerPoint if necessary
-if isempty(Sppt)
+if isempty(Sppt) && ispc,
     Sppt = Cppt(ppt_fn);
+end
+if ~ispc && ~exist(save_pn)
+    mkdir(save_pn)
 end
 
 % get the CRunData objects
@@ -55,8 +59,12 @@ if any(strcmp(sDisplayFun, listDiff)),
         hfig(ii) = S(ii+1).(sDisplayFun)(S(ii), varargin{:});
         figscale = CalcFigscale(hfig(ii), figheight);
         set(hfig(ii), 'Position', figscale*get(hfig(ii),'position'));
-        htmp = Sppt.CopyFigNewSlide(hfig(ii));
-        %set(htmp,'Height',figheight); 
+        if ispc,
+            htmp = Sppt.CopyFigNewSlide(hfig(ii));
+            %set(htmp,'Height',figheight);
+        else
+            saveas(hfig(ii), [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
+        end
     end
 
 else, % one call per iteration 
@@ -64,8 +72,12 @@ else, % one call per iteration
         hfig(ii) = S(ii).(sDisplayFun)(varargin{:});
         figscale = CalcFigscale(hfig(ii), figheight);
         set(hfig(ii), 'Position', figscale*get(hfig(ii),'position'));
-        htmp = Sppt.CopyFigNewSlide(hfig(ii));
-        %set(htmp,'Height',figheight);
+        if ispc,
+            htmp = Sppt.CopyFigNewSlide(hfig(ii));
+            %set(htmp,'Height',figheight);
+        else
+            saveas(hfig(ii), [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
+        end
     end
 end
 
