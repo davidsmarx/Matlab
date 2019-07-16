@@ -57,7 +57,11 @@ while ~isempty(wordparse),
 end % while ~isempty wordparse
 
 % data follows
-data = fscanf(fid,'%f',[sParms.nrows sParms.ncols]);
+% from Code V Help "Using Interferometric Data":
+%   Each value is entered as an integer and it is assumed to be read by rows
+%   from -X to +X (left to right) starting at +Y (top). 
+data = fscanf(fid,'%f',[sParms.ncols sParms.nrows]);
+data = flipud(data.'); %
 data(data==sParms.nda) = nan;
 map = 2*pi*data/sParms.datascale_wave; % return map in radians
 
