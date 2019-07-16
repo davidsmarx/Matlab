@@ -5,9 +5,6 @@
 %   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 %   Original IDL version by John Krist
 %   Matlab translation by Gary Gutt
-
-
-function bm = prop_define_entrance(bm)
 %        bm = prop_define_entrance(bm)
 % Normalize the wavefront amplitude for a total power of 1.
 %
@@ -21,6 +18,9 @@ function bm = prop_define_entrance(bm)
 % 2014 Jun 10  gmg  Matlab translation
 % 2017 Mar 22  gmg  Revised for keyword/value for optional inputs
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+function bm = prop_define_entrance(bm)
 
   propcommon
 
