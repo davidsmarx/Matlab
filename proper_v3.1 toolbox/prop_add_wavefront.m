@@ -5,10 +5,8 @@
 %   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 %   Original IDL version by John Krist
 %   Matlab translation by Gary Gutt
-
-
-function bm = prop_add_wavefront(bm, wfad)
 %        bm = prop_add_wavefront(bm, wfad)
+%
 % Add a wavefront to the current wavefront array.
 % The wavefront array is assumed to be at the same sampling as the
 % current wavefront.  Note that this is wavefront, not surface, error.
@@ -27,6 +25,8 @@ function bm = prop_add_wavefront(bm, wfad)
 % 2016 Apr 05  gmg  Matlab translation
 % 2017 Mar 21  gmg  Revised for keyword/value for optional inputs
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+function bm = prop_add_wavefront(bm, wfad)
 
   if size(wfad, 1) == 1
     bm.wf = bm.wf + wfad;
