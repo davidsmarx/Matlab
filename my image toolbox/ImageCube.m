@@ -4,6 +4,12 @@ function [hfig, sUserData] = ImageCube(imgCube, listI, varargin)
 % imgCube (Nslices, nr, nc)
 % listI (vector of length Nslices) numeric label for each slice
 %
+% keyboard commands:
+%   'f' next slice
+%   'b' previous slice
+%   '1' first slice
+%   'e' last slice
+%
 % options:
 % fImageDisplay = CheckOption('fImageDisplay', @imageschcit, varargin{:});
 % clim = CheckOption('clim', [], varargin{:});
@@ -55,11 +61,14 @@ set(hfig, 'UserData', sUserData);
         switch event.Key
             case 'f'
                 %disp('forward');
-                S.isl = min(S.Nsl, S.isl + 1);
+                %S.isl = min(S.Nsl, S.isl + 1);
+                S.isl = mod(S.isl, S.Nsl) + 1;
                 
             case 'b'
                 %disp('backward');
-                S.isl = max(1, S.isl - 1);
+                %S.isl = max(1, S.isl - 1);
+                S.isl = S.isl - 1;
+                if S.isl == 0, S.isl = S.Nsl; end
 
             case '1'
                 % go to first slice
