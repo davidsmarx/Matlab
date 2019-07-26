@@ -1,4 +1,4 @@
-function [hfig, sUserData] = ImageCube(imgCube, listI, varargin)
+function [hax, sUserData] = ImageCube(imgCube, listI, varargin)
 % [hfig, sUserData] = ImageCube(imgCube, listI, varargin)
 %
 % imgCube (Nslices, nr, nc)
@@ -15,9 +15,12 @@ function [hfig, sUserData] = ImageCube(imgCube, listI, varargin)
 % clim = CheckOption('clim', [], varargin{:});
 % cmap = CheckOption('colormap', 'gray', varargin{:});
 % fTitleStr = CheckOption('fTitleStr', @(isl) ['slice #' num2str(isl) '; Label ' num2str(listI(isl))], varargin{:});
+% hfig = CheckOption('hfig', [], varargin{:});
+% hax = CheckOption('hax', [], varargin{:});
 
 % check options
 hfig = CheckOption('hfig', [], varargin{:});
+hax = CheckOption('hax', [], varargin{:});
 fImageDisplay = CheckOption('fImageDisplay', @imageschcit, varargin{:});
 clim = CheckOption('clim', [], varargin{:});
 cmap = CheckOption('colormap', 'gray', varargin{:});
@@ -31,8 +34,10 @@ end
 
 % create the figure
 islinit = 1; % first slice to show
-if isempty(hfig), hfig = figure; else, figure(hfig), end
+if ~isempty(hfig), figure(hfig); end % else hfig is gcf
+if ~isempty(hax), axes(hax); end
 himage = fImageDisplay(squeeze(imgCube(islinit,:,:)));
+if isempty(hax), hax = gca; end
 if ~isempty(clim), set(gca,'clim',clim), end
 colormap(cmap);
 htitle = title(fTitleStr(islinit));
@@ -42,7 +47,7 @@ sUserData = struct(...
     'imgCube', imgCube ...
     ,'Nsl', Nsl ...
     ,'listSlLabel', listI ... % not used
-    ,'hax', gca ...
+    ,'hax', hax ...
     ,'himage', himage ...
     ,'htitle', htitle ...
     ,'fTitleStr', fTitleStr ...
