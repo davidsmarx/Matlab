@@ -1,6 +1,7 @@
 function [Imout, npad_pre, npad_post] = PadImArray(Im, N)
 % Imout = PadImArray(Im, N)
 %
+% N is the size of the new array
 % assumes N = [Ny Nx] >= size(Im)
 %
 % see also CropImage()
