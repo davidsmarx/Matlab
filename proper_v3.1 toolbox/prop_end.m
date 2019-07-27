@@ -5,9 +5,7 @@
 %   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 %   Original IDL version by John Krist
 %   Matlab translation by Gary Gutt
-
-
-function [wfa, samp] = prop_end(bm, varargin)
+%
 %        [wfa, samp] = prop_end(bm, varargin)
 % Set variables needed to properly conclude a propagation run
 %
@@ -29,6 +27,8 @@ function [wfa, samp] = prop_end(bm, varargin)
 % 2017 Mar 06  gmg  Revised for keyword/value for optional inputs
 % 2017 Apr 21  gmg  Removed sampling distance (arcsecons) return value
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+function [wfa, samp] = prop_end(bm, varargin)
 
 % Set default values of input parameters
   idx  = 0.0;           % size of central part of wavefront (pixels)

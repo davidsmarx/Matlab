@@ -5,9 +5,6 @@
 %   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 %   Original IDL version by John Krist
 %   Matlab translation by Gary Gutt
-
-
-function bm = prop_propagate(bm, dz, varargin)
 %        bm = prop_propagate(bm, dz, varargin)
 % Determine which propagator to use to propagate the current wavefront
 % by a specified distance and do it.
@@ -28,6 +25,9 @@ function bm = prop_propagate(bm, dz, varargin)
 % 2017 Mar 13  gmg  Revised for keyword/value for optional inputs
 % 2017 Nov 17  gmg  Fixed bug that sometimes ignored 'to_plane' switch
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+function bm = prop_propagate(bm, dz, varargin)
 
 % Set default values of input parameters
   snm  = '';    % name of surface to which to propagate

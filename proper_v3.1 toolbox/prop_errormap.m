@@ -5,9 +5,7 @@
 %   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 %   Original IDL version by John Krist
 %   Matlab translation by Gary Gutt
-
-
-function [bm, map] = prop_errormap(bm, flnm, varargin)
+%
 %        [bm, map] = prop_errormap(bm, flnm, varargin)
 % Read in an amplitude, surface, or wavefront error map from a
 % Flexible Image Transport System (FITS) file.
@@ -58,6 +56,8 @@ function [bm, map] = prop_errormap(bm, flnm, varargin)
 % 2014 Sep 02  gmg  Changed prop_shift_center call to allow odd size arrays
 % 2017 Mar 06  gmg  Revised for keyword/value for optional inputs
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+function [bm, map] = prop_errormap(bm, flnm, varargin)
 
 % Set default values of input parameters
   ampl = 0;             % file does not contain an amplitude map

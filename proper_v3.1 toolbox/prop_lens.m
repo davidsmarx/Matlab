@@ -5,9 +5,7 @@
 %   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 %   Original IDL version by John Krist
 %   Matlab translation by Gary Gutt
-
-
-function bm = prop_lens(bm, fl, snm)
+%
 %        bm = prop_lens(bm, fl, snm)
 % Alter the current wavefront as a perfect lens would.
 % This routine computes the phase change caused by a perfect lens
@@ -31,6 +29,9 @@ function bm = prop_lens(bm, fl, snm)
 % 2016 Sep 12  gmg  Changed prop_radius2 to prop_radius
 % 2017 Mar 13  gmg  Revised for keyword/value for optional inputs
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+function bm = prop_lens(bm, fl, snm)
 
   propcommon
   if print_it

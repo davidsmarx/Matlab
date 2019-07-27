@@ -5,9 +5,6 @@
 %   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 %   Original IDL version by John Krist
 %   Matlab translation by Gary Gutt
-
-
-function wf = prop_get_wavefront(bm)
 %        wf = prop_get_wavefront(bm)
 % Return the complex-valued wavefront array
 %
@@ -21,6 +18,9 @@ function wf = prop_get_wavefront(bm)
 % 2014 Jul 29  gmg  Matlab translation
 % 2017 Mar 13  gmg  Revised for keyword/value for optional inputs
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+function wf = prop_get_wavefront(bm)
 
   wf   = prop_shift_center(bm.wf);
 end                     % function prop_get_wavefront

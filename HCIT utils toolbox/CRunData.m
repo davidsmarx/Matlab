@@ -82,6 +82,7 @@ classdef CRunData < handle & CConstants
         Rundir_pn  = 'rundir/';         % always relative to Results_pn
         Reduced_pn = 'rundir/reduced/'; % always relative to Results_pn
         PCtemp_pn  = 'C:\Users\dmarx\HCITdatatemp\';
+        S383temp_pn= '';
         Rundir_fn  = ''; % filenames include full path assembled in the init 
         Reduced_fn = '';
         
@@ -183,10 +184,33 @@ classdef CRunData < handle & CConstants
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run010/';
                     S.XYlimDefault = 12;
                     S.DrawradiiDefault = [3.0 9.0];
+                    S.DrawthetaDefault = 180*[-0.5 0.5]*CConstants.P;
+                    
+                    S.RminSc    = 3.0; % lam/D
+                    S.RmaxSc    = 9.0;
+                    S.ThminSc   = (90 - 90)*CConstants.P;
+                    S.ThmaxSc   = (90 + 90)*CConstants.P;
+
+                    % overwritten if camera image is found
+                    S.NKTupper = [533.5, 555.5, 577.5]*S.NM;
+                    S.NKTlower = [522.5, 544.5, 566.5]*S.NM;
+                    S.NKTcenter = mean([S.NKTupper; S.NKTlower]);
+                    
+                case 12 % DST with BMC50.B DM at dm1 & BMC 50.A dm2
+                    S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run012/';
+                    S.S383temp_pn= '/home/dmarx/HCIT/DST/hcim_testbed_run012/results/';
+                    S.XYlimDefault = 12;
+                    S.DrawradiiDefault = [3.0 9.0];
                     
                     S.RminSc    = 3.0; % lam/D
                     S.RmaxSc    = 9.0;
 
+                    % overwritten if camera image is found
+                    S.NKTupper = [533.5, 555.5, 577.5]*S.NM;
+                    S.NKTlower = [522.5, 544.5, 566.5]*S.NM;
+                    S.NKTcenter = mean([S.NKTupper; S.NKTlower]);
+
+                    S.ppl0 = 4.52;
                     
                 case 606, % MCB-SPC
                     S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run606/';
@@ -274,15 +298,15 @@ classdef CRunData < handle & CConstants
                 sReduced_local_fn = [S.PCtemp_pn S.Reduced_pn s_bn];
                 sRundir_local_fn  = [S.PCtemp_pn S.Rundir_pn s_bn];
             else
-                sReduced_local_fn = S.Reduced_fn;
-                sRundir_local_fn  = S.Rundir_fn;
+                sReduced_local_fn = [S.S383temp_pn S.Reduced_pn s_bn];
+                sRundir_local_fn  = [S.S383temp_pn S.Rundir_pn s_bn];
             end
             
             % unzip the fits files if necessary
             % first check if 'local' fits files exists,
             if ~exist(sReduced_local_fn, 'file'),
                 sReduced_gz = [sReduced_local_fn '.gz'];
-                if ~exist(sReduced_gz, 'file') && ispc,
+                if ~exist(sReduced_gz, 'file') %&& ispc,
                     copyfile([S.Reduced_fn '.gz'], sReduced_gz);
                 end
                 gunzip(sReduced_gz);
@@ -294,7 +318,7 @@ classdef CRunData < handle & CConstants
             % repeat local logic for rundir
             if ~exist(sRundir_local_fn, 'file'),
                 sRundir_gz = [sRundir_local_fn '.gz'];
-                if ~exist(sRundir_gz, 'file') && ispc,
+                if ~exist(sRundir_gz, 'file') %&& ispc,
                     copyfile([S.Rundir_fn '.gz'], sRundir_gz);
                 end
                 gunzip(sRundir_gz);
