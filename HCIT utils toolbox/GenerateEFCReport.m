@@ -44,11 +44,17 @@ for iplot = 1:length(csDisplayFun),
     listHfig{iplot} = CreaetePlots(S, csDisplayFun{iplot}, Sppt, varargin{:});
 end
 
+% plot probeh
+[hfig, haxprobeh, probeh] = PlotProbeh(S);
+
+
     if nargout >= 1,
         sOut = struct(...
             'listS', S ...
             ,'listHfig', listHfig ...
             ,'Sppt', Sppt ...
+            ,'probeh', probeh ...
+            ,'haxprobeh', haxprobeh ...
             );
     end
 
@@ -112,3 +118,19 @@ function figscale = CalcFigscale(hfig, figheight)
     figscale = figheight/ysize;
 
 end % CalcFigscale
+
+function [hfig, hax, probeh] = PlotProbeh(S)
+
+     [itnum, probeh] = deal(zeros(size(S)));
+     for ii = 1:length(S)
+         itnum(ii)  = S(ii).iter;
+         probeh(ii) = FitsGetKeywordVal(S(ii).ImKeys,'PROBEH');
+     end
+
+     hfig = figure;
+     semilogy(itnum, probeh, '-o'), grid
+     xlabel('Iteration #')
+     ylabel('probeh')
+     hax = gca;
+     
+end % PlotProbeh

@@ -841,6 +841,7 @@ classdef CRunData < handle & CConstants
                 hold on
                 for irad = 1:length(drawRadii),
                     plot(drawRadii(irad)*[1 1], ylim, '--r')
+                    legstr{end+1} = [num2str(drawRadii(irad),'%.1f')];
                 end
                 hold off
             end
@@ -1392,9 +1393,11 @@ classdef CRunData < handle & CConstants
             end
             harad(1) = subplot(2,S.Nppair+1,S.Nppair+1);
             DisplayRadialPlot(S, ProbeModelPlot, 'hax', harad(1));
+            legend('location','south')
             harad(2) = subplot(2,S.Nppair+1,2*(S.Nppair+1));
             DisplayRadialPlot(S, ProbeMeasPlot,'hax',harad(2));
-
+            legend('location','south')
+            
             ylim = get(harad,'ylim');
             set(harad,'ylim',[min([ylim{:}]), max([ylim{:}])])
             
@@ -2069,9 +2072,20 @@ classdef CRunData < handle & CConstants
                     imageschcit(dDMv)
                     colorbartitle('Vmu')
                     title(['\Delta ' strRefDM{idm} ', ' num2str(rmsdDMv,'%.4f') 'V rms'])
+                    
+                    % save
+                    cdDMv{idm} = dDMv;
                 end
                 
             end % for idm
+            
+            % equalize clim for ddm
+            if ~isempty(refDMv),
+                aclim = AutoClim([cdDMv{:}],'symmetric',true);
+                set(hax(S.Ndm+1:end),'clim',aclim);
+                
+            end % refDMv
+            
             
             %             fprintf('rms dDMv1 = %.3f Vmu\n',rmsdDMv1);
             %             fprintf('rms dDMv2 = %.3f Vmu\n',rmsdDMv2);
