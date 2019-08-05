@@ -2085,7 +2085,7 @@ classdef CRunData < handle & CConstants
                 S.ReadDMvCube;
             end
             
-            % ust assume for now the DM1 is probed
+            % just assume for now the DM1 is probed
             DMv = S.DMvCube{1};
             
             [nacty, nactx, nsli] = size(DMv);
