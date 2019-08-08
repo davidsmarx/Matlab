@@ -5,9 +5,26 @@ function sOut = GenerateEFCReport(runnum, listItnum, csDisplayFun, varargin)
 % csDisplayFun is a cell array of methods, e.g.{'DisplayAllInt','DisplayCEfields'}
 %
 % create figures S.(sDisplayFun) for each iteration in listItnum
-% and copy to a PowerPoint presentation
+% and copy to a PowerPoint presentation (Windows) or save .png to results
+% folder
 % 
-% 
+% methods:
+% DisplayImCubeImage
+% DisplayImCubeUnProb
+% DisplayImCubeContrast
+% DisplayImCubeSigProb
+% DisplayIncInt
+% DisplayProbeAmp
+% DisplayProbeCube
+% DisplayCohInt
+% DisplayAllInt
+% DisplayIncCohInt
+% DisplayEfields
+% DisplayDEfields
+% DisplayCEfields
+% DisplayDMv
+% DisplayDMvProbe
+
 
 %mlock   
 persistent Sppt;
