@@ -214,6 +214,24 @@ classdef CRunData < handle & CConstants
 
                     S.ppl0 = 4.52;
                     
+                case 13 % DST model2
+                    S.Results_pn = '/home/dmarx/HCIT/DST/hcim_model2_run013/results/run013/';
+                    S.S383temp_pn = S.Results_pn; % it's all local
+                    
+                    S.XYlimDefault = 12;
+
+                    S.DrawradiiDefault = [3.0 9.0];
+                    
+                    S.RminSc    = 3.0; % lam/D
+                    S.RmaxSc    = 9.0;
+
+                    % overwritten if camera image is found
+                    S.NKTupper = [533.5, 555.5, 577.5]*S.NM;
+                    S.NKTlower = [522.5, 544.5, 566.5]*S.NM;
+                    S.NKTcenter = mean([S.NKTupper; S.NKTlower]);
+
+                    S.ppl0 = 4.45;
+
                 case 606, % MCB-SPC
                     S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run606/';
                     S.ppl0 = 6.09; % MCB SPC from config_MCB_SPC_20181015.py
@@ -653,8 +671,7 @@ classdef CRunData < handle & CConstants
             
         end % ReadProbeCube
         
-        function S = ReadImageCube(S)
-            
+        function S = ReadImageCube(S)            
             % unprobed images for total contrast:
             % see hcim/ly/lyotserver.py,
             % wavelength is outer loop, dmsettings (probes) inner loop
@@ -694,6 +711,8 @@ classdef CRunData < handle & CConstants
         end % ReadDMv
 
         function [hfig, him, Im] = DisplayImCubeImage(S, imnum)
+            % [hfig, him, Im] = DisplayImCubeImage(S, imnum)
+            
             if nargin < 2,
                 disp('usage: S.DisplayImCubeImage(imnum)');
                 error('Not enough input arguments');
