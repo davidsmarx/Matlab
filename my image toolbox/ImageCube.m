@@ -22,8 +22,10 @@ function [hfig, hax, sUserData] = ImageCube(imgCube, listI, varargin)
 hfig = CheckOption('hfig', [], varargin{:});
 hax = CheckOption('hax', [], varargin{:});
 fImageDisplay = CheckOption('fImageDisplay', @imageschcit, varargin{:});
-clim = CheckOption('clim', [], varargin{:});
+xplot = CheckOption('x', [], varargin{:});
+yplot = CheckOption('y', [], varargin{:});
 xylim = CheckOption('xylim', [], varargin{:});
+clim = CheckOption('clim', [], varargin{:});
 cmap = CheckOption('colormap', 'gray', varargin{:});
 fTitleStr = CheckOption('fTitleStr', @(isl) ['slice #' num2str(isl) '; Label ' num2str(listI(isl))], varargin{:});
 
@@ -33,11 +35,16 @@ if length(listI) ~= Nsl,
     error('number of image slices not consistent');
 end
 
+% validate axis scale
+if isempty(xplot) || isempty(yplot),
+    [xplot, yplot] = CreateGrid([nr nc]);
+end
+
 % create the figure
 islinit = 1; % first slice to show
 if ~isempty(hfig), figure(hfig); else, hfig = gcf; end 
 if ~isempty(hax), axes(hax); end
-himage = fImageDisplay(squeeze(imgCube(islinit,:,:)));
+himage = fImageDisplay(xplot, yplot, squeeze(imgCube(islinit,:,:)));
 if isempty(hax), hax = gca; end
 if ~isempty(clim), set(gca,'clim',clim), end
 if ~isempty(xylim), set(gca,'xlim', xylim, 'ylim', xylim), end
@@ -54,6 +61,8 @@ sUserData = struct(...
     ,'htitle', htitle ...
     ,'fTitleStr', fTitleStr ...
     ,'isl', islinit ... % current slice in figure
+    ,'xplot', xplot ...
+    ,'yplot', yplot ...
     );
 
 set(hfig, 'KeyPressFcn', @KeyPressCallback);
