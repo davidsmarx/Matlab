@@ -1892,17 +1892,28 @@ classdef CRunData < handle & CConstants
             CE   = dE_t .* conj(dE_m);
             
             for iwv = 1:S.NofW,
+                
+                % to make the phase plot cleaner, only plot phase where
+                % there are speckles. Let's make a mask from speckle
+                % correlation intensity
+                CEampiwv = squeeze(abs(CE(iwv,:,:)));
+                [~, bMaskce] = AutoMetric(CEampiwv, [], ...
+                    struct('image_type','psf','logPSF',true,'debug',true));
+                CEphaiwv = squeeze(angle(CE(iwv,:,:)));
+                CEphaiwv(~bMaskce) = nan;
+                
                 % subplot #
                 iamppl = iwv+0*S.NofW;
                 iphapl = iwv+1*S.NofW;
                 
                 % amplitude of projection
                 ha(1,iwv) = subplot(Nplr, S.NofW, iamppl);
-                imageschcit(x,y,squeeze(abs(CE(iwv,:,:)))); colorbar
+                imageschcit(x,y, CEampiwv); colorbar
                 title([sRI ', |dE_m''dE_t|, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 
                 ha(2,iwv) = subplot(Nplr, S.NofW, iphapl);
-                imageschcit(x,y,squeeze(angle(CE(iwv,:,:))/pi)); 
+                %imageschcit(x,y,CEphaiwv/pi); 
+                surf(x, y, CEphaiwv/pi, 'linestyle','none'); view(2); % doesn't plot NaN
                 title([sRI ', \angle{dE_m''dE_t}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 colorbartitle('Phase (\pi rad)')
                 % circular colormap for phase plots

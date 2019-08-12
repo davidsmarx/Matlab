@@ -165,7 +165,18 @@ end % AutoThreshold
 
 function [bMask, thresh] = AutoThresholdPSF(Im, sOptions)
     
-    [cnt, xbin] = hist(abs(Im(:)), 256);
+    if sOptions.logPSF,
+        absIm = abs(Im);
+        %abmin = min(absIm(absIm(:)>0));
+        absIm = absIm(absIm>0); % eliminate no signal
+        [cnt, xbin] = hist(log10(absIm(:)), 256);
+        xbin = 10.^xbin;
+        
+    else,
+        [cnt, xbin] = hist(abs(Im(:)), 256);
+        
+    end
+    
     % assume most pixels are dark + noise
     [cntmax, imax] = max(cnt);
     
@@ -196,6 +207,7 @@ function sOptions = ValidateOptions(varargin)
         ,'eps_outside', 1.0e-12 ...
         ,'AutoThreshold_Nbins', 21 ...
         ,'bScaleAmp', false ...
+        ,'logPSF', false ...
         ,'debug', false ...
         );
     
