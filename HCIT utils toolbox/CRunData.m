@@ -94,8 +94,10 @@ classdef CRunData < handle & CConstants
         IncInt
         IncIntEst   % part of inc int where all probeamp > 0
         IncIntMix   % part of UnProbed Image where any probeamp <= 0
+        IncIntEstFullBand % mean across all subbands
 
         CohInt
+        CohIntFullBand % mean across all subbands
         E_t
         E_m
         dE_ro
@@ -110,6 +112,7 @@ classdef CRunData < handle & CConstants
         
         ImCube
         ImCubeUnProb    % {iwv}
+        ImCubeUnProbFullBand % mean across all subbands
         ImCubeDelProb   % {iwv,ipr}
         ImCubeSigProb   % {iwv,ipr} = sigtbw  in tbif.task.probes
         ImCubeContrast  % {iwv} = ImCubUnProb / Thpt
@@ -601,6 +604,11 @@ classdef CRunData < handle & CConstants
                        
             end % for each wl
             
+            % whole band mean
+            S.CohIntFullBand = mean(cat(3, S.CohInt{:}), 3);
+            S.IncIntEstFullBand = mean(cat(3, S.IncIntEst{:}), 3);
+            
+            
         end % ReadReducedCube
         
         function S = ReadMaskCube(S, varargin)
@@ -694,6 +702,8 @@ classdef CRunData < handle & CConstants
             end
             
             % Useful Derived Parameters                       
+            % mean un probed over the band
+            S.ImCubeUnProbFullBand = mean(cat(3, S.ImCubeUnProb{:}), 3);
             
         end % ReadImageCube
         
@@ -835,7 +845,7 @@ classdef CRunData < handle & CConstants
             else,
                 hfig = figure;
             end 
-            hl = semilogy(rplot, [IntRad{:}]);
+            hl = semilogy(rplot, ([IntRad{:}]>0).*[IntRad{:}]);
             ha = gca;
             hold on
             
@@ -860,14 +870,14 @@ classdef CRunData < handle & CConstants
                 hold on
                 for irad = 1:length(drawRadii),
                     plot(drawRadii(irad)*[1 1], ylim, '--r')
-                    legstr{end+1} = [num2str(drawRadii(irad),'%.1f')];
+                    %legstr{end+1} = [num2str(drawRadii(irad),'%.1f')];
                 end
                 hold off
             end
 
             xlabel('Radius (\lambda/D)')
             ylabel(strYlabel)
-            legend(legstr{:}, 'location','north')
+            hleg = legend(legstr{:}, 'location','north');
             title(strTitle)
 
             
@@ -1543,22 +1553,24 @@ classdef CRunData < handle & CConstants
                 haxlist(1,ii) = subplot(3,S.Nlamcorr,ii);
             end
             S.DisplayImCubeUnProb('hax',haxlist(1,:),varargin{:});
-
+            % S.ImCubeUnProb{iwvpl}
+            
             % Coh Int
             figure(hfig);            
             for ii = 1:S.Nlamcorr,
                 haxlist(2,ii) = subplot(3,S.Nlamcorr,ii+S.Nlamcorr);
             end
-
             S.DisplayCohInt('hax',haxlist(2,:), varargin{:});
-
+            % S.CohInt{iwv}
+            
             % Inc Int
             figure(hfig);            
             for ii = 1:S.Nlamcorr,
                 haxlist(3,ii) = subplot(3,S.Nlamcorr,ii+2*S.Nlamcorr);
             end
             S.DisplayIncInt('hax',haxlist(3,:), varargin{:});
-
+            % S.IncIntEst{iwv}
+            
             % make common clim
             %climlist = get(haxlist,'clim');
             %set(haxlist,'clim',[min([climlist{:}]) max([climlist{:}])])
@@ -1599,6 +1611,17 @@ classdef CRunData < handle & CConstants
                 ,'Color','b' ...
                 ,'FontWeight','bold' ...
                 );
+            
+            
+            % radial plot of band mean total, unmodulated, modulated
+            [hfig, ha, hl, rplot, IntRad] = DisplayRadialPlot(S, ...
+                {S.ImCubeUnProbFullBand, S.CohIntFullBand, S.IncIntEstFullBand}, ...
+                'legstr', {'Total','Modulated','Unmodulated'}, ...
+                'plotmean', false);
+            set(hl,'LineWidth',2)
+            set(hl(1),'color','k')
+            set(hl(3),'color','b')
+            ylim = get(ha,'ylim'); set(ha,'ylim', [max([ylim(1) 1e-9]), ylim(2)]);
             
         end
         
