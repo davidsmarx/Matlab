@@ -2109,6 +2109,13 @@ classdef CRunData < handle & CConstants
                 
             end % for idm
             
+            % equalize clim for DMv
+            if ~isempty(refDMv),
+                aclim = AutoClim([DMv{:}],'one-sided',true);
+                set(hax(1:S.Ndm),'clim',aclim);
+                
+            end % refDMv
+
             % equalize clim for ddm
             if ~isempty(refDMv),
                 aclim = AutoClim([cdDMv{:}],'symmetric',true);
