@@ -816,7 +816,7 @@ classdef CRunData < handle & CConstants
             bMaskUse = CheckOption('bMask', S.bMask, varargin{:});
             strYlabel = CheckOption('ylabel', 'Average Normalized Intensity', varargin{:});
             plotRequired = CheckOption('plotrequired', [], varargin{:}); % [r(:) contrast(:)]
-            iplot = CheckOption('iplot', 1:S.NofW, varargin{:});
+            iplot = CheckOption('iplot', 1:length(ImCube), varargin{:});
             legstr = CheckOption('legstr', [], varargin{:});
             strTitle = CheckOption('title', ['Iter #' num2str(S.iter)], varargin{:});
             bPlotMean = CheckOption('plotmean', true, varargin{:});
@@ -1614,7 +1614,7 @@ classdef CRunData < handle & CConstants
             
             
             % radial plot of band mean total, unmodulated, modulated
-            [hfig, ha, hl, rplot, IntRad] = DisplayRadialPlot(S, ...
+            [hfig, ha, hl, rplot, IntRad] = S.DisplayRadialPlot( ...
                 {S.ImCubeUnProbFullBand, S.CohIntFullBand, S.IncIntEstFullBand}, ...
                 'legstr', {'Total','Modulated','Unmodulated'}, ...
                 'plotmean', false);
