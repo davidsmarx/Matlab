@@ -1611,19 +1611,43 @@ classdef CRunData < handle & CConstants
                 ,'Color','b' ...
                 ,'FontWeight','bold' ...
                 );
+
+            S.DisplayRadialIntensity(varargin{:});
             
+        end
+        
+        function [hfig, hax, hl, rplot, IntRad] = DisplayRadialIntensity(S, varargin)
+            % [hfig, hax, hl, rplot, IntRad] = DisplayRadialIntensity(S, varargin)
+            %
+            % radial plot of full band mean total, unmodulated, modulated
             
-            % radial plot of band mean total, unmodulated, modulated
-            [hfig, ha, hl, rplot, IntRad] = S.DisplayRadialPlot( ...
+            xlim = CheckOption('xlim', [], varargin{:});
+            ylim = CheckOption('ylim', [], varargin{:});
+            
+            if isempty(S.ImCubeUnProbFullBand),
+                S.ReadImageCube;
+            end
+            if isempty(S.CohIntFullBand) || isempty(S.IncIntEstFullBand),
+                S.ReadReducedCube;
+            end
+            
+            [hfig, hax, hl, rplot, IntRad] = S.DisplayRadialPlot( ...
                 {S.ImCubeUnProbFullBand, S.CohIntFullBand, S.IncIntEstFullBand}, ...
                 'legstr', {'Total','Modulated','Unmodulated'}, ...
                 'plotmean', false);
             set(hl,'LineWidth',2)
             set(hl(1),'color','k')
             set(hl(3),'color','b')
-            ylim = get(ha,'ylim'); set(ha,'ylim', [max([ylim(1) 1e-9]), ylim(2)]);
+            if ~isempty(xlim), set(hax,'xlim',xlim), end
+            if isempty(ylim)
+                ylim = get(hax,'ylim'); set(hax,'ylim', [max([ylim(1) 1e-9]), ylim(2)]);
+            else
+                set(hax,'ylim',ylim);
+            end
             
-        end
+    
+            
+        end % DisplayRadialIntensity
         
         function [hfig, haxlist] = DisplayIncCohInt(S, varargin)
             %    create large display of:
