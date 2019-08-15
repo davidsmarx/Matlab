@@ -2086,6 +2086,8 @@ classdef CRunData < handle & CConstants
             if isempty(S.DMvCube)
                 S.ReadDMvCube;
             end
+            
+            climDelta = CheckOption('climdelta', [], varargin{:});
 
             % extract the DV v to plot
             for idm = 1:S.Ndm,
@@ -2165,9 +2167,12 @@ classdef CRunData < handle & CConstants
 
             % equalize clim for ddm
             if ~isempty(refDMv),
-                aclim = AutoClim([cdDMv{:}],'symmetric',true);
-                set(hax(S.Ndm+1:end),'clim',aclim);
-                
+                if ~isempty(climDelta),
+                    set(hax(S.Ndm+1:end),'clim',climDelta)
+                else
+                    aclim = AutoClim([cdDMv{:}],'symmetric',true);
+                    set(hax(S.Ndm+1:end),'clim',aclim);
+                end                
             end % refDMv
             
             
