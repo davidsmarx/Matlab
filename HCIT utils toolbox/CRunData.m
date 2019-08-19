@@ -656,8 +656,8 @@ classdef CRunData < handle & CConstants
             % 4*Nppair*Nlamcorr+1 .. 4*Nppair*Nlamcorr + Nlamcorr  = probe estimate residual
             % 4*Nppair*Nlamcorr+Nlamcorr+1 .. 4*Nppair*Nlamcorr+2*Nlamcorr = probe estimate condition #
             
-            %finfo = fitsinfo(S.Reduced_fn);
-            %ProbeKwds = finfo.Image(2).Keywords;
+            % finfo = fitsinfo(S.Reduced_fn);
+            % ProbeKwds = finfo.Image(2).Keywords; % nothing interesting
             ProbeData = fitsread(S.Reduced_fn,'image',2);
 
             for iwl = 1:S.Nlamcorr,
