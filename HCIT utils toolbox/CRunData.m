@@ -1375,7 +1375,7 @@ classdef CRunData < handle & CConstants
                 S.ReadMaskCube;
             end
             
-            iwvplot = CheckOption('iwv', 2, varargin{:});            
+            iwvplot = CheckOption('iwv', ceil(S.NofW/2), varargin{:});
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             bLog = CheckOption('blog', true, varargin{:});
 
