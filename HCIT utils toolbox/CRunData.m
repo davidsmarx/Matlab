@@ -656,8 +656,8 @@ classdef CRunData < handle & CConstants
             % 4*Nppair*Nlamcorr+1 .. 4*Nppair*Nlamcorr + Nlamcorr  = probe estimate residual
             % 4*Nppair*Nlamcorr+Nlamcorr+1 .. 4*Nppair*Nlamcorr+2*Nlamcorr = probe estimate condition #
             
-            %finfo = fitsinfo(S.Reduced_fn);
-            %ProbeKwds = finfo.Image(2).Keywords;
+            % finfo = fitsinfo(S.Reduced_fn);
+            % ProbeKwds = finfo.Image(2).Keywords; % nothing interesting
             ProbeData = fitsread(S.Reduced_fn,'image',2);
 
             for iwl = 1:S.Nlamcorr,
@@ -1611,19 +1611,43 @@ classdef CRunData < handle & CConstants
                 ,'Color','b' ...
                 ,'FontWeight','bold' ...
                 );
+
+            S.DisplayRadialIntensity(varargin{:});
             
+        end
+        
+        function [hfig, hax, hl, rplot, IntRad] = DisplayRadialIntensity(S, varargin)
+            % [hfig, hax, hl, rplot, IntRad] = DisplayRadialIntensity(S, varargin)
+            %
+            % radial plot of full band mean total, unmodulated, modulated
             
-            % radial plot of band mean total, unmodulated, modulated
-            [hfig, ha, hl, rplot, IntRad] = S.DisplayRadialPlot( ...
+            xlim = CheckOption('xlim', [], varargin{:});
+            ylim = CheckOption('ylim', [], varargin{:});
+            
+            if isempty(S.ImCubeUnProbFullBand),
+                S.ReadImageCube;
+            end
+            if isempty(S.CohIntFullBand) || isempty(S.IncIntEstFullBand),
+                S.ReadReducedCube;
+            end
+            
+            [hfig, hax, hl, rplot, IntRad] = S.DisplayRadialPlot( ...
                 {S.ImCubeUnProbFullBand, S.CohIntFullBand, S.IncIntEstFullBand}, ...
                 'legstr', {'Total','Modulated','Unmodulated'}, ...
                 'plotmean', false);
             set(hl,'LineWidth',2)
             set(hl(1),'color','k')
             set(hl(3),'color','b')
-            ylim = get(ha,'ylim'); set(ha,'ylim', [max([ylim(1) 1e-9]), ylim(2)]);
+            if ~isempty(xlim), set(hax,'xlim',xlim), end
+            if isempty(ylim)
+                ylim = get(hax,'ylim'); set(hax,'ylim', [max([ylim(1) 1e-9]), ylim(2)]);
+            else
+                set(hax,'ylim',ylim);
+            end
             
-        end
+    
+            
+        end % DisplayRadialIntensity
         
         function [hfig, haxlist] = DisplayIncCohInt(S, varargin)
             %    create large display of:
@@ -2062,6 +2086,8 @@ classdef CRunData < handle & CConstants
             if isempty(S.DMvCube)
                 S.ReadDMvCube;
             end
+            
+            climDelta = CheckOption('climdelta', [], varargin{:});
 
             % extract the DV v to plot
             for idm = 1:S.Ndm,
@@ -2141,9 +2167,12 @@ classdef CRunData < handle & CConstants
 
             % equalize clim for ddm
             if ~isempty(refDMv),
-                aclim = AutoClim([cdDMv{:}],'symmetric',true);
-                set(hax(S.Ndm+1:end),'clim',aclim);
-                
+                if ~isempty(climDelta),
+                    set(hax(S.Ndm+1:end),'clim',climDelta)
+                else
+                    aclim = AutoClim([cdDMv{:}],'symmetric',true);
+                    set(hax(S.Ndm+1:end),'clim',aclim);
+                end                
             end % refDMv
             
             

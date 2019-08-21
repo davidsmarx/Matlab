@@ -1,8 +1,9 @@
-function sOut = GenerateEFCReport(runnum, listItnum, csDisplayFun, varargin)
+function sOut = GenerateEFCReport(runnum, listItnum, varargin)
 % sOut = GenerateEFCReport(runnum, listItnum, sDisplayFun)
 %
 % listItnum can be array of itnums, or array of CRunData objects
-% csDisplayFun is a cell array of methods, e.g.{'DisplayAllInt','DisplayCEfields'}
+% csDisplayFun is a cell array: {method, varargin options (e.g. 'clim', clim)}
+% varargin = additional cdDisplayFun cell arrays as you want
 %
 % create figures S.(sDisplayFun) for each iteration in listItnum
 % and copy to a PowerPoint presentation (Windows) or save .png to results
@@ -57,8 +58,10 @@ else
     error(['listItnum type error: ' class(listItnum)]);
 end
   
-for iplot = 1:length(csDisplayFun),
-    listHfig{iplot} = CreaetePlots(S, csDisplayFun{iplot}, Sppt, varargin{:});
+for iplot = 1:length(varargin),
+    if iscell(varargin{iplot}),
+        listHfig{iplot} = CreaetePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end});
+    end
 end
 
 % plot probeh
