@@ -5,9 +5,9 @@
 %   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 %   Original IDL version by John Krist
 %   Matlab translation by Gary Gutt
-
-
-function wlm = prop_get_wavelength(bm)
+%
+% wlm = prop_get_wavelength(bm)
+%
 %        wlm = prop_get_wavelength(bm)
 % Return the wavelength of the current beam.
 %
@@ -16,6 +16,7 @@ function wlm = prop_get_wavelength(bm)
 %
 % Required inputs:
 % bm   = beam structure
+function wlm = prop_get_wavelength(bm)
 
 % 2005 Feb     jek  created idl routine
 % 2016 Feb 24  gmg  Matlab translation

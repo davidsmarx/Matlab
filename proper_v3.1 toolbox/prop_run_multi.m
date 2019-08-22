@@ -5,9 +5,7 @@
 %   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 %   Original IDL version by John Krist
 %   Matlab translation by Gary Gutt
-
-
-function [img, pixx] = prop_run_multi(flnm, wl, nx, varargin)
+%
 %        [img, pixx] = prop_run_multi(flnm, wl, nx, varargin)
 % Execute multiple instances of a Proper prescription in parallel.
 % Accepts multiple wavelengths and/or multiple parameters.
@@ -46,14 +44,16 @@ function [img, pixx] = prop_run_multi(flnm, wl, nx, varargin)
 %                       (passed to Proper prescription)
 %                       Note: if both wl and prm are specified as arrays,
 %                       they must have the same number of elements.
-
+%
 % 2014 Mar     jek  created idl routine
 % 2015 Apr 06  gmg  Matlab translation
 % 2017 Apr 13  gmg  Revised for keyword/value for optional inputs
+% 2019 Aug 19  D.Marx NumWorkers = min([nj ncpus])
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+%
 % The DO_TABLE, PRINT_INTENSITY, and VERBOSE options to prop_run
 % are not supported by this routine.
+function [img, pixx] = prop_run_multi(flnm, wl, nx, varargin)
 
   propcommon
 
@@ -135,14 +135,15 @@ function [img, pixx] = prop_run_multi(flnm, wl, nx, varargin)
 
   ncpu = str2num(cpus);         % number of available logical CPUs
   fprintf(1, '   available logical CPUs:%6d\n', ncpu);
-  if nj > ncpu
-    error('Proper:PROP_RUN_MULTI', ...
-      'Requested cpus %6d > available cpus %6d\n', nj, ncpu);
-  end
-
+  %   if nj > ncpu
+  %     error('Proper:PROP_RUN_MULTI', ...
+  %       'Requested cpus %6d > available cpus %6d\n', nj, ncpu);
+  %   end
+  NumWorkers = min([nj ncpu]);
+  
 % Force Matlab 'local' cluster to recognize all available logical CPUs
   clst = parcluster('local');
-  clst.NumWorkers = ncpu;
+  clst.NumWorkers = NumWorkers;
   saveProfile(clst);
 
 % Set time scales for different operating systems
@@ -155,7 +156,7 @@ function [img, pixx] = prop_run_multi(flnm, wl, nx, varargin)
   end
 
   tstc = tic;           % start time to create pool
-  pool = parpool(nj);   % create pool of processors
+  pool = parpool(NumWorkers);   % create pool of processors
   tdec = toc(tstc);     % delta time to create pool
   fprintf(1, ' start time  delta time\n');
   fprintf(1, '    (sec)       (sec)\n');
