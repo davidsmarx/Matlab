@@ -1876,7 +1876,7 @@ classdef CRunData < handle & CConstants
             
         end % DisplayDEfields
 
-        function [hfig, ha] = DisplayCEfields(S, Sref, varargin)
+        function [hfig, ha, sCmetrics] = DisplayCEfields(S, Sref, varargin)
             % [hfig, ha] = DisplayCEfields(S, Sref, varargin)
             % correlation metrics DE_t .* conj(DE_m)
             
