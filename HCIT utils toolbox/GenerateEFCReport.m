@@ -19,6 +19,7 @@ function sOut = GenerateEFCReport(runnum, listItnum, varargin)
 % DisplayProbeCube
 % DisplayCohInt
 % DisplayAllInt
+% DisplayRadialIntensity
 % DisplayIncCohInt
 % DisplayEfields
 % DisplayDEfields
@@ -64,7 +65,7 @@ for iplot = 1:length(varargin),
     end
 end
 
-% plot probeh
+% plot graphs of metrics v itnum
 [hfig, haxprobeh, probeh] = PlotProbeh(S);
 
 

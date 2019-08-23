@@ -1542,6 +1542,8 @@ classdef CRunData < handle & CConstants
             % S.DisplayCohInt
             % S.DisplayIncInt
             
+            bPlotRadialIntensity = CheckOption('DisplayRadialIntensity', true, varargin{:});
+            
             % defaults that might be different
             varargin{end+1} = 'bLog'; varargin{end+1} = true;
             varargin{end+1} = 'clim'; varargin{end+1} = [-9 -6.5];
@@ -1614,7 +1616,9 @@ classdef CRunData < handle & CConstants
                 ,'FontWeight','bold' ...
                 );
 
-            S.DisplayRadialIntensity(varargin{:});
+            if bPlotRadialIntensity,
+                S.DisplayRadialIntensity(varargin{:});
+            end
             
         end
         
