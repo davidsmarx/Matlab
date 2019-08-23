@@ -94,6 +94,7 @@ classdef CRunData < handle & CConstants
         IncInt
         IncIntEst   % part of inc int where all probeamp > 0
         IncIntMix   % part of UnProbed Image where any probeamp <= 0
+        IncIntFullBand 
         IncIntEstFullBand % mean across all subbands
 
         CohInt
@@ -607,6 +608,7 @@ classdef CRunData < handle & CConstants
             % whole band mean
             S.CohIntFullBand = mean(cat(3, S.CohInt{:}), 3);
             S.IncIntEstFullBand = mean(cat(3, S.IncIntEst{:}), 3);
+            S.IncIntFullBand = mean(cat(3, S.IncInt{:}), 3);
             
             
         end % ReadReducedCube
@@ -1632,7 +1634,7 @@ classdef CRunData < handle & CConstants
             end
             
             [hfig, hax, hl, rplot, IntRad] = S.DisplayRadialPlot( ...
-                {S.ImCubeUnProbFullBand, S.CohIntFullBand, S.IncIntEstFullBand}, ...
+                {S.ImCubeUnProbFullBand, S.CohIntFullBand, S.IncIntFullBand}, ...
                 'legstr', {'Total','Modulated','Unmodulated'}, ...
                 'plotmean', false);
             set(hl,'LineWidth',2)
