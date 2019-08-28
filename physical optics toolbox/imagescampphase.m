@@ -20,6 +20,7 @@ bLog = CheckOption('bLog',false,varargin{:});
 ydir = CheckOption('ydir', 'reverse', varargin{:});
 xlabelstr = CheckOption('xlabel', [], varargin{:});
 ylabelstr = CheckOption('ylabel', [], varargin{:});
+xylim = CheckOption('xylim', [], varargin{:});
 
 pos = get(gcf,'position');
 pos(3) = 1.75*pos(3);
@@ -47,6 +48,10 @@ if ~isempty(xlabelstr), xlabel(xlabelstr), end
 if ~isempty(ylabelstr), ylabel(ylabelstr), end
 
 set(hax,'ydir',ydir);
+
+if ~isempty(xylim),
+    set(hax,'xlim',xylim,'ylim',xylim)
+end
 
 if nargout > 0,
     haxout = hax;
