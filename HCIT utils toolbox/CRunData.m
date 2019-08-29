@@ -175,7 +175,7 @@ classdef CRunData < handle & CConstants
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run603/';
                     S.XYlimDefault = 22;
                     
-                    throughput_fn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/Throughput_20171003T122253.mat';
+                    throughput_fn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/Throughput_20171003T122253_20190829.mat';
                     S.Sthpt = load(PathTranslator(throughput_fn));
                     S.Sthpt.ThptCal_fn = throughput_fn;
 
@@ -439,27 +439,34 @@ classdef CRunData < handle & CConstants
             % resample throughput data to pixels in scoring region
             if ~isempty(S.Sthpt),
 
-                if S.runnum == 603, % SPC disc
-                    error('SPC disc throughput data format needs to be reworked');
-                    %                     dxyfudge = 0.9;
-                    %                     rthpt = mean([Sth.src_dy(:).*dxyfudge./Sth.mmperlamD Sth.src_dx(:).*dxyfudge./Sth.mmperlamD],2);
-                    %                     thpt = mean([Sth.thpt_dy(:) Sth.thpt_dx(:)],2);
-                    %                     % normalize to clear region: lam/D > 8.5 & lam/D < 16.2
-                    %                     thpt_norm = mean(thpt(abs(rthpt) >= 8.5 & abs(rthpt) < 16.2));
-                    %                     thpt = thpt./ thpt_norm;
-                    %                     % rthpt, thpt is now a lookup table to throughput for
-                    %                     % cross-section
-                    %                     % make a matrix
-                    %                     Thpt = zeros(size(bMaskSc));
-                    %                     Thpt(bMaskSc) = interp1(rthpt, thpt, R(bMaskSc));
+                %                 if S.runnum == 603, % SPC disc
+                %                     error('SPC disc throughput data format needs to be reworked');
+                %                     %                     dxyfudge = 0.9;
+                %                     %                     rthpt = mean([Sth.src_dy(:).*dxyfudge./Sth.mmperlamD Sth.src_dx(:).*dxyfudge./Sth.mmperlamD],2);
+                %                     %                     thpt = mean([Sth.thpt_dy(:) Sth.thpt_dx(:)],2);
+                %                     %                     % normalize to clear region: lam/D > 8.5 & lam/D < 16.2
+                %                     %                     thpt_norm = mean(thpt(abs(rthpt) >= 8.5 & abs(rthpt) < 16.2));
+                %                     %                     thpt = thpt./ thpt_norm;
+                %                     %                     % rthpt, thpt is now a lookup table to throughput for
+                %                     %                     % cross-section
+                %                     %                     % make a matrix
+                %                     %                     Thpt = zeros(size(bMaskSc));
+                %                     %                     Thpt(bMaskSc) = interp1(rthpt, thpt, R(bMaskSc));
+                %                 end
+                if isfield(S.Sthpt,'fovx') && isfield(S.Sthpt,'fovy'),
+                    % most cases
+                    Finterp = scatteredInterpolant(S.Sthpt.fovx(:), S.Sthpt.fovy(:), S.Sthpt.thpt(:));
+                    S.Sthpt.ThptSc = ones(size(S.bMaskSc)); % avoid divide by zero
+                    S.Sthpt.ThptSc(S.bMaskSc) = Finterp(X(S.bMaskSc), Y(S.bMaskSc));
+                elseif isfield(S.Sthpt,'fovr'),
+                    % SPC Disc run 603
+                    S.Sthpt.ThptSc = ones(size(S.bMaskSc)); % avoid divide by zero
+                    S.Sthpt.ThptSc(S.bMaskSc) = interp1(S.Sthpt.fovr, S.Sthpt.thpt, R(S.bMaskSc));                    
                 end
-                Finterp = scatteredInterpolant(S.Sthpt.fovx(:), S.Sthpt.fovy(:), S.Sthpt.thpt(:));
-                S.Sthpt.ThptSc = ones(size(S.bMaskSc)); % avoid divide by zero
-                S.Sthpt.ThptSc(S.bMaskSc) = Finterp(X(S.bMaskSc), Y(S.bMaskSc));
 
             else
+                warning('no throughput data, contrast is normalized intensity');
                 S.Sthpt.ThptSc = ones(size(S.bMaskSc));
-                
             end
             
             % note: don't like nonzeros(...) because pixels within the dark
