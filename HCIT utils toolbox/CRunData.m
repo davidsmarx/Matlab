@@ -61,6 +61,7 @@ classdef CRunData < handle & CConstants
 % [hfig, hax] = DisplayDMv(S)
 % [hfig, hax] = DisplayDMv(S, Sref)
 % [hfig, hax] = DisplayDMv(S, DM1ref_fits_fn, DM2ref_fits_fn)
+% [hfig, hax] = DisplayDMvProbe(S)
 %
 % [hfig, ha] = DisplayDEfields(S, Sref, hfig)
 %
@@ -93,8 +94,11 @@ classdef CRunData < handle & CConstants
         IncInt
         IncIntEst   % part of inc int where all probeamp > 0
         IncIntMix   % part of UnProbed Image where any probeamp <= 0
+        IncIntFullBand 
+        IncIntEstFullBand % mean across all subbands
 
         CohInt
+        CohIntFullBand % mean across all subbands
         E_t
         E_m
         dE_ro
@@ -109,6 +113,7 @@ classdef CRunData < handle & CConstants
         
         ImCube
         ImCubeUnProb    % {iwv}
+        ImCubeUnProbFullBand % mean across all subbands
         ImCubeDelProb   % {iwv,ipr}
         ImCubeSigProb   % {iwv,ipr} = sigtbw  in tbif.task.probes
         ImCubeContrast  % {iwv} = ImCubUnProb / Thpt
@@ -172,7 +177,10 @@ classdef CRunData < handle & CConstants
                     
                     throughput_fn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/Throughput_20171003T122253.mat';
                     S.Sthpt = load(PathTranslator(throughput_fn));
+                    S.Sthpt.ThptCal_fn = throughput_fn;
 
+                    S.ppl0 = 4.01; % config_SPCdisc_20180321.py
+                    
                 case 604, % SPC_disc
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
                     S.XYlimDefault = 22;
@@ -182,6 +190,7 @@ classdef CRunData < handle & CConstants
                     S.XYlimDefault = 12;
                 case 10 % DST with BMC50.B DM at dm1
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run010/';
+                    S.S383temp_pn= '/home/dmarx/HCIT/DST/hcim_testbed_run010/results/';
                     S.XYlimDefault = 12;
                     S.DrawradiiDefault = [3.0 9.0];
                     S.DrawthetaDefault = 180*[-0.5 0.5]*CConstants.P;
@@ -212,6 +221,24 @@ classdef CRunData < handle & CConstants
 
                     S.ppl0 = 4.52;
                     
+                case 13 % DST model2
+                    S.Results_pn = '/home/dmarx/HCIT/DST/hcim_model2_run013/results/run013/';
+                    S.S383temp_pn = S.Results_pn; % it's all local
+                    
+                    S.XYlimDefault = 12;
+
+                    S.DrawradiiDefault = [3.0 9.0];
+                    
+                    S.RminSc    = 3.0; % lam/D
+                    S.RmaxSc    = 9.0;
+
+                    % overwritten if camera image is found
+                    S.NKTupper = [533.5, 555.5, 577.5]*S.NM;
+                    S.NKTlower = [522.5, 544.5, 566.5]*S.NM;
+                    S.NKTcenter = mean([S.NKTupper; S.NKTlower]);
+
+                    S.ppl0 = 4.45;
+
                 case 606, % MCB-SPC
                     S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run606/';
                     S.ppl0 = 6.09; % MCB SPC from config_MCB_SPC_20181015.py
@@ -386,7 +413,8 @@ classdef CRunData < handle & CConstants
             if isempty(S.bMask),
                 S.ReadMaskCube;
             end
-
+            [x, y, X, Y, R, T] = CreateGrid(S.bMaskSc, 1./S.ppl0);
+            
             if isempty(S.ImCube),
                 S.ReadImageCube;
             end
@@ -396,12 +424,20 @@ classdef CRunData < handle & CConstants
             end
 
             % options
-            % bMask
+            rminsc = CheckOption('RminSc', [], varargin{:});
+            rmaxsc = CheckOption('RmaxSc', [], varargin{:});
+            
+            % FOV mask for calculating contrast
+            bMaskScUse = S.bMaskSc;
+            if ~isempty(rminsc)
+                bMaskScUse = bMaskScUse & (R >= rminsc);
+            end
+            if ~isempty(rmaxsc)
+                bMaskScUse = bMaskScUse & (R <= rmaxsc);
+            end
             
             % resample throughput data to pixels in scoring region
             if ~isempty(S.Sthpt),
-
-                [x, y, X, Y, R, T] = CreateGrid(S.bMaskSc, 1./S.ppl0);
 
                 if S.runnum == 603, % SPC disc
                     error('SPC disc throughput data format needs to be reworked');
@@ -434,13 +470,13 @@ classdef CRunData < handle & CConstants
                 % NI total control region
                 Contrast.cntl_lam(iwv) = mean(nonzeros( S.ImCube(:,:,S.imgindex(iwv)).*S.bMask ));
                 % NI total score region
-                Contrast.score_lam(iwv) = mean(S.ImCubeUnProb{iwv}(S.bMaskSc)); 
+                Contrast.score_lam(iwv) = mean(S.ImCubeUnProb{iwv}(bMaskScUse)); 
                 % Contrast score region, Modulated & Unmodulated as
                 % contrast
                 S.ImCubeContrast{iwv} = S.ImCubeUnProb{iwv}./S.Sthpt.ThptSc;
                 S.ImCubeCohContrast{iwv} = S.CohInt{iwv}./S.Sthpt.ThptSc;
                 S.ImCubeIncContrast{iwv} = S.IncInt{iwv}./S.Sthpt.ThptSc;
-                Contrast.contr_lam(iwv) = mean(S.ImCubeContrast{iwv}(S.bMaskSc));
+                Contrast.contr_lam(iwv) = mean(S.ImCubeContrast{iwv}(bMaskScUse));
                 
             end
             Contrast.mean = mean(Contrast.contr_lam);
@@ -454,7 +490,7 @@ classdef CRunData < handle & CConstants
                 %bPampz = squeeze(S.bPampzero(iwv,:,:));
                 %bMaskUse = ~bPampz & bMaskSc;
                 
-                bMaskUse = S.bMaskSc;
+                bMaskUse = bMaskScUse;
                 % total incoherent
                 Contrast.inco_lam_NI(iwv) = mean(S.IncInt{iwv}(bMaskUse));
                 Contrast.inco_lam(iwv) = mean(S.IncInt{iwv}(bMaskUse)./S.Sthpt.ThptSc(bMaskUse));
@@ -581,6 +617,12 @@ classdef CRunData < handle & CConstants
                        
             end % for each wl
             
+            % whole band mean
+            S.CohIntFullBand = mean(cat(3, S.CohInt{:}), 3);
+            S.IncIntEstFullBand = mean(cat(3, S.IncIntEst{:}), 3);
+            S.IncIntFullBand = mean(cat(3, S.IncInt{:}), 3);
+            
+            
         end % ReadReducedCube
         
         function S = ReadMaskCube(S, varargin)
@@ -628,8 +670,8 @@ classdef CRunData < handle & CConstants
             % 4*Nppair*Nlamcorr+1 .. 4*Nppair*Nlamcorr + Nlamcorr  = probe estimate residual
             % 4*Nppair*Nlamcorr+Nlamcorr+1 .. 4*Nppair*Nlamcorr+2*Nlamcorr = probe estimate condition #
             
-            %finfo = fitsinfo(S.Reduced_fn);
-            %ProbeKwds = finfo.Image(2).Keywords;
+            % finfo = fitsinfo(S.Reduced_fn);
+            % ProbeKwds = finfo.Image(2).Keywords; % nothing interesting
             ProbeData = fitsread(S.Reduced_fn,'image',2);
 
             for iwl = 1:S.Nlamcorr,
@@ -641,7 +683,7 @@ classdef CRunData < handle & CConstants
                         ProbeData(:,:,1*S.Nlamcorr*S.Nppair+(ip-1)*S.Nlamcorr+iwl)) ...
                         );
                     
-                    S.ProbeMeasAmp{iwl, ip} = sqrt(squeeze( ProbeData(:,:,2*S.Nlamcorr*S.Nppair + (ip-1)*S.Nlamcorr+ iwl) ));
+                    S.ProbeMeasAmp{iwl, ip} = real(sqrt(squeeze( ProbeData(:,:,2*S.Nlamcorr*S.Nppair + (ip-1)*S.Nlamcorr+ iwl) )));
                     S.ProbeMeasCross{iwl, ip} = squeeze( ProbeData(:,:,3*S.Nlamcorr*S.Nppair + (ip-1)*S.Nlamcorr + iwl) );
                     
                 end % for each probe pair                
@@ -651,8 +693,7 @@ classdef CRunData < handle & CConstants
             
         end % ReadProbeCube
         
-        function S = ReadImageCube(S)
-            
+        function S = ReadImageCube(S)            
             % unprobed images for total contrast:
             % see hcim/ly/lyotserver.py,
             % wavelength is outer loop, dmsettings (probes) inner loop
@@ -675,6 +716,8 @@ classdef CRunData < handle & CConstants
             end
             
             % Useful Derived Parameters                       
+            % mean un probed over the band
+            S.ImCubeUnProbFullBand = mean(cat(3, S.ImCubeUnProb{:}), 3);
             
         end % ReadImageCube
         
@@ -692,6 +735,8 @@ classdef CRunData < handle & CConstants
         end % ReadDMv
 
         function [hfig, him, Im] = DisplayImCubeImage(S, imnum)
+            % [hfig, him, Im] = DisplayImCubeImage(S, imnum)
+            
             if nargin < 2,
                 disp('usage: S.DisplayImCubeImage(imnum)');
                 error('Not enough input arguments');
@@ -785,11 +830,11 @@ classdef CRunData < handle & CConstants
             bMaskUse = CheckOption('bMask', S.bMask, varargin{:});
             strYlabel = CheckOption('ylabel', 'Average Normalized Intensity', varargin{:});
             plotRequired = CheckOption('plotrequired', [], varargin{:}); % [r(:) contrast(:)]
-            iplot = CheckOption('iplot', 1:S.NofW, varargin{:});
+            iplot = CheckOption('iplot', 1:length(ImCube), varargin{:});
             legstr = CheckOption('legstr', [], varargin{:});
             strTitle = CheckOption('title', ['Iter #' num2str(S.iter)], varargin{:});
             bPlotMean = CheckOption('plotmean', true, varargin{:});
-            
+            haxuse = CheckOption('hax', [], varargin{:});
             
             re = linspace(dispRadlim(1), dispRadlim(2), Nr+1)';
             IntRad = cell(length(iplot),1);
@@ -804,12 +849,17 @@ classdef CRunData < handle & CConstants
                 IntRad{iiwv} = Itmp;
                 legstrwv{iiwv} = [num2str(S.NKTcenter(iwv)/S.NM,'%.1f') 'nm'];
             end % for iwv
-            
-            if isempty(legstr), legstr = legstrwv; end
-            
             rplot = mean([re(1:end-1) re(2:end)],2); % radii midway between edges
-            hfig = figure;
-            hl = semilogy(rplot, [IntRad{:}]);
+            
+            if isempty(legstr), legstr = legstrwv; end            
+            
+            if ~isempty(haxuse),
+                axes(haxuse);
+                hfig = gcf;
+            else,
+                hfig = figure;
+            end 
+            hl = semilogy(rplot, ([IntRad{:}]>0).*[IntRad{:}]);
             ha = gca;
             hold on
             
@@ -834,13 +884,14 @@ classdef CRunData < handle & CConstants
                 hold on
                 for irad = 1:length(drawRadii),
                     plot(drawRadii(irad)*[1 1], ylim, '--r')
+                    %legstr{end+1} = [num2str(drawRadii(irad),'%.1f')];
                 end
                 hold off
             end
 
             xlabel('Radius (\lambda/D)')
             ylabel(strYlabel)
-            legend(legstr{:}, 'location','north')
+            hleg = legend(legstr{:}, 'location','north');
             title(strTitle)
 
             
@@ -1328,62 +1379,70 @@ classdef CRunData < handle & CConstants
             
         end % DisplayOneProbeAmp
         
-        function [hfig, ha] = DisplayProbeCube(S, iwvplot, varargin)
+        function [hfig, ha] = DisplayProbeCube(S, varargin)
             % hfig = DisplayProbeCube(S, iwvplot)
             % ProbeCube is 2nd HDU of reduced data cube
             if isempty(S.ProbeModel),
                 S.ReadProbeCube;
             end
-            
-            if ~exist('iwvplot','var') || isempty(iwvplot),
-                warning('wavelength # not specified, plotting wave #1');
-                iwvplot = 1;
+            if isempty(S.bMask),
+                S.ReadMaskCube;
             end
             
+            iwvplot = CheckOption('iwv', ceil(S.NofW/2), varargin{:});
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             bLog = CheckOption('blog', true, varargin{:});
 
             [x, y] = CreateGrid(S.ProbeModel{1,1}, 1./S.ppl0);
+                        
             
-            % plot a cross-section to compare model & measure
-            ip = 1;
-            figure, plot(y, [abs(S.ProbeModel{iwvplot,ip}(:,x==0)), ...
-                    S.ProbeMeasAmp{iwvplot,ip}(:,x==0)].^2), grid
-            xlabel('Y (\lambda / D)')
-            legend(['it ' num2str(S.iter) ' model'],['it ' num2str(S.iter) ' Measured'])
-            title(['Cross Section, it ' num2str(S.iter) ', Wave #' num2str(iwvplot) ', Measure Probe #' num2str(ip)])
-
             if bLog,
-                funPlot = @(Ep) real(log10( Ep.^2 ));
+                funPlot = @(Ep) real(log10( abs(Ep).^2 ));
                 %                 ImModel = real(log10(abs(S.ProbeModel{iwvplot,ip}).^2));
                 %                 ImMeasure = real(log10(S.ProbeMeasAmp{iwvplot,ip}.^2));
                 sctitle = 'log_{10} Norm Intensity';
             else
-                funPlot = @(Ep) Ep.^2;
+                funPlot = @(Ep) abs(Ep).^2;
                 %                 ImModel = abs(S.ProbeModel{iwvplot,ip}).^2;
                 %                 ImMeasure = S.ProbeMeasAmp{iwvplot,ip}.^2;
                 sctitle = 'Linear Norm Intensity';
             end
                 
-            hfig = figure_mxn(2,S.Nppair);
+            hfig = figure_mxn(2,S.Nppair+1);
             for ip = 1:S.Nppair,
-                ha(ip) = subplot(2,S.Nppair,ip);
-                imageschcit(x,y, funPlot(abs(S.ProbeModel{iwvplot,ip}))), axis image, colorbartitle(sctitle)
+                ha(ip) = subplot(2,S.Nppair+1,ip);
+                imageschcit(x,y, funPlot(S.ProbeModel{iwvplot,ip})), axis image, colorbartitle(sctitle)
                 set(gca,'xlim',dispXYlim*[-1 1],'ylim',dispXYlim*[-1 1])
                 xlabel('\lambda / D'), ylabel('\lambda / D')
                 title(['wave #' num2str(iwvplot) ', it ' num2str(S.iter) ', Model Probe #' num2str(ip)])
                 
-                ha(S.Nppair+ip) = subplot(2,S.Nppair,S.Nppair+ip);
+                ha(S.Nppair+ip) = subplot(2,S.Nppair+1,S.Nppair+1+ip);
                 imageschcit(x,y, funPlot(S.ProbeMeasAmp{iwvplot,ip})), axis image, colorbartitle(sctitle)
                 set(gca,'xlim',dispXYlim*[-1 1],'ylim',dispXYlim*[-1 1])
                 xlabel('\lambda / D'), ylabel('\lambda / D')
                 title(['wave #' num2str(iwvplot) ', it ' num2str(S.iter) ', Measure Probe #' num2str(ip)])
             end
-
+            % match clim for all images
             climall = get(ha,'clim');
             if bLog, climmin = -9; else, climmin = 0; end
             clim = [climmin max([climall{:}])];
             set(ha,'clim',clim)
+
+            
+            % probe model is complex, take abs
+            for ip = 1:S.Nppair,
+                ProbeModelPlot{ip} = abs(S.ProbeModel{iwvplot,ip}).^2;
+                ProbeMeasPlot{ip}  = abs(S.ProbeMeasAmp{iwvplot,ip}).^2;
+            end
+            harad(1) = subplot(2,S.Nppair+1,S.Nppair+1);
+            DisplayRadialPlot(S, ProbeModelPlot, 'hax', harad(1));
+            legend('location','south')
+            harad(2) = subplot(2,S.Nppair+1,2*(S.Nppair+1));
+            DisplayRadialPlot(S, ProbeMeasPlot,'hax',harad(2));
+            legend('location','south')
+            
+            ylim = get(harad,'ylim');
+            set(harad,'ylim',[min([ylim{:}]), max([ylim{:}])])
             
         end % DisplayProbeCube
         
@@ -1495,6 +1554,8 @@ classdef CRunData < handle & CConstants
             % S.DisplayCohInt
             % S.DisplayIncInt
             
+            bPlotRadialIntensity = CheckOption('DisplayRadialIntensity', true, varargin{:});
+            
             % defaults that might be different
             varargin{end+1} = 'bLog'; varargin{end+1} = true;
             varargin{end+1} = 'clim'; varargin{end+1} = [-9 -6.5];
@@ -1508,22 +1569,24 @@ classdef CRunData < handle & CConstants
                 haxlist(1,ii) = subplot(3,S.Nlamcorr,ii);
             end
             S.DisplayImCubeUnProb('hax',haxlist(1,:),varargin{:});
-
+            % S.ImCubeUnProb{iwvpl}
+            
             % Coh Int
             figure(hfig);            
             for ii = 1:S.Nlamcorr,
                 haxlist(2,ii) = subplot(3,S.Nlamcorr,ii+S.Nlamcorr);
             end
-
             S.DisplayCohInt('hax',haxlist(2,:), varargin{:});
-
+            % S.CohInt{iwv}
+            
             % Inc Int
             figure(hfig);            
             for ii = 1:S.Nlamcorr,
                 haxlist(3,ii) = subplot(3,S.Nlamcorr,ii+2*S.Nlamcorr);
             end
             S.DisplayIncInt('hax',haxlist(3,:), varargin{:});
-
+            % S.IncIntEst{iwv}
+            
             % make common clim
             %climlist = get(haxlist,'clim');
             %set(haxlist,'clim',[min([climlist{:}]) max([climlist{:}])])
@@ -1564,8 +1627,45 @@ classdef CRunData < handle & CConstants
                 ,'Color','b' ...
                 ,'FontWeight','bold' ...
                 );
+
+            if bPlotRadialIntensity,
+                S.DisplayRadialIntensity(varargin{:});
+            end
             
         end
+        
+        function [hfig, hax, hl, rplot, IntRad] = DisplayRadialIntensity(S, varargin)
+            % [hfig, hax, hl, rplot, IntRad] = DisplayRadialIntensity(S, varargin)
+            %
+            % radial plot of full band mean total, unmodulated, modulated
+            
+            xlim = CheckOption('xlim', [], varargin{:});
+            ylim = CheckOption('ylim', [], varargin{:});
+            
+            if isempty(S.ImCubeUnProbFullBand),
+                S.ReadImageCube;
+            end
+            if isempty(S.CohIntFullBand) || isempty(S.IncIntEstFullBand),
+                S.ReadReducedCube;
+            end
+            
+            [hfig, hax, hl, rplot, IntRad] = S.DisplayRadialPlot( ...
+                {S.ImCubeUnProbFullBand, S.CohIntFullBand, S.IncIntFullBand}, ...
+                'legstr', {'Total','Modulated','Unmodulated'}, ...
+                'plotmean', false);
+            set(hl,'LineWidth',2)
+            set(hl(1),'color','k')
+            set(hl(3),'color','b')
+            if ~isempty(xlim), set(hax,'xlim',xlim), end
+            if isempty(ylim)
+                ylim = get(hax,'ylim'); set(hax,'ylim', [max([ylim(1) 1e-9]), ylim(2)]);
+            else
+                set(hax,'ylim',ylim);
+            end
+            
+    
+            
+        end % DisplayRadialIntensity
         
         function [hfig, haxlist] = DisplayIncCohInt(S, varargin)
             %    create large display of:
@@ -1792,7 +1892,7 @@ classdef CRunData < handle & CConstants
             
         end % DisplayDEfields
 
-        function [hfig, ha] = DisplayCEfields(S, Sref, varargin)
+        function [hfig, ha, sCmetrics] = DisplayCEfields(S, Sref, varargin)
             % [hfig, ha] = DisplayCEfields(S, Sref, varargin)
             % correlation metrics DE_t .* conj(DE_m)
             
@@ -1834,17 +1934,28 @@ classdef CRunData < handle & CConstants
             CE   = dE_t .* conj(dE_m);
             
             for iwv = 1:S.NofW,
+                
+                % to make the phase plot cleaner, only plot phase where
+                % there are speckles. Let's make a mask from speckle
+                % correlation intensity
+                CEampiwv = squeeze(abs(CE(iwv,:,:)));
+                [~, bMaskce] = AutoMetric(CEampiwv, [], ...
+                    struct('image_type','psf','logPSF',true,'debug',true));
+                CEphaiwv = squeeze(angle(CE(iwv,:,:)));
+                CEphaiwv(~bMaskce) = nan;
+                
                 % subplot #
                 iamppl = iwv+0*S.NofW;
                 iphapl = iwv+1*S.NofW;
                 
                 % amplitude of projection
                 ha(1,iwv) = subplot(Nplr, S.NofW, iamppl);
-                imageschcit(x,y,squeeze(abs(CE(iwv,:,:)))); colorbar
+                imageschcit(x,y, CEampiwv); colorbar
                 title([sRI ', |dE_m''dE_t|, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 
                 ha(2,iwv) = subplot(Nplr, S.NofW, iphapl);
-                imageschcit(x,y,squeeze(angle(CE(iwv,:,:))/pi)); 
+                %imageschcit(x,y,CEphaiwv/pi); 
+                surf(x, y, CEphaiwv/pi, 'linestyle','none'); view(2); % doesn't plot NaN
                 title([sRI ', \angle{dE_m''dE_t}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 colorbartitle('Phase (\pi rad)')
                 % circular colormap for phase plots
@@ -1993,6 +2104,8 @@ classdef CRunData < handle & CConstants
             if isempty(S.DMvCube)
                 S.ReadDMvCube;
             end
+            
+            climDelta = CheckOption('climdelta', [], varargin{:});
 
             % extract the DV v to plot
             for idm = 1:S.Ndm,
@@ -2056,14 +2169,69 @@ classdef CRunData < handle & CConstants
                     imageschcit(dDMv)
                     colorbartitle('Vmu')
                     title(['\Delta ' strRefDM{idm} ', ' num2str(rmsdDMv,'%.4f') 'V rms'])
+                    
+                    % save
+                    cdDMv{idm} = dDMv;
                 end
                 
             end % for idm
+            
+            % equalize clim for DMv
+            if ~isempty(refDMv),
+                aclim = AutoClim([DMv{:}],'one-sided',true);
+                set(hax(1:S.Ndm),'clim',aclim);
+                
+            end % refDMv
+
+            % equalize clim for ddm
+            if ~isempty(refDMv),
+                if ~isempty(climDelta),
+                    set(hax(S.Ndm+1:end),'clim',climDelta)
+                else
+                    aclim = AutoClim([cdDMv{:}],'symmetric',true);
+                    set(hax(S.Ndm+1:end),'clim',aclim);
+                end                
+            end % refDMv
+            
             
             %             fprintf('rms dDMv1 = %.3f Vmu\n',rmsdDMv1);
             %             fprintf('rms dDMv2 = %.3f Vmu\n',rmsdDMv2);
             %
         end % DisplayDMv
+        
+        function [hfig, hax] = DisplayDMvProbe(S, varargin)
+            % [hfig, hax] = DisplayDMvProbe(S, varargin)
+            
+            if isempty(S.DMvCube),
+                S.ReadDMvCube;
+            end
+            
+            % just assume for now the DM1 is probed
+            DMv = S.DMvCube{1};
+            
+            [nacty, nactx, nsli] = size(DMv);
+            npr = nsli-1;
+            
+            hfig = figure_mxn(2,npr/2);
+            for ii = 1:npr/2,
+                isl = 2*ii; % slice into dmv cube
+                hax(ii) = subplot(2,npr/2,ii);
+                imageschcit(0,0,squeeze(DMv(:,:,isl)-DMv(:,:,1)))
+                title(['Probe #' num2str(ii) '; +ve'])
+                colorbartitle('Vmu')
+                
+                hax(ii+npr/2) = subplot(2,npr/2,ii+npr/2);
+                imageschcit(0,0,squeeze(DMv(:,:,isl+1)-DMv(:,:,1)))
+                title(['Probe #' num2str(ii) '; -ve'])
+                colorbartitle('Vmu')
+                                    
+            end % for each pair
+            
+            % make uniform clim
+            clim = get(hax,'clim'); % a cell array
+            set(hax,'clim', max(abs([max([clim{:}]) min([clim{:}])]))*[-1 1])
+            
+        end % DisplayDMvProbes
         
         function [hfig, hax] = DisplayDelProbes(S, iwv, varargin)
             

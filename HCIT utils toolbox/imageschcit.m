@@ -35,7 +35,7 @@ if ischar(Im),
         case '.fits',
             % check if primary hdu is empty, and if so, use first image hdu
             finfo = fitsinfo(Im);
-            if isempty(finfo.PrimaryData.Size),
+            if isempty(finfo.PrimaryData.Size) || isequal(finfo.PrimaryData.Size, [1 1]),
                 Im = fitsread(Im,'image');
             else
                 Im = fitsread(Im);

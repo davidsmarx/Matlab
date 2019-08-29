@@ -162,9 +162,7 @@ classdef CGS < handle
             S.ph = fitsread(PathTranslator([bn num2str(gsnum,'%03d') 'ph.fits']));
             S.phw = fitsread(PathTranslator([bn num2str(gsnum,'%03d') 'phwrap.fits']));
             S.amp_keys = ampinfo.PrimaryData.Keywords;
-            
-            [S.x, S.y, S.X, S.Y, S.R, S.T] = CreateGrid(S.amp);
-           
+                       
             % S.bMask, S.ampthresh
             [sResult, S.bMask] = AutoMetric(S.amp);
             S.ampthresh = sResult.thresh;
@@ -172,13 +170,15 @@ classdef CGS < handle
             % S.phw_ptt
             % use FFT to remove large amounts of PTT (integer pixels in FFT space
             % then use zernikes to remove remaining PTT
+            [S.x, S.y, S.X, S.Y, S.R, S.T] = CreateGrid(S.amp);
             S.RemovePTTfft;
             S.phw_ptt = RemovePTTZ(S.phw_ptt, S.bMask);
             
             % S.E
             %S.E = S.amp .* exp(1i*S.phw_ptt);
             S.E = S.amp .* exp(1i*S.phw);
-             
+        
+
         end % CGS instantiator
         
         function Scopy = Copy(S)
@@ -190,6 +190,26 @@ classdef CGS < handle
             end
 
         end
+        
+        function Crop(S, wpix)
+                       
+            % crop all the image arrays to something bigger than the mask
+            if nargin == 0 || isempty(wpix),
+                wpix = 1.5*max(S.R(S.bMask));
+            end
+            
+            % guarantee that image size is even number
+            wc = ceil(wpix/2);
+            
+            [S.amp, S.bMask] = CropImage(S.amp, S.bMask, [0 0], 2*wc, 2*wc);
+            S.ph  = CropImage(S.ph, [], [0 0], 2*wc, 2*wc);
+            S.phw = CropImage(S.phw, [], [0 0], 2*wc, 2*wc);
+            S.phw_ptt = CropImage(S.phw_ptt, [], [0 0], 2*wc, 2*wc);
+            S.E   = CropImage(S.E, [], [0 0], 2*wc, 2*wc);            
+            
+            [S.x, S.y, S.X, S.Y, S.R, S.T] = CreateGrid(S.amp);
+
+        end % Crop
         
         function ReadAmpImages(S)
             % read the cmp.fits file
