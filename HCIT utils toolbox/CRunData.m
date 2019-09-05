@@ -1555,12 +1555,20 @@ classdef CRunData < handle & CConstants
             % S.DisplayIncInt
             
             bPlotRadialIntensity = CheckOption('DisplayRadialIntensity', true, varargin{:});
+            hfig = CheckOption('hfig', [], varargin{:});
             
             % defaults that might be different
             varargin{end+1} = 'bLog'; varargin{end+1} = true;
             varargin{end+1} = 'clim'; varargin{end+1} = [-9 -6.5];
             
-            hfig = figure_mxn(3,S.Nlamcorr);
+            if isempty(hfig),
+                hfig = figure_mxn(3,S.Nlamcorr);
+            else
+                % need to remove hfig from varargin
+                iv = find(strcmp(varargin, 'hfig'));
+                varargin{iv+1} = [];
+            end
+            
             %haxlist = zeros(3,S.Nlamcorr);
             
             % unprobed images
@@ -1829,7 +1837,9 @@ classdef CRunData < handle & CConstants
             [nw, nr, nc] = size(S.E_t);
             if nw ~= S.NofW, error(['number of wavelengths inconsistent']); end
             
-            sRI = ['run #' num2str(S.runnum) ', iter #' num2str(S.iter) '--' num2str(Sref.iter)];
+            %sRI = ['run #' num2str(S.runnum) ', iter #' num2str(S.iter) '--' num2str(Sref.iter)];
+            %sRI = ['iter #' num2str(S.iter) '--' num2str(Sref.iter)];
+            sRI = '';
             
             % top row = real(DE_t)
             % 2nd row = imag(DE_t)
@@ -2206,6 +2216,7 @@ classdef CRunData < handle & CConstants
                 S.ReadDMvCube;
             end
             
+            
             % just assume for now the DM1 is probed
             DMv = S.DMvCube{1};
             
@@ -2217,12 +2228,12 @@ classdef CRunData < handle & CConstants
                 isl = 2*ii; % slice into dmv cube
                 hax(ii) = subplot(2,npr/2,ii);
                 imageschcit(0,0,squeeze(DMv(:,:,isl)-DMv(:,:,1)))
-                title(['Probe #' num2str(ii) '; +ve'])
+                title(['iter #' num2str(S.iter) '; Probe #' num2str(ii) '; +ve'])
                 colorbartitle('Vmu')
                 
                 hax(ii+npr/2) = subplot(2,npr/2,ii+npr/2);
                 imageschcit(0,0,squeeze(DMv(:,:,isl+1)-DMv(:,:,1)))
-                title(['Probe #' num2str(ii) '; -ve'])
+                title(['iter #' num2str(S.iter) '; Probe #' num2str(ii) '; -ve'])
                 colorbartitle('Vmu')
                                     
             end % for each pair
