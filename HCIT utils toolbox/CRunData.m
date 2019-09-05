@@ -94,6 +94,7 @@ classdef CRunData < handle & CConstants
         IncInt
         IncIntEst   % part of inc int where all probeamp > 0
         IncIntMix   % part of UnProbed Image where any probeamp <= 0
+        IncIntFullBand 
         IncIntEstFullBand % mean across all subbands
 
         CohInt
@@ -176,7 +177,10 @@ classdef CRunData < handle & CConstants
                     
                     throughput_fn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/Throughput_20171003T122253.mat';
                     S.Sthpt = load(PathTranslator(throughput_fn));
+                    S.Sthpt.ThptCal_fn = throughput_fn;
 
+                    S.ppl0 = 4.01; % config_SPCdisc_20180321.py
+                    
                 case 604, % SPC_disc
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
                     S.XYlimDefault = 22;
@@ -409,7 +413,8 @@ classdef CRunData < handle & CConstants
             if isempty(S.bMask),
                 S.ReadMaskCube;
             end
-
+            [x, y, X, Y, R, T] = CreateGrid(S.bMaskSc, 1./S.ppl0);
+            
             if isempty(S.ImCube),
                 S.ReadImageCube;
             end
@@ -419,12 +424,20 @@ classdef CRunData < handle & CConstants
             end
 
             % options
-            % bMask
+            rminsc = CheckOption('RminSc', [], varargin{:});
+            rmaxsc = CheckOption('RmaxSc', [], varargin{:});
+            
+            % FOV mask for calculating contrast
+            bMaskScUse = S.bMaskSc;
+            if ~isempty(rminsc)
+                bMaskScUse = bMaskScUse & (R >= rminsc);
+            end
+            if ~isempty(rmaxsc)
+                bMaskScUse = bMaskScUse & (R <= rmaxsc);
+            end
             
             % resample throughput data to pixels in scoring region
             if ~isempty(S.Sthpt),
-
-                [x, y, X, Y, R, T] = CreateGrid(S.bMaskSc, 1./S.ppl0);
 
                 if S.runnum == 603, % SPC disc
                     error('SPC disc throughput data format needs to be reworked');
@@ -457,13 +470,13 @@ classdef CRunData < handle & CConstants
                 % NI total control region
                 Contrast.cntl_lam(iwv) = mean(nonzeros( S.ImCube(:,:,S.imgindex(iwv)).*S.bMask ));
                 % NI total score region
-                Contrast.score_lam(iwv) = mean(S.ImCubeUnProb{iwv}(S.bMaskSc)); 
+                Contrast.score_lam(iwv) = mean(S.ImCubeUnProb{iwv}(bMaskScUse)); 
                 % Contrast score region, Modulated & Unmodulated as
                 % contrast
                 S.ImCubeContrast{iwv} = S.ImCubeUnProb{iwv}./S.Sthpt.ThptSc;
                 S.ImCubeCohContrast{iwv} = S.CohInt{iwv}./S.Sthpt.ThptSc;
                 S.ImCubeIncContrast{iwv} = S.IncInt{iwv}./S.Sthpt.ThptSc;
-                Contrast.contr_lam(iwv) = mean(S.ImCubeContrast{iwv}(S.bMaskSc));
+                Contrast.contr_lam(iwv) = mean(S.ImCubeContrast{iwv}(bMaskScUse));
                 
             end
             Contrast.mean = mean(Contrast.contr_lam);
@@ -477,7 +490,7 @@ classdef CRunData < handle & CConstants
                 %bPampz = squeeze(S.bPampzero(iwv,:,:));
                 %bMaskUse = ~bPampz & bMaskSc;
                 
-                bMaskUse = S.bMaskSc;
+                bMaskUse = bMaskScUse;
                 % total incoherent
                 Contrast.inco_lam_NI(iwv) = mean(S.IncInt{iwv}(bMaskUse));
                 Contrast.inco_lam(iwv) = mean(S.IncInt{iwv}(bMaskUse)./S.Sthpt.ThptSc(bMaskUse));
@@ -607,6 +620,7 @@ classdef CRunData < handle & CConstants
             % whole band mean
             S.CohIntFullBand = mean(cat(3, S.CohInt{:}), 3);
             S.IncIntEstFullBand = mean(cat(3, S.IncIntEst{:}), 3);
+            S.IncIntFullBand = mean(cat(3, S.IncInt{:}), 3);
             
             
         end % ReadReducedCube
@@ -1375,7 +1389,7 @@ classdef CRunData < handle & CConstants
                 S.ReadMaskCube;
             end
             
-            iwvplot = CheckOption('iwv', 2, varargin{:});            
+            iwvplot = CheckOption('iwv', ceil(S.NofW/2), varargin{:});
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             bLog = CheckOption('blog', true, varargin{:});
 
@@ -1636,7 +1650,7 @@ classdef CRunData < handle & CConstants
             end
             
             [hfig, hax, hl, rplot, IntRad] = S.DisplayRadialPlot( ...
-                {S.ImCubeUnProbFullBand, S.CohIntFullBand, S.IncIntEstFullBand}, ...
+                {S.ImCubeUnProbFullBand, S.CohIntFullBand, S.IncIntFullBand}, ...
                 'legstr', {'Total','Modulated','Unmodulated'}, ...
                 'plotmean', false);
             set(hl,'LineWidth',2)

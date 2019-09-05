@@ -10,7 +10,14 @@ U = CConstants;
 fid = fopen(fn,'rt');
 if isequal(fid,-1), error(['cannot open file ' fn]); end
 
-A = textscan(fid,'%f %f %f %f','headerlines',6);
+ltmp = fgetl(fid);
+while isempty(strfind(ltmp, 'X-Field'))
+    ltmp = fgetl(fid);
+end
+% data follows
+A = textscan(fid,'%f %f %f %f', 101*101, 'delimiter', '\t');
+
+fclose(fid);
 
 [xf, yf, mag, theta] = deal(A{:});
 theta = theta*U.P; % degrees to radians
