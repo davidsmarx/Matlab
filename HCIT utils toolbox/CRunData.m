@@ -1838,8 +1838,8 @@ classdef CRunData < handle & CConstants
             if nw ~= S.NofW, error(['number of wavelengths inconsistent']); end
             
             %sRI = ['run #' num2str(S.runnum) ', iter #' num2str(S.iter) '--' num2str(Sref.iter)];
-            %sRI = ['iter #' num2str(S.iter) '--' num2str(Sref.iter)];
-            sRI = '';
+            sRI = ['\DeltaE Iter #' num2str(S.iter) ' - ' num2str(Sref.iter)];
+            %sRI = '';
             
             % top row = real(DE_t)
             % 2nd row = imag(DE_t)
@@ -1868,22 +1868,22 @@ classdef CRunData < handle & CConstants
                 
                 % change in unprobed image intensity
                 ha(1,iwv) = subplot(Nplr, S.NofW, iptr);
-                imageschcit(x,y,squeeze(real(dE_t(iwv,:,:)))); colorbar
-                title([sRI ', real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                imageschcit(x,y,squeeze(real(dE_t(iwv,:,:)))); %colorbar
+                title(['Measure: real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 
                 ha(2,iwv) = subplot(Nplr, S.NofW, ipti);
-                imageschcit(x,y,squeeze(imag(dE_t(iwv,:,:)))); colorbar
-                title([sRI ', imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                imageschcit(x,y,squeeze(imag(dE_t(iwv,:,:)))); %colorbar
+                title(['Measure: imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
 
                 ha(3,iwv) = subplot(Nplr, S.NofW, ipmr);
-                imageschcit(x,y,squeeze(real(dE_m(iwv,:,:)))); colorbar
-                title([sRI ',Model: real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                imageschcit(x,y,squeeze(real(dE_m(iwv,:,:)))); %colorbar
+                title(['Model: real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 
                 ha(4,iwv) = subplot(Nplr, S.NofW, ipmi);
-                imageschcit(x,y,squeeze(imag(dE_m(iwv,:,:)))); colorbar
-                title([sRI ',Model: imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                imageschcit(x,y,squeeze(imag(dE_m(iwv,:,:)))); %colorbar
+                title(['Model: imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
 
-            end
+            end            
 
             % xlim, ylim
             xlim = dispXYlim*[-1 1]; ylim = xlim;
@@ -1899,7 +1899,33 @@ classdef CRunData < handle & CConstants
                 %set(ha,'clim',clim)
             end
             set(ha,'clim',clim)
+
+            % put colorbars on the right-most axes
+            for ii = 1:4,
+                colorbar('peer',ha(ii,end))
+            end
             
+            % make a title at the top
+            han = annotation('textbox', [0.5 0.8 0.2 0.2], 'String', sRI, ...
+                'FitBoxToText', 'on', 'LineStyle', 'none', ...
+                'FontSize', 24, 'Color', 'r', 'FontWeight', 'bold');
+            set(han,'HorizontalAlignment','center')
+            % center horizontally
+            ppp = get(han,'Position');
+            set(han,'Position',[0.5 - 0.5*ppp(3) ppp(2:end)])
+            
+            %             pos = get(get(haxlist(1,1),'YLabel'),'Position');
+            %             ht = text(haxlist(1,1), ylpos(1) - 2, ylpos(2), 'UnProbed' ...
+            %                 , 'Rotation',90 ...
+            %                 ,'HorizontalAlignment','center' ...
+            %                 ,'VerticalAlignment','top' ...
+            %                 ,'VerticalAlignment','bottom' ...
+            %                 ... ,'Position', ylpos - [2 0 0] ...
+            %                 ,'FontSize', 18 ...
+            %                 ,'Color','b' ...
+            %                 ,'FontWeight','bold' ...
+            %                 );
+
         end % DisplayDEfields
 
         function [hfig, ha, sCmetrics] = DisplayCEfields(S, Sref, varargin)
