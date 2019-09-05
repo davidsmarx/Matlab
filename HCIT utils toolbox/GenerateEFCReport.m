@@ -27,6 +27,7 @@ function sOut = GenerateEFCReport(runnum, listItnum, varargin)
 % DisplayDMv
 % DisplayDMvProbe
 
+more off
 
 %mlock   
 persistent Sppt;
@@ -58,7 +59,8 @@ elseif isa(listItnum, 'CRunData')
 else
     error(['listItnum type error: ' class(listItnum)]);
 end
-  
+
+listHfig = {};
 for iplot = 1:length(varargin),
     if iscell(varargin{iplot}),
         listHfig{iplot} = CreaetePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end});
@@ -67,7 +69,7 @@ end
 
 % plot graphs of metrics v itnum
 [hfig, haxprobeh, probeh] = PlotProbeh(S);
-
+[hfig, haxrmsddmv, rmsdDMv] = PlotRMSdDMv(S);
 
     if nargout >= 1,
         sOut = struct(...
@@ -76,8 +78,12 @@ end
             ,'Sppt', Sppt ...
             ,'probeh', probeh ...
             ,'haxprobeh', haxprobeh ...
+            ,'haxrmsddmv', haxrmsddmv ...
+            ,'rmsdDMv', rmsdDMv ...
             );
     end
+
+more on
 
 end % main
 
@@ -103,29 +109,30 @@ function hfig = CreaetePlots(S, sDisplayFun, Sppt, varargin)
     
     N = length(S);
 
+    hfig = [];
     if any(strcmp(sDisplayFun, listDiff)),
         for ii = 1:N-1,
-            hfig(ii) = S(ii+1).(sDisplayFun)(S(ii), varargin{:});
-            figscale = CalcFigscale(hfig(ii), figheight);
-            set(hfig(ii), 'Position', figscale*get(hfig(ii),'position'));
+            hfig = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
+            figscale = CalcFigscale(hfig, figheight);
+            set(hfig, 'Position', figscale*get(hfig,'position'));
             if ispc,
-                htmp = Sppt.CopyFigNewSlide(hfig(ii));
+                htmp = Sppt.CopyFigNewSlide(hfig);
                 %set(htmp,'Height',figheight);
             else
-                saveas(hfig(ii), [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
+                saveas(hfig, [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
             end
         end
         
     else, % one call per iteration
         for ii = 1:N,
-            hfig(ii) = S(ii).(sDisplayFun)(varargin{:});
-            figscale = CalcFigscale(hfig(ii), figheight);
-            set(hfig(ii), 'Position', figscale*get(hfig(ii),'position'));
+            hfig = S(ii).(sDisplayFun)(varargin{:},'hfig',hfig);
+            figscale = CalcFigscale(hfig, figheight);
+            set(hfig, 'Position', figscale*get(hfig,'position'));
             if ispc,
-                htmp = Sppt.CopyFigNewSlide(hfig(ii));
+                htmp = Sppt.CopyFigNewSlide(hfig);
                 %set(htmp,'Height',figheight);
             else
-                saveas(hfig(ii), [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
+                saveas(hfig, [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
             end
         end
     end
@@ -155,3 +162,35 @@ function [hfig, hax, probeh] = PlotProbeh(S)
      hax = gca;
      
 end % PlotProbeh
+
+function [hfig, hax, rmsdDMv] = PlotRMSdDMv(listS, varargin)
+
+    for ii = 1:length(listS),
+        if isempty(listS(ii).DMvCube)
+            listS(ii).ReadDMvCube;
+        end
+    end
+    
+    Ndm = length(listS(1).DMvCube);
+    
+    for ii = 1:length(listS),
+        for idm = 1:Ndm
+            DMvtmp{idm} = squeeze(listS(ii).DMvCube{idm}(:,:,1));
+        end
+        listDMv{ii} = [DMvtmp{:}];
+    end
+    
+    % rms difference
+    rmsdDMv = zeros(length(listS)-1,1);
+    for ii = 1:length(listS)-1
+        iuse = abs(listDMv{ii+1}) > 0 & abs(listDMv{ii}) > 0;
+        rmsdDMv(ii) = rms(listDMv{ii+1}(iuse) - listDMv{ii}(iuse));
+    end
+    
+    hfig = figure;
+    plot([listS(2:end).iter].', rmsdDMv), grid
+    xlabel('Iteration #')
+    ylabel('rms \Delta Vmu')
+    hax = gca;
+    
+end % PlotRMSdDMv
