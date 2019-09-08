@@ -1906,6 +1906,12 @@ classdef CRunData < handle & CConstants
             end
             
             % make a title at the top
+            % delete previous annotation if it exists
+            hantmp = findobj(gcf,'type','textboxshape');
+            if ~isempty(hantmp)
+               hantmp.delete; 
+            end
+            % new annotation
             han = annotation('textbox', [0.5 0.8 0.2 0.2], 'String', sRI, ...
                 'FitBoxToText', 'on', 'LineStyle', 'none', ...
                 'FontSize', 24, 'Color', 'r', 'FontWeight', 'bold');
@@ -1913,6 +1919,8 @@ classdef CRunData < handle & CConstants
             % center horizontally
             ppp = get(han,'Position');
             set(han,'Position',[0.5 - 0.5*ppp(3) ppp(2:end)])
+            % so it can be found and deleted later
+            set(get(han,'parent'),'HandleVisibility','on')
             
             %             pos = get(get(haxlist(1,1),'YLabel'),'Position');
             %             ht = text(haxlist(1,1), ylpos(1) - 2, ylpos(2), 'UnProbed' ...
@@ -2142,6 +2150,7 @@ classdef CRunData < handle & CConstants
             end
             
             climDelta = CheckOption('climdelta', [], varargin{:});
+            hfig = CheckOption('hfig', [], varargin{:});
 
             % extract the DV v to plot
             for idm = 1:S.Ndm,
@@ -2185,7 +2194,11 @@ classdef CRunData < handle & CConstants
             end % if ~isempty(dmvref)
                     
             Nr = 1 + ~isempty(refDMv);
-            hfig = figure_mxn(Nr,S.Ndm);
+            if isempty(hfig),
+                hfig = figure_mxn(Nr,S.Ndm);
+            else
+                figure(hfig);
+            end
             
             for idm = 1:S.Ndm,
 
