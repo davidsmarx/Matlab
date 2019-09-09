@@ -192,7 +192,13 @@ function [bMask, thresh] = AutoThresholdPSF(Im, sOptions)
     
     bMask = abs(Im) >= thresh;
     
+    if sOptions.debug,
+        fprintf('AutoThresholdPSF; thresh = %.3e\n',thresh);
+        %figure, imageschcit(bMask), title('before imopen');
+    end
+    
     % morphological opening to eliminate outlier 'salt' noise
+    bMask = imclose(bMask, strel('disk',3));
     bMask = imopen(bMask, strel('disk',3));
 
 end % AutoThresholdPSF
