@@ -2242,9 +2242,10 @@ classdef CRunData < handle & CConstants
                 S.ReadDMvCube;
             end
             
+            idm = CheckOption('idm', 1, varargin{:}); % which DM is probing?
             
-            % just assume for now the DM1 is probed
-            DMv = S.DMvCube{1};
+            % probed DM:
+            DMv = S.DMvCube{idm};
             
             [nacty, nactx, nsli] = size(DMv);
             npr = nsli-1;
