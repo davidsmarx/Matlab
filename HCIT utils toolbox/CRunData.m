@@ -1977,6 +1977,9 @@ classdef CRunData < handle & CConstants
             dE_m = S.E_m - Sref.E_m;
             CE   = dE_t .* conj(dE_m);
             
+            sCmetrics = struct(...
+                ...
+                );
             for iwv = 1:S.NofW,
                 
                 % to make the phase plot cleaner, only plot phase where
