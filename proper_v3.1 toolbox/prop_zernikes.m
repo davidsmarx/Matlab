@@ -5,9 +5,7 @@
 %   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 %   Original IDL version by John Krist
 %   Matlab translation by Gary Gutt
-
-
-function [bmo, amap] = prop_zernikes(bmi, zn, zv, varargin)
+%
 %        [bmo, amap] = prop_zernikes(bmi, zn, zv, varargin)
 % Add Zernike-polynomial wavefront errors to current wavefront.
 % Noll ordering is used and a circular system is assumed.
@@ -71,6 +69,7 @@ function [bmo, amap] = prop_zernikes(bmi, zn, zv, varargin)
 %       20 : X pentafoil
 %       21 : Y pentafoil
 %       22 : 5th order spherical
+function [bmo, amap] = prop_zernikes(bmi, zn, zv, varargin)
 
 % 2005 Feb     jek  created idl routine
 % 2016 Jun 23  gmg  Matlab translation
