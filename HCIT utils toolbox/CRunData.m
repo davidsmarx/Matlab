@@ -1555,12 +1555,20 @@ classdef CRunData < handle & CConstants
             % S.DisplayIncInt
             
             bPlotRadialIntensity = CheckOption('DisplayRadialIntensity', true, varargin{:});
+            hfig = CheckOption('hfig', [], varargin{:});
             
             % defaults that might be different
             varargin{end+1} = 'bLog'; varargin{end+1} = true;
             varargin{end+1} = 'clim'; varargin{end+1} = [-9 -6.5];
             
-            hfig = figure_mxn(3,S.Nlamcorr);
+            if isempty(hfig),
+                hfig = figure_mxn(3,S.Nlamcorr);
+            else
+                % need to remove hfig from varargin
+                iv = find(strcmp(varargin, 'hfig'));
+                varargin{iv+1} = [];
+            end
+            
             %haxlist = zeros(3,S.Nlamcorr);
             
             % unprobed images
@@ -1829,7 +1837,9 @@ classdef CRunData < handle & CConstants
             [nw, nr, nc] = size(S.E_t);
             if nw ~= S.NofW, error(['number of wavelengths inconsistent']); end
             
-            sRI = ['run #' num2str(S.runnum) ', iter #' num2str(S.iter) '--' num2str(Sref.iter)];
+            %sRI = ['run #' num2str(S.runnum) ', iter #' num2str(S.iter) '--' num2str(Sref.iter)];
+            sRI = ['\DeltaE Iter #' num2str(S.iter) ' - ' num2str(Sref.iter)];
+            %sRI = '';
             
             % top row = real(DE_t)
             % 2nd row = imag(DE_t)
@@ -1858,22 +1868,22 @@ classdef CRunData < handle & CConstants
                 
                 % change in unprobed image intensity
                 ha(1,iwv) = subplot(Nplr, S.NofW, iptr);
-                imageschcit(x,y,squeeze(real(dE_t(iwv,:,:)))); colorbar
-                title([sRI ', real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                imageschcit(x,y,squeeze(real(dE_t(iwv,:,:)))); %colorbar
+                title(['Measure: real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 
                 ha(2,iwv) = subplot(Nplr, S.NofW, ipti);
-                imageschcit(x,y,squeeze(imag(dE_t(iwv,:,:)))); colorbar
-                title([sRI ', imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                imageschcit(x,y,squeeze(imag(dE_t(iwv,:,:)))); %colorbar
+                title(['Measure: imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
 
                 ha(3,iwv) = subplot(Nplr, S.NofW, ipmr);
-                imageschcit(x,y,squeeze(real(dE_m(iwv,:,:)))); colorbar
-                title([sRI ',Model: real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                imageschcit(x,y,squeeze(real(dE_m(iwv,:,:)))); %colorbar
+                title(['Model: real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 
                 ha(4,iwv) = subplot(Nplr, S.NofW, ipmi);
-                imageschcit(x,y,squeeze(imag(dE_m(iwv,:,:)))); colorbar
-                title([sRI ',Model: imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                imageschcit(x,y,squeeze(imag(dE_m(iwv,:,:)))); %colorbar
+                title(['Model: imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
 
-            end
+            end            
 
             % xlim, ylim
             xlim = dispXYlim*[-1 1]; ylim = xlim;
@@ -1889,7 +1899,41 @@ classdef CRunData < handle & CConstants
                 %set(ha,'clim',clim)
             end
             set(ha,'clim',clim)
+
+            % put colorbars on the right-most axes
+            for ii = 1:4,
+                colorbar('peer',ha(ii,end))
+            end
             
+            % make a title at the top
+            % delete previous annotation if it exists
+            hantmp = findobj(gcf,'type','textboxshape');
+            if ~isempty(hantmp)
+               hantmp.delete; 
+            end
+            % new annotation
+            han = annotation('textbox', [0.5 0.8 0.2 0.2], 'String', sRI, ...
+                'FitBoxToText', 'on', 'LineStyle', 'none', ...
+                'FontSize', 24, 'Color', 'r', 'FontWeight', 'bold');
+            set(han,'HorizontalAlignment','center')
+            % center horizontally
+            ppp = get(han,'Position');
+            set(han,'Position',[0.5 - 0.5*ppp(3) ppp(2:end)])
+            % so it can be found and deleted later
+            set(get(han,'parent'),'HandleVisibility','on')
+            
+            %             pos = get(get(haxlist(1,1),'YLabel'),'Position');
+            %             ht = text(haxlist(1,1), ylpos(1) - 2, ylpos(2), 'UnProbed' ...
+            %                 , 'Rotation',90 ...
+            %                 ,'HorizontalAlignment','center' ...
+            %                 ,'VerticalAlignment','top' ...
+            %                 ,'VerticalAlignment','bottom' ...
+            %                 ... ,'Position', ylpos - [2 0 0] ...
+            %                 ,'FontSize', 18 ...
+            %                 ,'Color','b' ...
+            %                 ,'FontWeight','bold' ...
+            %                 );
+
         end % DisplayDEfields
 
         function [hfig, ha, sCmetrics] = DisplayCEfields(S, Sref, varargin)
@@ -1933,6 +1977,9 @@ classdef CRunData < handle & CConstants
             dE_m = S.E_m - Sref.E_m;
             CE   = dE_t .* conj(dE_m);
             
+            sCmetrics = struct(...
+                ...
+                );
             for iwv = 1:S.NofW,
                 
                 % to make the phase plot cleaner, only plot phase where
@@ -2106,6 +2153,7 @@ classdef CRunData < handle & CConstants
             end
             
             climDelta = CheckOption('climdelta', [], varargin{:});
+            hfig = CheckOption('hfig', [], varargin{:});
 
             % extract the DV v to plot
             for idm = 1:S.Ndm,
@@ -2149,7 +2197,11 @@ classdef CRunData < handle & CConstants
             end % if ~isempty(dmvref)
                     
             Nr = 1 + ~isempty(refDMv);
-            hfig = figure_mxn(Nr,S.Ndm);
+            if isempty(hfig),
+                hfig = figure_mxn(Nr,S.Ndm);
+            else
+                figure(hfig);
+            end
             
             for idm = 1:S.Ndm,
 
@@ -2206,6 +2258,7 @@ classdef CRunData < handle & CConstants
                 S.ReadDMvCube;
             end
             
+            
             % just assume for now the DM1 is probed
             DMv = S.DMvCube{1};
             
@@ -2217,12 +2270,12 @@ classdef CRunData < handle & CConstants
                 isl = 2*ii; % slice into dmv cube
                 hax(ii) = subplot(2,npr/2,ii);
                 imageschcit(0,0,squeeze(DMv(:,:,isl)-DMv(:,:,1)))
-                title(['Probe #' num2str(ii) '; +ve'])
+                title(['iter #' num2str(S.iter) '; Probe #' num2str(ii) '; +ve'])
                 colorbartitle('Vmu')
                 
                 hax(ii+npr/2) = subplot(2,npr/2,ii+npr/2);
                 imageschcit(0,0,squeeze(DMv(:,:,isl+1)-DMv(:,:,1)))
-                title(['Probe #' num2str(ii) '; -ve'])
+                title(['iter #' num2str(S.iter) '; Probe #' num2str(ii) '; -ve'])
                 colorbartitle('Vmu')
                                     
             end % for each pair

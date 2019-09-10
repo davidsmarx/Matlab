@@ -18,6 +18,15 @@ function [hfig, hax, sUserData] = ImageCube(imgCube, listI, varargin)
 % hfig = CheckOption('hfig', [], varargin{:});
 % hax = CheckOption('hax', [], varargin{:});
 
+% validate inputs
+[Nsl, nr, nc] = size(imgCube);
+if nargin == 1,
+    listI = 1:Nsl;
+end
+if length(listI) ~= Nsl,
+    error('number of image slices not consistent');
+end
+
 % check options
 hfig = CheckOption('hfig', [], varargin{:});
 hax = CheckOption('hax', [], varargin{:});
@@ -29,11 +38,6 @@ clim = CheckOption('clim', [], varargin{:});
 cmap = CheckOption('colormap', 'gray', varargin{:});
 fTitleStr = CheckOption('fTitleStr', @(isl) ['slice #' num2str(isl) '; Label ' num2str(listI(isl))], varargin{:});
 
-% validate inputs
-[Nsl, nr, nc] = size(imgCube);
-if length(listI) ~= Nsl,
-    error('number of image slices not consistent');
-end
 
 % validate axis scale
 if isempty(xplot) || isempty(yplot),
