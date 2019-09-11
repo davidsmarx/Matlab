@@ -5,8 +5,6 @@
 %   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 %   Original IDL version by John Krist
 %   Matlab translation by Gary Gutt
-
-
 function [img, pixx] = prop_run(flnm, wlu, nx, varargin)
 %        [img, pixx] = prop_run(flnm, wlu, nx, varargin)
 % Execute one or more instances of a Proper prescription.
