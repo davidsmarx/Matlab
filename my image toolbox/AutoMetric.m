@@ -181,14 +181,16 @@ function [bMask, thresh] = AutoThresholdPSF(Im, sOptions)
     [cntmax, imax] = max(cnt);
     
     % only pixels where Intensity is < twice the dark intensity
-    Idk = Im(abs(Im) < xbin(imax+10)); 
-    [cntdk, xbindk] = hist(abs(Idk(:)), 256);
+    Idk = Im(abs(Im) < 2*xbin(imax)); % xbin(imax+10)); 
+    %[cntdk, xbindk] = hist(abs(Idk(:)), 256);
         
     % mean, std of dark pixels
-    mu = sum(xbindk.*cntdk)./sum(cntdk);
-    sig = sqrt( sum(xbindk.^2.*cntdk)./sum(cntdk) - mu.^2 );
+    %     mu = sum(xbindk.*cntdk)./sum(cntdk);
+    %     sig = sqrt( sum(xbindk.^2.*cntdk)./sum(cntdk) - mu.^2 );
+    mu = mean(Idk(:));
+    sig = std(Idk(:));
     
-    thresh = mu + 2*sig;
+    thresh = mu + sOptions.PSF_thresh_nsig * sig;
     
     bMask = abs(Im) >= thresh;
     
@@ -215,6 +217,7 @@ function sOptions = ValidateOptions(varargin)
         ,'bScaleAmp', false ...
         ,'logPSF', false ...
         ,'debug', false ...
+        ,'PSF_thresh_nsig', 2 ...
         );
     
     % copy given option values over the default values

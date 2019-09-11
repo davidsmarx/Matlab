@@ -1943,6 +1943,7 @@ classdef CRunData < handle & CConstants
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
+            bDebugAutoMetric = CheckOption('debug', false, varargin{:});
             
             if isempty(S.E_t),
                 S.ReadReducedCube;
@@ -1977,9 +1978,25 @@ classdef CRunData < handle & CConstants
             dE_m = S.E_m - Sref.E_m;
             CE   = dE_t .* conj(dE_m);
             
+            % from Joon:
+            % CP =  <dEt.dEm>/<dEm.dEm>
+            % CC =  <dEt.dEm>/sqrt(<dEt.dEt><dEm.dEm>)
+            % |DE| = sqrt(<dEm.dEm>/<dEt.dEt>)
+            bMaskCube = false(size(S.E_t));
+            [nwtmp, nrtmp, nctmp] = size(S.E_t);
+            if nwtmp ~= S.NofW, error('cube size wrong'); end
+            for ii = 1:S.NofW,
+                bMaskCube(ii,:,:) = S.bMask;
+            end
+            dE_mu = dE_m(bMaskCube);
+            dE_tu = dE_t(bMaskCube);
+
             sCmetrics = struct(...
-                ...
+                'CP', (dE_mu'*dE_tu)./(dE_mu'*dE_mu) ...
+                ,'CC', (dE_mu'*dE_tu)./sqrt( (dE_mu'*dE_mu).*(dE_tu'*dE_tu) ) ...
+                ,'mag_dEm_dEt', sqrt( (dE_mu'*dE_mu)./(dE_tu'*dE_tu) ) ...
                 );
+            
             for iwv = 1:S.NofW,
                 
                 % to make the phase plot cleaner, only plot phase where
@@ -1987,7 +2004,8 @@ classdef CRunData < handle & CConstants
                 % correlation intensity
                 CEampiwv = squeeze(abs(CE(iwv,:,:)));
                 [~, bMaskce] = AutoMetric(CEampiwv, [], ...
-                    struct('image_type','psf','logPSF',true,'debug',true));
+                    struct('image_type','psf','logPSF',true,...
+                    'debug',bDebugAutoMetric,'PSF_thresh_nsig',10));
                 CEphaiwv = squeeze(angle(CE(iwv,:,:)));
                 CEphaiwv(~bMaskce) = nan;
                 
