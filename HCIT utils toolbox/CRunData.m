@@ -780,7 +780,8 @@ classdef CRunData < handle & CConstants
             climopt = CheckOption('clim', [], varargin{:});
             xcoff = CheckOption('xcoff', 0, varargin{:}); % star offset, pixels
             ycoff = CheckOption('ycoff', 0, varargin{:}); % star offset, pixels
-            %haxuse = CheckOption('hax', [], varargin{:});
+            hax = CheckOption('hax', [], varargin{:});
+            hfig = CheckOption('hfig', [], varargin{:});
             
             [x, y] = CreateGrid(Im, 1./S.ppl0);
             x = x - xcoff/S.ppl0;
@@ -788,7 +789,16 @@ classdef CRunData < handle & CConstants
             
             xlim = dispXYlim*[-1 1]; ylim = xlim;
 
-            hfig = figure;
+            if isempty(hfig) && isempty(hax),
+                hfig = figure;
+            end
+            if ~isempty(hfig)
+                figure(hfig)
+            end
+            if ~isempty(hax),
+                axes(hax)
+            end
+            
             if bPlotLog,
                 imageschcit(x, y, log10(abs(Im))), axis image,
                 colorbartitle('log_{10} Norm Intensity')
@@ -2138,12 +2148,13 @@ classdef CRunData < handle & CConstants
             
         end % DisplayDE
 
-        function DisplayPampzero(S)
+        function [hfig, ha] = DisplayPampzero(S, varargin)
+            % [hfig, ha] = DisplayPampzero(S, varargin)
             
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+
             [nw, ny, nx] = size(S.bPampzero);
-            
             [x, y] = CreateGrid([nx ny], 1./S.ppl0);
-            xlim = dispXYlim*[-1 1]; ylim = xlim;
 
             hfig = figure_mxn(1,S.NofW);
             for iw = 1:S.NofW,
@@ -2153,7 +2164,7 @@ classdef CRunData < handle & CConstants
                xlabel('\lambda / D')
                ylabel('\lambda / D')
                
-               set(gca,'xlim',xlim,'ylim',ylim)
+               set(gca,'xlim',dispXYlim*[-1 1],'ylim',dispXYlim*[-1 1])
                
             end
             
