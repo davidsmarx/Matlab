@@ -188,6 +188,7 @@ classdef CRunData < handle & CConstants
                 case 0 % DST
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run000/';
                     S.XYlimDefault = 12;
+                    
                 case 10 % DST with BMC50.B DM at dm1
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run010/';
                     S.S383temp_pn= '/home/dmarx/HCIT/DST/hcim_testbed_run010/results/';
@@ -325,6 +326,9 @@ classdef CRunData < handle & CConstants
                 sReduced_local_fn = [S.PCtemp_pn S.Reduced_pn s_bn];
                 sRundir_local_fn  = [S.PCtemp_pn S.Rundir_pn s_bn];
             else
+                if ~exist([S.S383temp_pn S.Reduced_pn],'dir')
+                    mkdir([S.S383temp_pn S.Reduced_pn])
+                end
                 sReduced_local_fn = [S.S383temp_pn S.Reduced_pn s_bn];
                 sRundir_local_fn  = [S.S383temp_pn S.Rundir_pn s_bn];
             end
@@ -821,6 +825,18 @@ classdef CRunData < handle & CConstants
             %      ImCubeCohInt, ImCubeIncInt
             %
             % output rplot, IntRad = radius, radial intensity data
+            %            
+            %             Nr = CheckOption('nr', ceil(min([128 length(R)/4])), varargin{:}); % # of radial sample pts
+            %             dispRadlim = CheckOption('dispradlim', [0 S.XYlimDefault], varargin{:});
+            %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            %             bMaskUse = CheckOption('bMask', S.bMask, varargin{:});
+            %             strYlabel = CheckOption('ylabel', 'Average Normalized Intensity', varargin{:});
+            %             plotRequired = CheckOption('plotrequired', [], varargin{:}); % [r(:) contrast(:)]
+            %             iplot = CheckOption('iplot', 1:length(ImCube), varargin{:});
+            %             legstr = CheckOption('legstr', [], varargin{:});
+            %             strTitle = CheckOption('title', ['Iter #' num2str(S.iter)], varargin{:});
+            %             bPlotMean = CheckOption('plotmean', true, varargin{:});
+            %             haxuse = CheckOption('hax', [], varargin{:});
 
             [x, y, X, Y, R] = CreateGrid(ImCube{1}, 1./S.ppl0);
 
@@ -1846,6 +1862,7 @@ classdef CRunData < handle & CConstants
             % 3rd row = real(DE_m)
             % 4ty row = imag(DE_m)
 
+            
             Nplr = 4;
             if isa(hfig,'matlab.ui.Figure'),
                 figure(hfig)
@@ -2361,7 +2378,30 @@ classdef CRunData < handle & CConstants
 end % classdef
 
 % utilities
+function val = CheckOption(varstring, defaultval, varargin)
+% val = CheckOption(varstring, defaultval, varargin)
+%
+% utility for checking varargin for an option
+% varstring = string keyword
+% if varstring is found in varargin{:},
+% the value of the following entry in varargin is returned
+% else the defaultval is returned
+%
+% example:
+% RminSc = CheckOption('RminSc', S.RminSc, varargin{:});
+
+iv = find(strcmp(varargin, varstring));
+
+if ~isempty(iv),
+    val = varargin{iv+1};
+else
+    val = defaultval;
+end
+
+end % CheckOption
+
 function DrawCircles(hax, drawRadii)
+% DrawCircles(hax, drawRadii)
 
 if isempty(drawRadii),
     return
@@ -2381,6 +2421,7 @@ end % for each axes
 end % DrawCircles
 
 function DrawThetaLines(hax, drawTheta, drawRadii)
+% DrawThetaLines(hax, drawTheta, drawRadii)
 
 if isempty(drawTheta),
     return
