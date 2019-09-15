@@ -5,9 +5,7 @@
 %   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 %   Original IDL version by John Krist
 %   Matlab translation by Gary Gutt
-
-
-function dx = prop_get_sampling(bm)
+%
 %        dx = prop_get_sampling(bm)
 % Return the current wavefront sampling interval in meters / pixel
 %
@@ -16,6 +14,7 @@ function dx = prop_get_sampling(bm)
 %
 % Required inputs:
 % bm   = beam structure
+function dx = prop_get_sampling(bm)
 
 % 2005 Feb     jek  created idl routine
 % 2014 May 07  gmg  Matlab translation
