@@ -16,4 +16,7 @@ set(han,'Position',[0.5 - 0.5*ppp(3) ppp(2:end)])
 % so it can be found and deleted later
 set(get(han,'parent'),'HandleVisibility','on')
 
-set(han, varargin{:})
+if ~isempty(varargin),
+    set(han, varargin{:})
+end
+
