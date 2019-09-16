@@ -70,7 +70,7 @@ fclose(fid);
 if bPlot,
     figure, imageschcit(map)
     colorbartitle('Wavefront (rad)')
-    title([sParms.Title '; \lambda = ' num2str(sParms.wavelength/U.NM) 'nm'])
+    title([pwd2titlestr(sParms.Title) '; \lambda = ' num2str(sParms.wavelength/U.NM) 'nm'])
 end % if plot
 
 end % main

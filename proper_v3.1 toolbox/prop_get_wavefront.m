@@ -8,18 +8,17 @@
 %        wf = prop_get_wavefront(bm)
 % Return the complex-valued wavefront array
 %
+% wf = prop_get_wavefront(bm)
+%
 % Outputs:
 % wf   = complex-valued wavefront array
 %
 % Required inputs:
 % bm   = beam structure
-
 % 2005 Feb     jek  created idl routine
 % 2014 Jul 29  gmg  Matlab translation
 % 2017 Mar 13  gmg  Revised for keyword/value for optional inputs
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
 function wf = prop_get_wavefront(bm)
 
   wf   = prop_shift_center(bm.wf);
