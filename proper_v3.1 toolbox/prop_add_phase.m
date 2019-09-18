@@ -5,9 +5,8 @@
 %   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 %   Original IDL version by John Krist
 %   Matlab translation by Gary Gutt
-
-
-function bm = prop_add_phase(bm, perr)
+% 
+% 
 %        bm = prop_add_phase(bm, perr)
 % Add a phase error map or value to the current wavefront array.
 % The phase error array is assumed to be at the same sampling as the
@@ -19,6 +18,7 @@ function bm = prop_add_phase(bm, perr)
 % Required inputs:
 % bm   = wavefront structure (input)
 % perr = scalar or 2D image containing phase error in meters
+function bm = prop_add_phase(bm, perr)
 
 % 2005 Feb     jek  created idl routine
 % 2014 May 08  gmg  Matlab translation

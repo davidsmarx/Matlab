@@ -188,6 +188,7 @@ classdef CRunData < handle & CConstants
                 case 0 % DST
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run000/';
                     S.XYlimDefault = 12;
+                    
                 case 10 % DST with BMC50.B DM at dm1
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run010/';
                     S.S383temp_pn= '/home/dmarx/HCIT/DST/hcim_testbed_run010/results/';
@@ -325,6 +326,9 @@ classdef CRunData < handle & CConstants
                 sReduced_local_fn = [S.PCtemp_pn S.Reduced_pn s_bn];
                 sRundir_local_fn  = [S.PCtemp_pn S.Rundir_pn s_bn];
             else
+                if ~exist([S.S383temp_pn S.Reduced_pn],'dir')
+                    mkdir([S.S383temp_pn S.Reduced_pn])
+                end
                 sReduced_local_fn = [S.S383temp_pn S.Reduced_pn s_bn];
                 sRundir_local_fn  = [S.S383temp_pn S.Rundir_pn s_bn];
             end
@@ -787,7 +791,8 @@ classdef CRunData < handle & CConstants
             climopt = CheckOption('clim', [], varargin{:});
             xcoff = CheckOption('xcoff', 0, varargin{:}); % star offset, pixels
             ycoff = CheckOption('ycoff', 0, varargin{:}); % star offset, pixels
-            %haxuse = CheckOption('hax', [], varargin{:});
+            hax = CheckOption('hax', [], varargin{:});
+            hfig = CheckOption('hfig', [], varargin{:});
             
             [x, y] = CreateGrid(Im, 1./S.ppl0);
             x = x - xcoff/S.ppl0;
@@ -795,7 +800,16 @@ classdef CRunData < handle & CConstants
             
             xlim = dispXYlim*[-1 1]; ylim = xlim;
 
-            hfig = figure;
+            if isempty(hfig) && isempty(hax),
+                hfig = figure;
+            end
+            if ~isempty(hfig)
+                figure(hfig)
+            end
+            if ~isempty(hax),
+                axes(hax)
+            end
+            
             if bPlotLog,
                 imageschcit(x, y, log10(abs(Im))), axis image,
                 colorbartitle('log_{10} Norm Intensity')
@@ -828,6 +842,18 @@ classdef CRunData < handle & CConstants
             %      ImCubeCohInt, ImCubeIncInt
             %
             % output rplot, IntRad = radius, radial intensity data
+            %            
+            %             Nr = CheckOption('nr', ceil(min([128 length(R)/4])), varargin{:}); % # of radial sample pts
+            %             dispRadlim = CheckOption('dispradlim', [0 S.XYlimDefault], varargin{:});
+            %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            %             bMaskUse = CheckOption('bMask', S.bMask, varargin{:});
+            %             strYlabel = CheckOption('ylabel', 'Average Normalized Intensity', varargin{:});
+            %             plotRequired = CheckOption('plotrequired', [], varargin{:}); % [r(:) contrast(:)]
+            %             iplot = CheckOption('iplot', 1:length(ImCube), varargin{:});
+            %             legstr = CheckOption('legstr', [], varargin{:});
+            %             strTitle = CheckOption('title', ['Iter #' num2str(S.iter)], varargin{:});
+            %             bPlotMean = CheckOption('plotmean', true, varargin{:});
+            %             haxuse = CheckOption('hax', [], varargin{:});
 
             [x, y, X, Y, R] = CreateGrid(ImCube{1}, 1./S.ppl0);
 
@@ -1853,6 +1879,7 @@ classdef CRunData < handle & CConstants
             % 3rd row = real(DE_m)
             % 4ty row = imag(DE_m)
 
+            
             Nplr = 4;
             if isa(hfig,'matlab.ui.Figure'),
                 figure(hfig)
@@ -1950,6 +1977,7 @@ classdef CRunData < handle & CConstants
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
+            bDebugAutoMetric = CheckOption('debug', false, varargin{:});
             
             if isempty(S.E_t),
                 S.ReadReducedCube;
@@ -1984,9 +2012,25 @@ classdef CRunData < handle & CConstants
             dE_m = S.E_m - Sref.E_m;
             CE   = dE_t .* conj(dE_m);
             
+            % from Joon:
+            % CP =  <dEt.dEm>/<dEm.dEm>
+            % CC =  <dEt.dEm>/sqrt(<dEt.dEt><dEm.dEm>)
+            % |DE| = sqrt(<dEm.dEm>/<dEt.dEt>)
+            bMaskCube = false(size(S.E_t));
+            [nwtmp, nrtmp, nctmp] = size(S.E_t);
+            if nwtmp ~= S.NofW, error('cube size wrong'); end
+            for ii = 1:S.NofW,
+                bMaskCube(ii,:,:) = S.bMask;
+            end
+            dE_mu = dE_m(bMaskCube);
+            dE_tu = dE_t(bMaskCube);
+
             sCmetrics = struct(...
-                ...
+                'CP', (dE_mu'*dE_tu)./(dE_mu'*dE_mu) ...
+                ,'CC', (dE_mu'*dE_tu)./sqrt( (dE_mu'*dE_mu).*(dE_tu'*dE_tu) ) ...
+                ,'mag_dEm_dEt', sqrt( (dE_mu'*dE_mu)./(dE_tu'*dE_tu) ) ...
                 );
+            
             for iwv = 1:S.NofW,
                 
                 % to make the phase plot cleaner, only plot phase where
@@ -1994,7 +2038,8 @@ classdef CRunData < handle & CConstants
                 % correlation intensity
                 CEampiwv = squeeze(abs(CE(iwv,:,:)));
                 [~, bMaskce] = AutoMetric(CEampiwv, [], ...
-                    struct('image_type','psf','logPSF',true,'debug',true));
+                    struct('image_type','psf','logPSF',true,...
+                    'debug',bDebugAutoMetric,'PSF_thresh_nsig',10));
                 CEphaiwv = squeeze(angle(CE(iwv,:,:)));
                 CEphaiwv(~bMaskce) = nan;
                 
@@ -2127,12 +2172,13 @@ classdef CRunData < handle & CConstants
             
         end % DisplayDE
 
-        function DisplayPampzero(S)
+        function [hfig, ha] = DisplayPampzero(S, varargin)
+            % [hfig, ha] = DisplayPampzero(S, varargin)
             
+            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+
             [nw, ny, nx] = size(S.bPampzero);
-            
             [x, y] = CreateGrid([nx ny], 1./S.ppl0);
-            xlim = dispXYlim*[-1 1]; ylim = xlim;
 
             hfig = figure_mxn(1,S.NofW);
             for iw = 1:S.NofW,
@@ -2142,7 +2188,7 @@ classdef CRunData < handle & CConstants
                xlabel('\lambda / D')
                ylabel('\lambda / D')
                
-               set(gca,'xlim',xlim,'ylim',ylim)
+               set(gca,'xlim',dispXYlim*[-1 1],'ylim',dispXYlim*[-1 1])
                
             end
             
@@ -2265,9 +2311,10 @@ classdef CRunData < handle & CConstants
                 S.ReadDMvCube;
             end
             
+            idm = CheckOption('idm', 1, varargin{:}); % which DM is probing?
             
-            % just assume for now the DM1 is probed
-            DMv = S.DMvCube{1};
+            % probed DM:
+            DMv = S.DMvCube{idm};
             
             [nacty, nactx, nsli] = size(DMv);
             npr = nsli-1;
@@ -2368,7 +2415,30 @@ classdef CRunData < handle & CConstants
 end % classdef
 
 % utilities
+function val = CheckOption(varstring, defaultval, varargin)
+% val = CheckOption(varstring, defaultval, varargin)
+%
+% utility for checking varargin for an option
+% varstring = string keyword
+% if varstring is found in varargin{:},
+% the value of the following entry in varargin is returned
+% else the defaultval is returned
+%
+% example:
+% RminSc = CheckOption('RminSc', S.RminSc, varargin{:});
+
+iv = find(strcmp(varargin, varstring));
+
+if ~isempty(iv),
+    val = varargin{iv+1};
+else
+    val = defaultval;
+end
+
+end % CheckOption
+
 function DrawCircles(hax, drawRadii)
+% DrawCircles(hax, drawRadii)
 
 if isempty(drawRadii),
     return
@@ -2388,6 +2458,7 @@ end % for each axes
 end % DrawCircles
 
 function DrawThetaLines(hax, drawTheta, drawRadii)
+% DrawThetaLines(hax, drawTheta, drawRadii)
 
 if isempty(drawTheta),
     return

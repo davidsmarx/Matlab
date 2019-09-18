@@ -3,7 +3,11 @@ function haxout = imagescampphase(A,x,y,varargin)
 %
 % options:
 %   'bLog', true or (false)
-%   'titlestr', titlestr
+%   'title', titlestr
+%   ydir = CheckOption('ydir', 'reverse', varargin{:});
+%   xlabelstr = CheckOption('xlabel', [], varargin{:});
+%   ylabelstr = CheckOption('ylabel', [], varargin{:});
+%   xylim = CheckOption('xylim', [], varargin{:});
 
 [ny, nx] = size(A);
 
@@ -15,7 +19,7 @@ if nargin < 3 || isempty(y),
 end
 
 % options
-titlestr = CheckOption('titlestr','',varargin{:});
+titlestr = CheckOption('title','',varargin{:});
 bLog = CheckOption('bLog',false,varargin{:});
 ydir = CheckOption('ydir', 'reverse', varargin{:});
 xlabelstr = CheckOption('xlabel', [], varargin{:});

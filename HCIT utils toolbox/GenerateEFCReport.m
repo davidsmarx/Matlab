@@ -104,37 +104,57 @@ function hfig = CreaetePlots(S, sDisplayFun, Sppt, varargin)
     listDiff = {
         'DisplayDEfields'
         'DisplayDMv'
-        'DisplayCEfields'
         };
     
     N = length(S);
 
     hfig = [];
-    if any(strcmp(sDisplayFun, listDiff)),
-        for ii = 1:N-1,
-            hfig = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
-            figscale = CalcFigscale(hfig, figheight);
-            set(hfig, 'Position', figscale*get(hfig,'position'));
-            if ispc,
-                htmp = Sppt.CopyFigNewSlide(hfig);
-                %set(htmp,'Height',figheight);
-            else
-                saveas(hfig, [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
-            end
-        end
+    switch sDisplayFun,
+        case listDiff
+            %if any(strcmp(sDisplayFun, listDiff)),
+            for ii = 1:N-1,
+                hfig = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
+                figscale = CalcFigscale(hfig, figheight);
+                set(hfig, 'Position', figscale*get(hfig,'position'));
+                if ispc,
+                    htmp = Sppt.CopyFigNewSlide(hfig);
+                    %set(htmp,'Height',figheight);
+                else
+                    saveas(hfig, [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
+                end
+            end % for ii iter
         
-    else, % one call per iteration
-        for ii = 1:N,
-            hfig = S(ii).(sDisplayFun)(varargin{:},'hfig',hfig);
-            figscale = CalcFigscale(hfig, figheight);
-            set(hfig, 'Position', figscale*get(hfig,'position'));
-            if ispc,
-                htmp = Sppt.CopyFigNewSlide(hfig);
-                %set(htmp,'Height',figheight);
-            else
-                saveas(hfig, [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
+        case 'DisplayCEfields'
+
+            for ii = 1:N-1,
+                [hfig, hax, sCtmp] = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
+                sCmetric(ii) = sCtmp;
+                
+                figscale = CalcFigscale(hfig, figheight);
+                set(hfig, 'Position', figscale*get(hfig,'position'));
+                if ispc,
+                    htmp = Sppt.CopyFigNewSlide(hfig);
+                    %set(htmp,'Height',figheight);
+                else
+                    saveas(hfig, [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
+                end
+            end % for ii iter
+
+            figure, plotampphase([S(2:N).iter], [sCmetric.CC],...
+                'xlabel','Iteration #','title','\DeltaE Testbed Model Correlation (CC)');
+            
+        otherwise, % one call per iteration
+            for ii = 1:N,
+                hfig = S(ii).(sDisplayFun)(varargin{:},'hfig',hfig);
+                figscale = CalcFigscale(hfig, figheight);
+                set(hfig, 'Position', figscale*get(hfig,'position'));
+                if ispc,
+                    htmp = Sppt.CopyFigNewSlide(hfig);
+                    %set(htmp,'Height',figheight);
+                else
+                    saveas(hfig, [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
+                end
             end
-        end
     end
 
 end % CreatePlots

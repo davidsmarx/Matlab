@@ -1,7 +1,7 @@
 function winpath = PathTranslator(s383path)
 % winpath = PathTranslator(s383path)
 
-if isequal(computer, 'GLNXA64'),
+if ~ispc, %isequal(computer, 'GLNXA64'),
     winpath = s383path;
     return
 end

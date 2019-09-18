@@ -1,5 +1,6 @@
 function val = CheckOption(varstring, defaultval, varargin)
 % val = CheckOption(varstring, defaultval, varargin)
+% val = CheckOption(varstring, defaultval, struct)
 %
 % utility for checking varargin for an option
 % varstring = string keyword
@@ -9,11 +10,23 @@ function val = CheckOption(varstring, defaultval, varargin)
 %
 % example:
 % RminSc = CheckOption('RminSc', S.RminSc, varargin{:});
+val = defaultval;
 
+if isempty(varargin)
+    return
+end
+
+% options are in a struct
+if isstruct(varargin{1}),
+    sOpt = varargin{1};
+    if isfield(sOpt, varstring),
+        val = sOpt.(varstring);
+    end    
+end
+
+% options are a list of name, value pairs
 iv = find(strcmp(varargin, varstring));
-
 if ~isempty(iv),
     val = varargin{iv+1};
-else
-    val = defaultval;
 end
+
