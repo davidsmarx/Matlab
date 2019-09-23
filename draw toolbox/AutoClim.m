@@ -29,6 +29,7 @@ end
 % options
 bOnesided = CheckOption('one-sided',false,varargin{:});
 bSymmetric = CheckOption('symmetric',false,varargin{:});
+pctscale = CheckOption('pctscale', 100, varargin{:});
 
 if bOnesided && bSymmetric,
     % doesn't make sense
@@ -46,8 +47,8 @@ end
 
 % for complex numbers, sort sorts the abs()
 asort = sort(A(:),'ascend');
-amax = asort(ceil(0.99*length(asort)));
-amin = asort(floor(0.01*length(asort)));
+amax = asort(ceil((pctscale/100)*length(asort)));
+amin = asort(floor((1-(pctscale/100))*length(asort))+1);
 
 % check result is valid
 if amax - amin <= 0,
