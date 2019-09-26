@@ -2,7 +2,7 @@ function haxout = imagescampphase(A,x,y,varargin)
 % hax = imagescampphase(A,x,y,options)
 %
 % options:
-%   'bLog', true or (false)
+%   'bLog', (false) or 'true' (log10) or 'log10' or 'db'
 %   'title', titlestr
 %   ydir = CheckOption('ydir', 'reverse', varargin{:});
 %   xlabelstr = CheckOption('xlabel', [], varargin{:});
@@ -31,12 +31,19 @@ pos(3) = 1.75*pos(3);
 set(gcf,'position',pos)
 
 hax(1) = subplot(1,2,1);
-if bLog,
-    Aplot = real(20*log10(abs(A)));
-    strColorbarAmp = '|A|^2 (dB)';
-else,
-    Aplot = abs(A);
-    strColorbarAmp = '|A|';
+if islogical(bLog) && bLog,
+    bLog = 'log10';
+end
+switch lower(bLog)
+    case 'log10',
+        Aplot = real(log10(abs(A).^2));
+        strColorbarAmp = 'log_{10} Intensity';
+    case 'db',
+        Aplot = real(20*log10(abs(A)));
+        strColorbarAmp = '|A|^2 (dB)';
+    otherwise
+        Aplot = abs(A);
+        strColorbarAmp = '|A|';
 end
 
 imagesc(x,y,Aplot), axis image,...

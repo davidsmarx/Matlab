@@ -5,14 +5,21 @@ function [hfig, hax] = PropDisplayWavefront(wavefront, varargin)
 
 U = CConstants;
 
+ampclim = CheckOption('ampclim', [], varargin{:});
+phaclim = CheckOption('phaclim', [-1 1], varargin{:});
+hfig = CheckOption('hfig', [], varargin{:});
+hax = CheckOption('hax', [], varargin{:});
+
 [x, y] = CreateGrid(wavefront.wf, wavefront.dx);
 
-hfig = figure;
+if isempty(hfig), hfig = figure; else, figure(hfig); end
 
 E = fftshift(wavefront.wf);
-Img = abs(E).^2;
 
-imageschcit(x/U.MM, y/U.MM, real(log10(Img))), colorbartitle('log_{10} Intensity')
-set(gca,'clim',[-9 0])
+%Img = abs(E).^2;
+%imageschcit(x/U.MM, y/U.MM, real(log10(Img))), colorbartitle('log_{10} Intensity')
+hax = imagescampphase(E, x/U.MM, y/U.MM, 'bLog', true, 'ydir', 'normal');
+if ~isempty(ampclim), set(hax(1),'clim',ampclim); end
+if ~isempty(phaclim), set(hax(2),'clim',phaclim); end
 
-hax = gca;
+
