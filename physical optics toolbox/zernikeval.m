@@ -24,6 +24,8 @@ if exist('poly_order','var'),
             P = zernikepolynomials('polar');
         case {'noll','zemax'},
             P = zernikepolynomials('noll');
+        case 'codevfringe'
+            P = zernikepolynomials('codevfringe');
         otherwise
             error(['unknown polynomial ordering: ' poly_order]);
     end
