@@ -369,13 +369,17 @@
                 ystr = S.Y(L==istrut);
                 rstr = S.R(L==istrut);
                 
-                r1 = S.sDims.meanODradius - 1*S.U.MM;
-                [rtmp, xtmp, ytmp] = filterdata(rstr > r1 - rpad & rstr < r1 + rpad,...
-                    rstr, xstr, ystr);
+                %r1 = S.sDims.meanODradius - rpad;% - 1*S.U.MM;
+                %                 [rtmp, xtmp, ytmp] = filterdata(rstr > r1 - rpad & rstr < r1 + rpad,...
+                %                     rstr, xstr, ystr);
+                [rtmp, xtmp, ytmp] = filterdata(rstr > max(rstr) - 0.1*range(rstr), ...
+                    rstr, xstr, ystr);                
                 strutxy1(istrut,:) = [mean(xtmp) mean(ytmp)];
 
-                r2 = S.sDims.meanIDradius + 1*S.U.MM;
-                [rtmp, xtmp, ytmp] = filterdata(rstr > r2 - rpad & rstr < r2 + rpad,...
+                %                 r2 = S.sDims.meanIDradius + 1*S.U.MM;
+                %                 [rtmp, xtmp, ytmp] = filterdata(rstr > r2 - rpad & rstr < r2 + rpad,...
+                %                     rstr, xstr, ystr);
+                [rtmp, xtmp, ytmp] = filterdata(rstr < min(rstr) + 0.1*range(rstr), ...
                     rstr, xstr, ystr);
                 strutxy2(istrut,:) = [mean(xtmp) mean(ytmp)];
                                                        
@@ -393,10 +397,11 @@
             end
 
             % call FindStrut and Deconv for each strut
+            if bDebug, hfigDebug = figure; imageschcit(S.x/S.U.UM, S.y/S.U.UM, S.Im); end
             for istrut = 1:N,
                 Sstrut(istrut) = S.FindStrut(...
                     strutxy1(istrut,:), strutxy2(istrut,:) ...
-                    , varargin{:} ...
+                    , 'hfigDebug', hfigDebug, varargin{:} ...
                     );
                 
                 Spsf(istrut) = S.StrutDeconv(Sstrut(istrut), varargin{:});
@@ -422,7 +427,7 @@
             %
             % options:
             %   'widthd' = width (m) of line across strut to find edges,
-            %              default = 70*S.pix
+            %              default = 750um
             %   'nlines' = # of lines across strut to use to find edges,
             %              spaced between xy0 and xy1, default = 10
             %   'debug'
