@@ -25,7 +25,7 @@
         pPad = 1.25; % factor
         sDims
         Sstruts
-        
+
     end % properties
     
     
@@ -415,6 +415,7 @@
                 ,'strutxy2', strutxy2 ...
                 ,'Sstrut', Sstrut ...
                 ,'Spsf', Spsf ...
+                ,'radiuspad', rpad ...
                 );
             
         end % FindAllStruts
