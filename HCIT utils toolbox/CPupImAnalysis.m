@@ -685,7 +685,7 @@
             % [hfig, hax] = PlotEdgeResponse(S, Spsf, varargin)
                         
             hax = CheckOption('hax', [], varargin{:});
-            xlim = CheckOption('xlim', 150*[-1 1], varargin{:});
+            xlim = CheckOption('xlim', [], varargin{:});
             stitle = CheckOption('title', '', varargin{:});
             
             % [fwhmlt, ~, xelt, dhalflt] = fwhm(Spsf.d(Spsf.d < 0), -Spsf.meangrAs(Spsf.d < 0));
@@ -710,8 +710,8 @@
             text(Spsf.dhalfrt(2)/S.U.UM, 0.75*ylim(2), [' ' num2str(Spsf.fwhmrt/S.U.UM,'%.1f') '\mum'],'fontsize',12,'color','r')
             
             xlabel('Cross Section (\mum)'), ylabel('Gradient Intensity')
-            set(gca,'xlim',xlim)
-            set(gca,'ylim',ylim)
+            if ~isempty(xlim), set(gca,'xlim',xlim/S.U.UM), end
+            %set(gca,'ylim',ylim)
             
             title([stitle ', ' num2str(Spsf.strutwidth/S.U.UM,'%.1f') '\mum'])
             
@@ -721,11 +721,12 @@
             % [hfig, hax, han] = DisplayEdgeResponseAllStruts(S, varargin)                      
             
             titlestr = CheckOption('title', [], varargin{:});
+            xlim = CheckOption('xlim', [], varargin{:});
             
             hfig = figure_mxn(ceil(S.Sstruts.N/2), 2);
             for istrut = 1:S.Sstruts.N,
                 hax = subplot(ceil(S.Sstruts.N/2), 2, istrut);
-                S.PlotEdgeResponse(S.Sstruts.Spsf(istrut),'xlim',0.5*S.U.MM/S.U.UM*[-1 1],...
+                S.PlotEdgeResponse(S.Sstruts.Spsf(istrut),'xlim', xlim,...
                     'hax', hax, 'title', ['strut #' num2str(istrut)])
         
             end % for istrut
