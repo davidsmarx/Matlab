@@ -1,5 +1,5 @@
 function sOut = GenerateEFCReport(runnum, listItnum, varargin)
-% sOut = GenerateEFCReport(runnum, listItnum, sDisplayFun)
+% sOut = GenerateEFCReport(runnum, listItnum, cDisplayFun)
 %
 % listItnum can be array of itnums, or array of CRunData objects
 % csDisplayFun is a cell array: {method, varargin options (e.g. 'clim', clim)}
@@ -34,6 +34,7 @@ persistent Sppt;
 
 % options
 ppt_fn = CheckOption('pptfn', '', varargin{:});
+sOptin = CheckOption('sOptin', [], varargin{:});
     
 % check if PowerPoint Presentation already exists and still there
 try
@@ -52,7 +53,7 @@ N = length(listItnum);
 if isnumeric(listItnum),
     for ii = 1:N
         fprintf('reading itnum %d\n', listItnum(ii));
-        S(ii) = CRunData(runnum, listItnum(ii));
+        S(ii) = CRunData(runnum, listItnum(ii), sOptin);
     end
 elseif isa(listItnum, 'CRunData')
     S = listItnum;
@@ -63,7 +64,7 @@ end
 listHfig = {};
 for iplot = 1:length(varargin),
     if iscell(varargin{iplot}),
-        listHfig{iplot} = CreaetePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end});
+        listHfig{end+1} = CreaetePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end});
     end
 end
 
