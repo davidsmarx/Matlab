@@ -397,7 +397,7 @@
             end
 
             % call FindStrut and Deconv for each strut
-            if bDebug, hfigDebug = figure; imageschcit(S.x/S.U.UM, S.y/S.U.UM, S.Im); end
+            if bDebug, hfigDebug = figure; imageschcit(S.x/S.U.UM, S.y/S.U.UM, S.Im); else, hfigDebug = []; end
             for istrut = 1:N,
                 Sstrut(istrut) = S.FindStrut(...
                     strutxy1(istrut,:), strutxy2(istrut,:) ...
