@@ -304,6 +304,7 @@ classdef CGS < handle
             hfig = CheckOption('hfig', figure_mxn(2,2), varargin{:});
             usebMask = CheckOption('usebMask', true, varargin{:});
             phplot = CheckOption('phplot', 'angleE', varargin{:}); % other choice = 'phw_ptt'
+            dphclim = CheckOption('dphclim', [], varargin{:});
             
             switch phplot
                 case 'angleE'
@@ -338,6 +339,7 @@ classdef CGS < handle
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
             title(['gsnum ' num2str(S.gsnum) ' Amp -  Ref gsnum ' num2str(Sref.gsnum) ' Amp'])
             
+            
             hax(4) = subplot(2,2,4);
             dpha = mod2pi(funPhPl(S) - funPhPl(Sref));
             if usebMask,
@@ -346,7 +348,9 @@ classdef CGS < handle
             him = imageschcit(S.x, S.y, dpha);
             colorbartitle('Phase (rad)')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
-            set(gca,'clim',AutoClim(dpha,'symmetric',true,'pctscale',100))
+            if isempty(dphclim), set(gca,'clim',AutoClim(dpha,'symmetric',true,'pctscale',100))
+            else set(gca,'clim',dphclim)
+            end
             title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(angle(S.E(S.bMask).*conj(Sref.E(S.bMask)))),'%.3f') 'rad'])
             
             
