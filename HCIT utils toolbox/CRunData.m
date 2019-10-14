@@ -2043,13 +2043,18 @@ classdef CRunData < handle & CConstants
                 CEphaiwv = squeeze(angle(CE(iwv,:,:)));
                 CEphaiwv(~bMaskce) = nan;
                 
+                % plot log amp
+                CEampiwvlog = real(log10(CEampiwv));
+                CEampiwvlog(~bMaskce) = nan;
+                
                 % subplot #
                 iamppl = iwv+0*S.NofW;
                 iphapl = iwv+1*S.NofW;
                 
                 % amplitude of projection
+                
                 ha(1,iwv) = subplot(Nplr, S.NofW, iamppl);
-                imageschcit(x,y, CEampiwv); colorbar
+                imageschcit(x,y, CEampiwvlog); colorbar
                 title([sRI ', |dE_m''dE_t|, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 
                 ha(2,iwv) = subplot(Nplr, S.NofW, iphapl);
@@ -2058,8 +2063,8 @@ classdef CRunData < handle & CConstants
                 title([sRI ', \angle{dE_m''dE_t}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 colorbartitle('Phase (\pi rad)')
                 % circular colormap for phase plots
-                colormap(ha(2,iwv), hsv) %phasemap) % hsv also works
                 set(ha(2,iwv),'clim',[-1 1]) % pi radians
+                colormap(ha(2,iwv), hsv) %phasemap) % hsv also works
                 
             end
 
@@ -2068,9 +2073,9 @@ classdef CRunData < handle & CConstants
             set(ha,'xlim',xlim,'ylim',ylim)
 
             % clim for abs plots
-            if isempty(clim),
-                CEuse = CE(abs(CE(:)) > 0);
-                clim = AutoClim(abs(CEuse),'one-sided',true);
+            if isempty(clim) && S.NofW > 1,
+                cclim = get(ha(1,:),'clim'); % returns a cell array
+                clim = [min([cclim{:}]) max([cclim{:}])];                
             end
             set(ha(1,:),'clim',clim)
             
