@@ -3,25 +3,13 @@ function [Field, headerinfo] = z_GetPSFHuygens(varargin)
 % [PSF, parmsstruct] = z_GetPSFHuygens(options)
 % 
 % options:
-%     'textfilename', textfilename
-%     'settingsfilename', settingsfilename ( .cfg )
+%     'textfilename', textfilename (default = [pwd '\PSFHuygens.txt'])
+%     'settingsfilename', settingsfilename ( .cfg ), (default = use lens
+%                                                     current settings)
 %
-% calls ZEMAX FFT PSF analysis
+% calls ZEMAX Huygens PSF analysis
 % the settings are the default settings for the lens
 %
-% [...] = z_GetPSFHuygens(zchan)
-%    ZEMAX calculates PSF on current lens, results are stored in
-%    [pwd '\PSFFFTanalysis.txt']
-%
-% [...] = z_GetPSFHuygens(textfilename)
-%    read results from textfilename
-%
-% [...] = z_GetPSFHuygens(zchan, textfilename)
-%    ZEMAX calculates POP on current lens and stores results in
-%    textfilename
-% 
-% [...] = z_GetPSFHuygens
-%    interactively select a text file with POP results to read
 %
 % Field = matrix of field values calculated from the POP
 % headerinfo:
@@ -42,18 +30,23 @@ function [Field, headerinfo] = z_GetPSFHuygens(varargin)
 [zchan, textfilename, settingsfilename, settingsflag] = ValidateInputs(varargin{:});
 
 if ~isempty(zchan),
-    % call ZEMAX to do the analysis
-    
-    % zemax three-letter code for this analysis
-    typecode = 'Hps';
-    
-    % make the call
-    cmdstr =...
-        ['GetTextFile, ' textfilename ', ' typecode ', ' settingsfilename ', ' settingsflag];
-    retval = ddereq(zchan,cmdstr,[1 1]);
-
-    % wait until zemax is ready
-    while ~ddereq(zchan,'GetVersion',[1 1]), pause(0.25); end
+    try
+        % call ZEMAX to do the analysis
+        
+        % zemax three-letter code for this analysis
+        typecode = 'Hps';
+        
+        % make the call
+        cmdstr =...
+            ['GetTextFile, ' textfilename ', ' typecode ', ' settingsfilename ', ' settingsflag];
+        retval = ddereq(zchan,cmdstr,[1 1]);
+        
+        % wait until zemax is ready
+        while ~ddereq(zchan,'GetVersion',[1 1]), pause(0.25); end
+    catch
+        disp('zemax dde error!');
+        keyboard;
+    end % try catch
 end
 
 % get the image data from the textfile
@@ -166,21 +159,20 @@ while ~feof(fid),
                 Field = fscanf(fid,'%e',headerinfo.NxNyImage)';
                 
             otherwise,
-                % header lines that begin with the number value must be
-                % deciphered by the word at the end of the line
-                switch lower(wordparse{1}{end}),
-                    case 'deg.',
-                        atmp = sscanf(ltmp,'%f to %f');
-                        headerinfo.Wavelength = atmp;
-                    case '(deg).'
-                        % 0.5700 µm at -0.5083, -0.3553 (deg).
-                        headerinfo.Wavelegnth = str2double(wordparse{1}{1})*UM;
-                        headerinfo.fieldpoint = str2double(wordparse{1}(end-2:end-1))*P;
-                        headerinfo.fieldpointUnits = 'rad';
-                        
-                        
+                % if line begins with a number, assume it is in the format:
+                % wavelength um at fieldpoint_x, fieldpoint_y units.
+                if ~isnan(str2double(wordparse{1}{1})),
+                    headerinfo.Wavelegnth = str2double(wordparse{1}{1})*UM;
+                    headerinfo.fieldpoint = str2double(wordparse{1}(4:5));
+                    headerinfo.fieldpointUnits = wordparse{1}{end};
+                    
+                    if strfind(headerinfo.fieldpointUnits, 'mm')
+                        headerinfo.fieldpoint = headerinfo.fieldpoint*MM;
+                    elseif strfind(headerinfo.fieldpointUnits, 'deg')
+                        headerinfo.fieldpoint = headerinfo.fieldpoint*P;
+                    end
                 end
-
+                
         end % switch
     end % if ~isempty line
 
