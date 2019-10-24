@@ -1,11 +1,12 @@
 
-function hout = draw_circle(ctr, D, lw, col)
-% draw_circle(ctr, D, lw, col)
+function hout = draw_circle(ctr, D, lw, col, varargin)
+% draw_circle(ctr, D, lw, col, options
+% options are property, value pairs as for rectangle()
 
 R       = D/2;
 h=rectangle('Position', ...
     [ctr-R*[1 1] [D D]],...
-    'EdgeColor', col, 'LineWidth',lw,'Curvature',[1 1]);
+    'EdgeColor', col, 'LineWidth',lw,'Curvature',[1 1], varargin{:});
                     
 if nargout > 0,
     hout = h;

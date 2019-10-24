@@ -1,9 +1,10 @@
 function [width, rmax, xmax, xhalf, errmsg] = fwhm(x,response)
-% [width, rmax, xm] = fwhm(x,response)
+% [width, rmax, xmax, xhalf, errmsg] = fwhm(x,response)
 % 
 % width = fwhm
 % rmax = max response, half-max is half of this.
 % xmax   = interpolated sub-pixel location of the peak
+% xhalf = [x1, x2] where width = x2 - x1
 
 % initialize return values to error
 width = NaN;

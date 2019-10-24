@@ -625,7 +625,7 @@ classdef CRunData < handle & CConstants
                 % have option to just set inc int to zero at these poitns
                 S.IncIntEst{iwl} = S.IncInt{iwl};
                 S.IncIntEst{iwl}(S.IncInt{iwl} <= 0) = eps;
-                       
+                                       
             end % for each wl
             
             % whole band mean
@@ -1796,6 +1796,7 @@ classdef CRunData < handle & CConstants
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
+            drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
 
             % title
             sRI = ['run #' num2str(S.runnum) ', iter #' num2str(S.iter)];
@@ -1847,11 +1848,12 @@ classdef CRunData < handle & CConstants
             end
             set(hax(1,:),'clim',aclim)  % abs plots
             set(hax(2:3,:),'clim',clim) % real, imag plots
-            
+  
+            DrawCircles(hax, drawRadii);
             
         end % DisplayEfields
 
-        function [hfig, ha] = DisplayDEfields(S, Sref, varargin)
+        function [hfig, ha, sMetrics] = DisplayDEfields(S, Sref, varargin)
             % [hfig, ha] = DisplayDEfields(S, Sref, varargin)
             % 4 x NofW, dE_t real, imag, dE_m real, imag
             
@@ -1888,11 +1890,16 @@ classdef CRunData < handle & CConstants
             end
             [x, y] = CreateGrid([nc nr], 1./S.ppl0);
             ha = zeros(Nplr,S.NofW);
+            
             %
             dE_t = S.E_t - Sref.E_t;
             dE_m = S.E_m - Sref.E_m;
-                        
+            
+            % pixels to use for metrics
+            bMaskuse = S.bMaskSc & Sref.bMaskSc;
+            
             climE = zeros(2*S.NofW,2);
+            [rmsdE_t, rmsdE_m] = deal(zeros(S.NofW,1));
             for iwv = 1:S.NofW,
                 % subplot #
                 iptr = iwv+0*S.NofW;
@@ -1916,7 +1923,11 @@ classdef CRunData < handle & CConstants
                 ha(4,iwv) = subplot(Nplr, S.NofW, ipmi);
                 imageschcit(x,y,squeeze(imag(dE_m(iwv,:,:)))); %colorbar
                 title(['Model: imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
-
+                
+                % use only score region for rms dE
+                bMaskiwl = bMaskuse & (S.IncInt{iwv} >= 0) & (Sref.IncInt{iwv} >= 0);
+                rmsdE_t(iwv) = sqrt(mean(abs(dE_t(iwv,bMaskiwl)).^2));
+                rmsdE_m(iwv) = sqrt(mean(abs(dE_m(iwv,bMaskiwl)).^2));
             end            
 
             % xlim, ylim
@@ -1955,18 +1966,12 @@ classdef CRunData < handle & CConstants
             set(han,'Position',[0.5 - 0.5*ppp(3) ppp(2:end)])
             % so it can be found and deleted later
             set(get(han,'parent'),'HandleVisibility','on')
-            
-            %             pos = get(get(haxlist(1,1),'YLabel'),'Position');
-            %             ht = text(haxlist(1,1), ylpos(1) - 2, ylpos(2), 'UnProbed' ...
-            %                 , 'Rotation',90 ...
-            %                 ,'HorizontalAlignment','center' ...
-            %                 ,'VerticalAlignment','top' ...
-            %                 ,'VerticalAlignment','bottom' ...
-            %                 ... ,'Position', ylpos - [2 0 0] ...
-            %                 ,'FontSize', 18 ...
-            %                 ,'Color','b' ...
-            %                 ,'FontWeight','bold' ...
-            %                 );
+
+            sMetrics = struct(...
+                'type', 'dEfields' ...
+                ,'rmsdE_t', rmsdE_t ...
+                ,'rmsdE_m', rmsdE_m ...
+                );
 
         end % DisplayDEfields
 
@@ -2026,7 +2031,8 @@ classdef CRunData < handle & CConstants
             dE_tu = dE_t(bMaskCube);
 
             sCmetrics = struct(...
-                'CP', (dE_mu'*dE_tu)./(dE_mu'*dE_mu) ...
+                'type', 'CEfields' ...
+                ,'CP', (dE_mu'*dE_tu)./(dE_mu'*dE_mu) ...
                 ,'CC', (dE_mu'*dE_tu)./sqrt( (dE_mu'*dE_mu).*(dE_tu'*dE_tu) ) ...
                 ,'mag_dEm_dEt', sqrt( (dE_mu'*dE_mu)./(dE_tu'*dE_tu) ) ...
                 ,'mse', mean( abs(dE_tu - dE_mu).^2 ) ...
@@ -2200,7 +2206,7 @@ classdef CRunData < handle & CConstants
             
         end % DisplayPampzero
 
-        function [hfig, hax] = DisplayDMv(S, dmvref, varargin)
+        function [hfig, hax, sMetrics] = DisplayDMv(S, dmvref, varargin)
             % [hfig, hax] = S.DisplayDMv([], varargin)
             % [hfig, hax] = S.DisplayDMv(Sref, varargin)
             % [hfig, hax] = S.DisplayDMv({refDM1v_fits, refDM2v_fits}, varargin)
@@ -2304,6 +2310,7 @@ classdef CRunData < handle & CConstants
                 end                
             end % refDMv
             
+            sMetrics = struct;
             
             %             fprintf('rms dDMv1 = %.3f Vmu\n',rmsdDMv1);
             %             fprintf('rms dDMv2 = %.3f Vmu\n',rmsdDMv2);
