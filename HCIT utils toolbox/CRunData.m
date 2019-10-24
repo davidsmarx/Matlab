@@ -2020,7 +2020,7 @@ classdef CRunData < handle & CConstants
             [nwtmp, nrtmp, nctmp] = size(S.E_t);
             if nwtmp ~= S.NofW, error('cube size wrong'); end
             for ii = 1:S.NofW,
-                bMaskCube(ii,:,:) = S.bMask;
+                bMaskCube(ii,:,:) = S.bMaskSc & (S.IncInt{ii} > 0);
             end
             dE_mu = dE_m(bMaskCube);
             dE_tu = dE_t(bMaskCube);
@@ -2029,6 +2029,7 @@ classdef CRunData < handle & CConstants
                 'CP', (dE_mu'*dE_tu)./(dE_mu'*dE_mu) ...
                 ,'CC', (dE_mu'*dE_tu)./sqrt( (dE_mu'*dE_mu).*(dE_tu'*dE_tu) ) ...
                 ,'mag_dEm_dEt', sqrt( (dE_mu'*dE_mu)./(dE_tu'*dE_tu) ) ...
+                ,'mse', mean( abs(dE_tu - dE_mu).^2 ) ...
                 );
             
             for iwv = 1:S.NofW,
