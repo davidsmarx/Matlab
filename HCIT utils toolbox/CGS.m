@@ -21,6 +21,8 @@ classdef CGS < handle
     %    [hfig, hax] = DisplayGSrefGS(S, Sref)
     %          hfig = CheckOption('hfig', figure_mxn(2,2), varargin{:});
     %          usebMask = CheckOption('usebMask', true, varargin{:});
+    %          phplot = CheckOption('phplot', 'angleE', varargin{:}); % other choice = 'phw_ptt'
+    %          dphclim = CheckOption('dphclim', [], varargin{:});
     %
     %    [Z, rz, pharesidual] = ZernikeFit(S, nz)
     %

@@ -1204,7 +1204,6 @@ classdef CRunData < handle & CConstants
             if isempty(S.IncInt),
                 S.ReadReducedCube;
             end
-
             
             % options:
             % %  val = CheckOption(sOpt, valDefault, varargin)
@@ -1213,7 +1212,7 @@ classdef CRunData < handle & CConstants
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
-            IncIntType = CheckOption('type', 'normal', varargin{:});
+            IncIntType = CheckOption('type', 'est', varargin{:});
             
             %%%% end options
 

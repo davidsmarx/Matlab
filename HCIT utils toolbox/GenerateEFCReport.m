@@ -72,6 +72,7 @@ end
 % plot graphs of metrics v itnum
 [hfig, haxprobeh, probeh] = PlotProbeh(S);
 [hfig, haxrmsddmv, rmsdDMv] = PlotRMSdDMv(S);
+[hfig, haxtexp, texp] = PlotTexp(S);
 
     if nargout >= 1,
         sOut = struct(...
@@ -209,6 +210,22 @@ function [hfig, hax, probeh] = PlotProbeh(S)
      hax = gca;
      
 end % PlotProbeh
+
+function [hfig, hax, texp] = PlotTexp(S)
+
+    [itnum, texp] = deal(zeros(size(S)));
+    for ii = 1:length(S)
+        itnum(ii) = S(ii).iter;
+        texp(ii) = FitsGetKeywordVal(S(ii).ImKeys, 'texp');
+    end
+    
+    hfig = figure;
+    plot(itnum, texp, 'o'), grid
+    xlabel('Iteration #')
+    ylabel('T_{exp} (s)')
+    hax = gca;
+    
+end % PlotTexp
 
 function [hfig, hax, rmsdDMv] = PlotRMSdDMv(listS, varargin)
     % [hfig, hax, rmsdDMv] = PlotRMSdDMv(listS, varargin)
