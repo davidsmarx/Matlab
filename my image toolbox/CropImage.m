@@ -5,7 +5,10 @@ function [Imcrop, bMaskcrop] = CropImage(Im, bMask, xycent, xwid, ywid)
 % xycent = [xc yc] in pixels, with [0, 0] at the center of the image array
 % xwid, ywid are in pixels
 %
-% crop to square array of width = max([xwid ywid])
+% crop to array such that:
+%   ixuse = x >= -xwid/2 & x < xwid/2;
+%   iyuse = y >= -ywid/2 & y < ywid/2;
+%
 % return:
 %    Imcrop is the cropped Im
 %    bMaskcrop is the cropped bMask

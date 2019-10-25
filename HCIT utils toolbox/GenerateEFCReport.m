@@ -62,10 +62,10 @@ else
 end
 
 % call the plotting methods
-listHfig = {};
+if length(varargin) == 0, listHfig = []; end
 for iplot = 1:length(varargin),
     if iscell(varargin{iplot}),
-        listHfig{end+1} = CreaetePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end});
+        listHfig(iplot) = CreaetePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end});
     end
 end
 
