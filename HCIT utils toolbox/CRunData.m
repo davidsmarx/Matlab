@@ -2309,7 +2309,9 @@ classdef CRunData < handle & CConstants
                 end                
             end % refDMv
             
-            sMetrics = struct;
+            sMetrics = struct(...
+                'type', 'DMv' ...
+                );
             
             %             fprintf('rms dDMv1 = %.3f Vmu\n',rmsdDMv1);
             %             fprintf('rms dDMv2 = %.3f Vmu\n',rmsdDMv2);
