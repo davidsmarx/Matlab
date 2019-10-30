@@ -323,6 +323,9 @@ classdef CRunData < handle & CConstants
             %         or local PC drive. If PC, we will copy data
             %         locally to save unzip and read time
             if ispc,
+                if ~exist([S.PCtemp_pn S.Reduced_pn],'dir')
+                    mkdir([S.PCtemp_pn S.Reduced_pn])
+                end
                 sReduced_local_fn = [S.PCtemp_pn S.Reduced_pn s_bn];
                 sRundir_local_fn  = [S.PCtemp_pn S.Rundir_pn s_bn];
             else
@@ -1421,6 +1424,7 @@ classdef CRunData < handle & CConstants
                 S.ReadMaskCube;
             end
             
+            hfig = CheckOption('hfig', [], varargin{:});
             iwvplot = CheckOption('iwv', ceil(S.NofW/2), varargin{:});
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             bLog = CheckOption('blog', true, varargin{:});
@@ -1440,7 +1444,11 @@ classdef CRunData < handle & CConstants
                 sctitle = 'Linear Norm Intensity';
             end
                 
-            hfig = figure_mxn(2,S.Nppair+1);
+            if isempty(hfig),
+                hfig = figure_mxn(2,S.Nppair+1);
+            else
+                figure(hfig)
+            end
             for ip = 1:S.Nppair,
                 ha(ip) = subplot(2,S.Nppair+1,ip);
                 imageschcit(x,y, funPlot(S.ProbeModel{iwvplot,ip})), axis image, colorbartitle(sctitle)
@@ -1467,10 +1475,10 @@ classdef CRunData < handle & CConstants
                 ProbeMeasPlot{ip}  = abs(S.ProbeMeasAmp{iwvplot,ip}).^2;
             end
             harad(1) = subplot(2,S.Nppair+1,S.Nppair+1);
-            DisplayRadialPlot(S, ProbeModelPlot, 'hax', harad(1));
+            S.DisplayRadialPlot(ProbeModelPlot, 'hax', harad(1),'title', ['Iter #' num2str(S.iter) ', Model']);
             legend('location','south')
             harad(2) = subplot(2,S.Nppair+1,2*(S.Nppair+1));
-            DisplayRadialPlot(S, ProbeMeasPlot,'hax',harad(2));
+            S.DisplayRadialPlot(ProbeMeasPlot,'hax',harad(2),'title', ['Iter #' num2str(S.iter) ', Measure']);
             legend('location','south')
             
             ylim = get(harad,'ylim');
