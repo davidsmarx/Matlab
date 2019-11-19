@@ -171,24 +171,16 @@ classdef CRunData < handle & CConstants
             % 'rundir_pn' and 'reduced_pn' are always relative to
             % Results_pn
             switch S.runnum,
-                case 603, % SPC_disc
-                    S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run603/';
-                    S.XYlimDefault = 22;
-                    
-                    throughput_fn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/Throughput_20171003T122253_20190829.mat';
-                    S.Sthpt = load(PathTranslator(throughput_fn));
-                    S.Sthpt.ThptCal_fn = throughput_fn;
-
-                    S.ppl0 = 4.01; % config_SPCdisc_20180321.py
-                    
-                case 604, % SPC_disc
-                    S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
-                    S.XYlimDefault = 22;
-                
                 case 0 % DST
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run000/';
                     S.XYlimDefault = 12;
                     
+                case 001,
+                    S.Results_pn = '/home/dmarx/HCIT/MCB/hcim_model2_run001/results/run001/';
+                    
+                    S.XYlimDefault = 10;
+                    S.DrawradiiDefault = [3.0 9.0];
+
                 case 10 % DST with BMC50.B DM at dm1
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run010/';
                     S.S383temp_pn= '/home/dmarx/HCIT/DST/hcim_testbed_run010/results/';
@@ -240,6 +232,23 @@ classdef CRunData < handle & CConstants
 
                     S.ppl0 = 4.45;
 
+                case 100 % PIAA
+                    error('reserved for PIAA');
+                    
+                case 603, % SPC_disc
+                    S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run603/';
+                    S.XYlimDefault = 22;
+                    
+                    throughput_fn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/Throughput_20171003T122253_20190829.mat';
+                    S.Sthpt = load(PathTranslator(throughput_fn));
+                    S.Sthpt.ThptCal_fn = throughput_fn;
+
+                    S.ppl0 = 4.01; % config_SPCdisc_20180321.py
+                    
+                case 604, % SPC_disc
+                    S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
+                    S.XYlimDefault = 22;
+                
                 case 606, % MCB-SPC
                     S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run606/';
                     S.ppl0 = 6.09; % MCB SPC from config_MCB_SPC_20181015.py
@@ -293,13 +302,6 @@ classdef CRunData < handle & CConstants
                     %S.Sthpt.fovx(:), S.Sthpt.fovy(:), S.Sthpt.thpt(:)
                     S.Sthpt = load(PathTranslator(ThptCal_fn));
                     S.Sthpt.ThptCal_fn = ThptCal_fn;
-
-                case 001,
-                    S.Results_pn = '/home/dmarx/HCIT/MCB/hcim_model2_run001/results/run001/';
-                    
-                    S.XYlimDefault = 10;
-                    S.DrawradiiDefault = [3.0 9.0];
-
                     
                 otherwise
                     error('unrecognized runnum');

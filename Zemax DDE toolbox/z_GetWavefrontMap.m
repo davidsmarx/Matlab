@@ -1,33 +1,15 @@
 function [Wavefront, sParms] = z_GetWavefrontMap(varargin)
-% [Wavefront, sParms] = z_GetWavefrontMap(zchan, textfilename)
+% [Wavefront, sParms] = z_GetWavefrontMap(zchan, options)
+% [Wavefront, sParms] = z_GetWavefrontMap(options)
 % 
-% [Wavefront, sParms] = z_GetWavefrontMap(zchan)
-% [Wavefront, sParms] = z_GetWavefrontMap(textfilename)
-% [Wavefront, sParms] = z_GetWavefrontMap(zchan, textfilename)
-% [Wavefront, sParms] = z_GetWavefrontMap(zchan, textfilename, settings.cfg)
-% [Wavefront, sParms] = z_GetWavefrontMap
+% options:
+%     'textfilename', textfilename (default = [pwd '\WavefrontMap.txt'])
+%     'settingsfilename', settingsfilename ( .cfg ), (default = use lens
+%                                                     current settings)
 %
 % calls ZEMAX Wavefront -> Wavefrontmap analysis
 % the settings are the default settings for the lens
 %
-% [...] = z_GetWavefrontMap(zchan)
-%    ZEMAX calculates the Wavefrontmap on current lens, results are stored in
-%    [pwd '\wavefrontmap.txt']
-%
-% [...] = z_GetWavefrontMap(textfilename)
-%    read results from textfilename
-%
-% [...] = z_GetWavefrontMap(zchan, textfilename)
-%    ZEMAX calculates the wavefrontmap on current lens and stores results in
-%    textfilename
-% 
-% [...] = z_GetWavefrontMap
-%    interactively select a text file with wavefrontmap results to read
-%
-% [...] = z_GetWavefrontMap(zchan, textfilename, settings.cfg)
-%    use the configuration in settings.cfg to make the calculations. If
-%    settings.cfg is not specified, default settings are used, and then the
-%    default settings are written to 'wfmsettings.cfg'
 %
 % Wavefront = Wavefront
 % sParms fields:
@@ -177,47 +159,25 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [zchan, textfilename, settingsfilename, settingsflag] = ValidateInputs(varargin)
-% [Field, sParms] = z_GetWavefrontMap(zchan)
-% [Field, sParms] = z_GetWavefrontMap(textfilename)
-% [Field, sParms] = z_GetWavefrontMap(zchan, textfilename)
-% [Field, sParms] = z_GetWavefrontMap(zchan, textfilename, settings.cfg)
+% [Field, sParms] = z_GetWavefrontMap(zchan, options)
+% [Field, sParms] = z_GetWavefrontMap(options)
 
-switch(nargin),
-    case 0,
-        [filename, pathname, fi] = uigetfile({'*.txt'},'Select wavefrontmap Analysis');
-        if isequal(filename,0),
-            textfilename = [];
-        else,
-            textfilename = [pathname filename];
-        end
-        zchan = [];
-        settingsfilename = [pwd '\IntSettings.cfg'];
 
-        % flag determines use/save settings. see discussion in "GetTextFile" in Zemax manual
-        settingsflag = '0'; % 0 => use default settings, and save the settings used to settingsfilename
-
-    case 1,
-        if isstr(varargin{1}),
-            textfilename = varargin{1};
-            zchan = [];
-        else
-            zchan = varargin{1};
-            textfilename = [pwd '\intanalysis.txt'];
-        end
-        settingsfilename = [pwd '\IntSettings.cfg'];
-        % flag determines use/save settings. see discussion in "GetTextFile" in Zemax manual
-        settingsflag = '0'; % 0 => use default settings, and save the settings used to settingsfilename
-    case 2,
-        zchan = varargin{1};
-        textfilename = varargin{2};
-        settingsfilename = [pwd '\IntSettings.cfg'];
-        % flag determines use/save settings. see discussion in "GetTextFile" in Zemax manual
-        settingsflag = '0'; % 0 => use default settings, and save the settings used to settingsfilename
-    case 3,
-        [zchan, textfilename, settingsfilename] = deal(varargin{:});
-        settingsflag = '1'; % 1 => use settings in settingsfilename
-    otherwise,
-        error('usage: [Field, sParms] = z_GetWavefrontMap(zchan, textfilename)');
+zchan = [];
+if isa(varargin{1},'double'),
+    zchan = varargin{1};
 end
+
+textfilename = CheckOption('textfilename', [pwd '\WavefrontMap.txt'], varargin{:});
+settingsfilename = CheckOption('settingsfilename', '', varargin{:});
+
+if isempty(settingsfilename),
+    settingsfilename = [pwd '\Settings.cfg'];
+    settingsflag = '0'; % 0 => use default settings, and save the settings used to settingsfilename, see p. 634
+else
+    settingsflag = '1'; % 1 => use settings in settingsfilename
+end
+
+
 
 end % ValidateInputs
