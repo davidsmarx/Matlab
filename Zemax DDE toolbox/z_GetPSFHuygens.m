@@ -80,6 +80,11 @@ if fid == -1, error(['error opening text file ' textfilename]); end
 %    Center.ic = column index of center point
 %    ReferenceCoord = [x0, y0]
 
+% initialize return vals to empty, if something goes wrong with reading the
+% text file, we return empty
+Field = [];
+headerinfo = struct;
+
 % read each line, assumes 'Values...' is the last header line before data
 % not all header lines are always included, depending on settings
 ltmp = fgetl(fid); % 
