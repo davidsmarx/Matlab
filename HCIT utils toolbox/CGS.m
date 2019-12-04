@@ -240,6 +240,13 @@ classdef CGS < handle
             
         end % rmsPha
         
+        function rmsP = rmsPhaDiff(S, Sref)
+            
+            bMaskTmp = S.bMask & Sref.bMask;
+            rmsP = rms(mod2pi(S.phw_ptt(bMaskTmp) - Sref.phw_ptt(bMaskTmp)));
+            
+        end % rmsPha
+
         function [hfig, hax] = DisplayGS(S, varargin)
             % [hfig, hax] = DisplayGS(S, varargin)
             %
