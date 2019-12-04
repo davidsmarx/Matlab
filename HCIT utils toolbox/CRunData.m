@@ -392,6 +392,8 @@ classdef CRunData < handle & CConstants
             % get actual wavelengths from the camera fits files
             for iwv = 1:S.NofW,
                fn = FitsGetKeywordVal(S.ImKeys, ['C' num2str(iwv-1) 'P0J0']) ;
+               [pntmp, fntmp, ext] = fileparts(fn);
+               fn = [pntmp '/' fntmp '.fits'];
                if isempty(fn) || ~exist(PathTranslator(fn),'file'),
                    warning(['cannot open ' fn]);
                    %continue
