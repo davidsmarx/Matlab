@@ -2271,7 +2271,7 @@ classdef CRunData < handle & CConstants
 
                 % plot S DMv
                 hax(idm) = subplot(Nr, S.Ndm, idm);
-                imageschcit(DMv{idm}), 
+                imageschcit(0,0,DMv{idm}), 
                 colorbartitle('Vmu')
                 title(strDM{idm})
                 
@@ -2282,7 +2282,7 @@ classdef CRunData < handle & CConstants
                     dDMv = DMv{idm} - refDMv{idm};
                     rmsdDMv = rms(dDMv(abs(dDMv)>0));
 
-                    imageschcit(dDMv)
+                    imageschcit(0,0,dDMv)
                     colorbartitle('Vmu')
                     title(['\Delta ' strRefDM{idm} ', ' num2str(rmsdDMv,'%.4f') 'V rms'])
                     
