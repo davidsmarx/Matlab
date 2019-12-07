@@ -171,24 +171,16 @@ classdef CRunData < handle & CConstants
             % 'rundir_pn' and 'reduced_pn' are always relative to
             % Results_pn
             switch S.runnum,
-                case 603, % SPC_disc
-                    S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run603/';
-                    S.XYlimDefault = 22;
-                    
-                    throughput_fn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/Throughput_20171003T122253_20190829.mat';
-                    S.Sthpt = load(PathTranslator(throughput_fn));
-                    S.Sthpt.ThptCal_fn = throughput_fn;
-
-                    S.ppl0 = 4.01; % config_SPCdisc_20180321.py
-                    
-                case 604, % SPC_disc
-                    S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
-                    S.XYlimDefault = 22;
-                
                 case 0 % DST
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run000/';
                     S.XYlimDefault = 12;
                     
+                case 001,
+                    S.Results_pn = '/home/dmarx/HCIT/MCB/hcim_model2_run001/results/run001/';
+                    
+                    S.XYlimDefault = 10;
+                    S.DrawradiiDefault = [3.0 9.0];
+
                 case 10 % DST with BMC50.B DM at dm1
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run010/';
                     S.S383temp_pn= '/home/dmarx/HCIT/DST/hcim_testbed_run010/results/';
@@ -240,6 +232,23 @@ classdef CRunData < handle & CConstants
 
                     S.ppl0 = 4.45;
 
+                case 100 % PIAA
+                    error('reserved for PIAA');
+                    
+                case 603, % SPC_disc
+                    S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run603/';
+                    S.XYlimDefault = 22;
+                    
+                    throughput_fn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/Throughput_20171003T122253_20190829.mat';
+                    S.Sthpt = load(PathTranslator(throughput_fn));
+                    S.Sthpt.ThptCal_fn = throughput_fn;
+
+                    S.ppl0 = 4.01; % config_SPCdisc_20180321.py
+                    
+                case 604, % SPC_disc
+                    S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
+                    S.XYlimDefault = 22;
+                
                 case 606, % MCB-SPC
                     S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run606/';
                     S.ppl0 = 6.09; % MCB SPC from config_MCB_SPC_20181015.py
@@ -293,13 +302,6 @@ classdef CRunData < handle & CConstants
                     %S.Sthpt.fovx(:), S.Sthpt.fovy(:), S.Sthpt.thpt(:)
                     S.Sthpt = load(PathTranslator(ThptCal_fn));
                     S.Sthpt.ThptCal_fn = ThptCal_fn;
-
-                case 001,
-                    S.Results_pn = '/home/dmarx/HCIT/MCB/hcim_model2_run001/results/run001/';
-                    
-                    S.XYlimDefault = 10;
-                    S.DrawradiiDefault = [3.0 9.0];
-
                     
                 otherwise
                     error('unrecognized runnum');
@@ -323,6 +325,9 @@ classdef CRunData < handle & CConstants
             %         or local PC drive. If PC, we will copy data
             %         locally to save unzip and read time
             if ispc,
+                if ~exist([S.PCtemp_pn S.Reduced_pn],'dir')
+                    mkdir([S.PCtemp_pn S.Reduced_pn])
+                end
                 sReduced_local_fn = [S.PCtemp_pn S.Reduced_pn s_bn];
                 sRundir_local_fn  = [S.PCtemp_pn S.Rundir_pn s_bn];
             else
@@ -387,6 +392,8 @@ classdef CRunData < handle & CConstants
             % get actual wavelengths from the camera fits files
             for iwv = 1:S.NofW,
                fn = FitsGetKeywordVal(S.ImKeys, ['C' num2str(iwv-1) 'P0J0']) ;
+               [pntmp, fntmp, ext] = fileparts(fn);
+               fn = [pntmp '/' fntmp '.fits'];
                if isempty(fn) || ~exist(PathTranslator(fn),'file'),
                    warning(['cannot open ' fn]);
                    %continue
@@ -1421,6 +1428,7 @@ classdef CRunData < handle & CConstants
                 S.ReadMaskCube;
             end
             
+            hfig = CheckOption('hfig', [], varargin{:});
             iwvplot = CheckOption('iwv', ceil(S.NofW/2), varargin{:});
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             bLog = CheckOption('blog', true, varargin{:});
@@ -1440,7 +1448,11 @@ classdef CRunData < handle & CConstants
                 sctitle = 'Linear Norm Intensity';
             end
                 
-            hfig = figure_mxn(2,S.Nppair+1);
+            if isempty(hfig),
+                hfig = figure_mxn(2,S.Nppair+1);
+            else
+                figure(hfig)
+            end
             for ip = 1:S.Nppair,
                 ha(ip) = subplot(2,S.Nppair+1,ip);
                 imageschcit(x,y, funPlot(S.ProbeModel{iwvplot,ip})), axis image, colorbartitle(sctitle)
@@ -1467,10 +1479,10 @@ classdef CRunData < handle & CConstants
                 ProbeMeasPlot{ip}  = abs(S.ProbeMeasAmp{iwvplot,ip}).^2;
             end
             harad(1) = subplot(2,S.Nppair+1,S.Nppair+1);
-            DisplayRadialPlot(S, ProbeModelPlot, 'hax', harad(1));
+            S.DisplayRadialPlot(ProbeModelPlot, 'hax', harad(1),'title', ['Iter #' num2str(S.iter) ', Model']);
             legend('location','south')
             harad(2) = subplot(2,S.Nppair+1,2*(S.Nppair+1));
-            DisplayRadialPlot(S, ProbeMeasPlot,'hax',harad(2));
+            S.DisplayRadialPlot(ProbeMeasPlot,'hax',harad(2),'title', ['Iter #' num2str(S.iter) ', Measure']);
             legend('location','south')
             
             ylim = get(harad,'ylim');

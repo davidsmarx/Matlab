@@ -29,19 +29,20 @@ function sOut = GenerateEFCReport(runnum, listItnum, varargin)
 
 more off
 
-%mlock   
-persistent Sppt;
+% mlock   
+% persistent Sppt;
 
 % options
 ppt_fn = CheckOption('pptfn', '', varargin{:});
-sOptin = CheckOption('sOptin', [], varargin{:});
-    
-% check if PowerPoint Presentation already exists and still there
-try
-    Sppt.Presentation.Slides,
-catch
-    clear Sppt; Sppt = [];
-end
+sOptin = CheckOption('sOptin', [], varargin{:}); % passed to CRunData
+Sppt = CheckOption('Sppt', [], varargin{:});
+
+% % check if PowerPoint Presentation already exists and still there
+% try
+%     Sppt.Presentation.Slides,
+% catch
+%     clear Sppt; Sppt = [];
+% end
 
 % open PowerPoint if necessary, and plots are requested
 if isempty(Sppt) && ispc && ~isempty(varargin),
@@ -97,6 +98,7 @@ function [hfig, hax, sMetrics] = CreaetePlots(S, sDisplayFun, Sppt, varargin)
 
     save_pn = CheckOption('save_pn', ['./' sDisplayFun '/'], varargin{:}); % is ~ispc
     figheight = CheckOption('figheight', 700, varargin{:}); % for ppt display
+    trialname = CheckOption('trialname', '', varargin{:});
 
     % create path to put plots, if necessary
     if ~ispc && ~exist(save_pn)
@@ -149,6 +151,7 @@ function [hfig, hax, sMetrics] = CreaetePlots(S, sDisplayFun, Sppt, varargin)
                 legend(char(tbwvstrtmp, 'TB-mean', mowvstrtmp, 'Model-Mean'))
                 xlabel('Iteration #')
                 ylabel('mean |\DeltaE|^2')
+                title(trialname, 'fontsize', 14)
             end
             
         case 'DisplayCEfields'
@@ -168,7 +171,7 @@ function [hfig, hax, sMetrics] = CreaetePlots(S, sDisplayFun, Sppt, varargin)
             end % for ii iter
 
             figure, plotampphase([S(2:N).iter], [sMetrics.CC],...
-                'xlabel','Iteration #','title','\DeltaE Testbed Model Correlation (CC)');
+                'xlabel','Iteration #','title',[trialname ', \DeltaE Testbed Model Correlation (CC)']);
             
         otherwise, % one call per iteration
             sMetrics = struct;

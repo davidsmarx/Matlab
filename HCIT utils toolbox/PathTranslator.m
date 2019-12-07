@@ -19,6 +19,9 @@ end
 if strcmp(A{1}, '~'),
     winpath = ['Y:\' A{2} '\' A{3:end}];
     
+elseif ~strcmp(A{1}, '/')
+    winpath = s383path; % it's a relative path
+    
 elseif strcmp([A{2} '/' A{3}], 'home/bseo'),
     winpath = strjoin({'Y:\bseo', A{4:end}}, '\');
     
