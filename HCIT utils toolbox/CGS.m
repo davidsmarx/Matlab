@@ -53,6 +53,7 @@ classdef CGS < handle
         ph
         phw
         cAmpPlanes % input and est amp images each plane (cmp.fits)
+        zAmpPlanes % camz for each amp image
         amp_keys
         bMask
         ampthresh
@@ -147,6 +148,9 @@ classdef CGS < handle
                         S.listSrcImDir = dir(PathTranslator(...
                             ['/proj/piaa-data/Data/' year '-*-*/bseo/gsttb_s_' num2str(gsnum,'%04d') '/*.fits']...
                             ));
+
+                    case 'piaa'
+                        bn = '/proj/piaacmc/phaseretrieval/reduced/piaa_';
                         
                     otherwise
                         % do nothing, let bn = bn
@@ -221,15 +225,18 @@ classdef CGS < handle
             NIm = length(finfo.Contents);
 
             S.cAmpPlanes = cell(1,NIm);
-
+            S.zAmpPlanes = zeros(NIm,1);
+            
             % each hdu is N x N x 3
             % (:,:,1) = measured amplitude
             % (:,:,2) = calculated amplitude
             % (:,:,3) = calculated phase
             
             S.cAmpPlanes{1} = fitsread(PathTranslator(cmp_fn));
+            S.zAmpPlanes(1) = FitsGetKeywordVal(finfo.PrimaryData.Keywords, 'Z');
             for ii = 2:NIm,
                 S.cAmpPlanes{ii} = fitsread(PathTranslator(cmp_fn),'image',ii-1);
+                S.zAmpPlanes(ii) = FitsGetKeywordVal(finfo.Image(ii-1).Keywords, 'Z');
             end
             
         end % ReadAmpImages
@@ -514,6 +521,8 @@ classdef CGS < handle
                 else
                     imageschcit(Im)
                 end
+                
+                title(['Z = ' num2str(S.zAmpPlanes(ii),'%.1f')])
 
             end % for 
 
