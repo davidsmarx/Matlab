@@ -53,9 +53,13 @@ elseif isequal([A{2} '/' A{3}],'net/spud-data')
 
 elseif isequal([A{2} '/' A{3}],'net/piaa-data') || isequal([A{2} '/' A{3}],'proj/piaa-data')
     % mcb camera data
-    winpath = strjoin({'X:\', A{5:end}}, '\');
+    winpath = strjoin({'X:', A{5:end}}, '\');
     %A = {A{1:3},A{5:end}}; % remove /Data/
 
+elseif isequal([A{2} '/' A{3}], 'proj/piaacmc')
+    % piaacmc share and camera images
+    winpath = strjoin({'W:', A{4:end}}, '\');
+    
 elseif length(A) >= 4 && isequal([A{2} '/' A{3} '/' A{4}],'proj/dst/data')
     winpath = strjoin({'Y:\ln_dst_data', A{5:end}}, '\');
     
