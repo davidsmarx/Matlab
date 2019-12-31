@@ -65,7 +65,13 @@ classdef CGS < handle
         Y
         R
         T
-        
+
+        RemapRadialR2
+        RemapRadialR1
+        RemapRadialRmin % = 1.51*MM;
+        RemapRadialRmax %= 14.2*MM;
+        RemapRadialRpix  % = 145; % pixels pupil radius taken manually from bMask(:,x==0)
+
     end % properties
     
     methods
@@ -79,6 +85,8 @@ classdef CGS < handle
             if nargin == 0,
                 return
             end
+            
+            U = CConstants;
             
             if ~exist('bn','var') || isempty(bn),
                 %bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
@@ -151,12 +159,19 @@ classdef CGS < handle
 
                     case 'piaa'
                         bn = '/proj/piaacmc/phaseretrieval/reduced/piaa_';
+                        % get dir listing of raw camera images                        
+                        S.listPupImDir = dir(PathTranslator(...
+                            ['/proj/piaacmc/scicam/*/gspiaa_p_' num2str(gsnum,'04d') '/piaa_*.fits']...
+                            ));
+                        S.listSrcImDir = dir(PathTranslator(...
+                            ['/proj/piaacmc/scicam/*/gspiaa_s_' num2str(gsnum,'04d') '/piaa_*.fits']...
+                            ));
                         
                     otherwise
                         % do nothing, let bn = bn
                         %disp(bn);
                 end % switch bn
-            end
+            end % if ~exist('bn','var') || isempty(bn),
             
             %disp(['opening: ' PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits'])]);
             ampinfo = fitsinfo(PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits']));
@@ -184,6 +199,14 @@ classdef CGS < handle
             %S.E = S.amp .* exp(1i*S.phw_ptt);
             S.E = S.amp .* exp(1i*S.phw);
         
+            % load the radial mapping
+            % should be part of the bn switch
+            rm2_rm1 = load(PathTranslator('/proj/piaacmc/phaseretrieval/2019-10-16-nutekPiaaRemappingCoords\remapping.txt'));
+            S.RemapRadialR2 = rm2_rm1(:,1);
+            S.RemapRadialR1 = rm2_rm1(:,2);
+            S.RemapRadialRmin = 1.51*U.MM;
+            S.RemapRadialRmax = 14.2*U.MM;
+            S.RemapRadialRpix = 145; % pixels pupil radius taken manually from bMask(:,x==0)
 
         end % CGS instantiator
         
@@ -540,6 +563,67 @@ classdef CGS < handle
             
         end % DisplayAllAmpCamera
         
+        function [ampremap, pharemap, hax] = RemapRadial(S, varargin)
+            % PIAA radial remapping of amplitude and phase
+            % optional display
+            % for example, see W:\phaseretrieval\test_remapgsnum_script.m
+            
+            U = CConstants;
+            
+            % options
+            bDebug = CheckOption('debug', false, varargin{:});
+            bDisplay = CheckOption('display', false, varargin{:});
+            
+            hax = [];
+            N = size(S.bMask);
+            [x, y, X, Y, R, T] = CreateGrid(N, S.RemapRadialRmax./S.RemapRadialRpix);
+          
+            if bDebug,
+                figure, plot(X(S.bMask)/U.MM, Y(S.bMask)/U.MM, '.'), grid
+                axis image
+                xlabel('Camera X (mm)'), ylabel('Camera Y (mm)')
+                title('Pupil Mask Physical Size at PIAA')
+            end
+            
+            % piaa out map to piaa in
+            Rm = zeros(size(R));
+            Rm(S.bMask) = interp1(S.RemapRadialR2, S.RemapRadialR1, R(S.bMask), 'pchip', nan);
+            Xm = Rm.*cos(T); Ym = Rm.*sin(T);
+            
+            if bDebug,
+                figure, plot(Xm(S.bMask)/U.MM, Ym(S.bMask)/U.MM, '.'), grid
+                axis image
+                xlabel('Camera X (mm)'), ylabel('Camera Y (mm)')
+                title('PIAA Out to In Map')
+            end
+            
+            % interpolate E-field at xm, ym
+            Ei_r = interp2(X, Y, real(exp(1j*S.phw_ptt)), Xm, Ym);
+            Ei_i = interp2(X, Y, imag(exp(1j*S.phw_ptt)), Xm, Ym);
+            Ei = Ei_r + 1j*Ei_i;
+            
+            pharemap = angle(Ei);
+            
+            ampremap = interp2(X, Y, S.amp, Xm, Ym);
+
+            if bDisplay,
+                hfig = figure_mxn(2,2);
+                
+                hax(1,1) = subplot(2,2,1);
+                imageschcit(S.amp), colorbartitle('Amplitude'), title('Before Remapping')
+                
+                hax(1,2) = subplot(2,2,2);
+                imageschcit(S.phw_ptt), colorbartitle('Phase (rad)'), title('Before Remapping')
+                
+                hax(2,1) = subplot(2,2,3);
+                imageschcit(ampremap), colorbartitle('Amplitude'), title('After Remapping')
+                
+                hax(2,2) = subplot(2,2,4);
+                imageschcit(pharemap), colorbartitle('Phase (rad)'), title('After Remapping')
+                
+            end
+
+        end
     end % methods
     
 end % classdef
