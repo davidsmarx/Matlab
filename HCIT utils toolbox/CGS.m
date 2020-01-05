@@ -72,6 +72,7 @@ classdef CGS < handle
         RemapRadialRmax %= 14.2*MM;
         RemapRadialRpix  % = 145; % pixels pupil radius taken manually from bMask(:,x==0)
         Eremap
+        bMaskRemap
         
     end % properties
     
@@ -564,7 +565,7 @@ classdef CGS < handle
             
         end % DisplayAllAmpCamera
         
-        function [ampremap, pharemap] = RemapRadial(S, varargin)
+        function [Zremap, ampremap, pharemap] = RemapRadial(S, varargin)
             % PIAA radial remapping of amplitude and phase
             % for example, see W:\phaseretrieval\test_remapgsnum_script.m
             % result is saved as amp & phase of S.Eremap
@@ -576,10 +577,22 @@ classdef CGS < handle
             
             hax = [];
             N = size(S.bMask);
+            
+            % coorindates for this routine are in (mm)
             [x, y, X, Y, R, T] = CreateGrid(N, S.RemapRadialRmax./S.RemapRadialRpix);
           
+            % force circular bMask
+            S.bMaskRemap = R <= S.RemapRadialRmax; % (mm)
+            
             if bDebug,
-                figure, plot(X(S.bMask)/U.MM, Y(S.bMask)/U.MM, '.'), grid
+                figure_mxn(1,2)
+                
+                rgbM = zeros([size(S.bMask) 3]);
+                rgbM(:,:,1) = 128*S.bMask;
+                rgbM(:,:,3) = 128*S.bMaskRemap;
+                subplot(1,2,1), imshow(rgbM), title('bMask and bMask for remap')
+                
+                subplot(1,2,2), plot(X(S.bMaskRemap)/U.MM, Y(S.bMaskRemap)/U.MM, '.')
                 axis image
                 xlabel('Camera X (mm)'), ylabel('Camera Y (mm)')
                 title('Pupil Mask Physical Size at PIAA')
@@ -587,25 +600,30 @@ classdef CGS < handle
             
             % piaa out map to piaa in
             Rm = zeros(size(R));
-            Rm(S.bMask) = interp1(S.RemapRadialR2, S.RemapRadialR1, R(S.bMask), 'pchip', nan);
+            Rm(S.bMaskRemap) = interp1(S.RemapRadialR2, S.RemapRadialR1, R(S.bMaskRemap), 'pchip', nan);
             Xm = Rm.*cos(T); Ym = Rm.*sin(T);
             
             if bDebug,
-                figure, plot(Xm(S.bMask)/U.MM, Ym(S.bMask)/U.MM, '.'), grid
+                figure, plot(Xm(S.bMaskRemap)/U.MM, Ym(S.bMaskRemap)/U.MM, '.'), grid
                 axis image
                 xlabel('Camera X (mm)'), ylabel('Camera Y (mm)')
                 title('PIAA Out to In Map')
             end
             
-            % interpolate E-field at xm, ym
+            % interpolate phase using complex numbers at xm, ym
             Ei_r = interp2(X, Y, real(exp(1j*S.phw_ptt)), Xm, Ym);
             Ei_i = interp2(X, Y, imag(exp(1j*S.phw_ptt)), Xm, Ym);
-            Ei = Ei_r + 1j*Ei_i;
-            
+            Ei = Ei_r + 1j*Ei_i;            
             pharemap = angle(Ei);
-            
-            ampremap = interp2(X, Y, S.amp, Xm, Ym);
 
+            % zernike fit to phase, coordinates are in mm
+            Zremap = zernikefit(X(S.bMaskRemap), Y(S.bMaskRemap), pharemap(S.bMaskRemap), 1:11, S.RemapRadialRmax, 'Noll');
+
+            % interpolate amplitude onto remap grid
+            ampremap = interp2(X, Y, S.amp, Xm, Ym);
+            
+            % results S.Eramap and S.bMaskRemap are stored in the object
+            % properties because CGS is < handle
             S.Eremap = ampremap .* exp(1j*pharemap);
 
         end % RemapRadial

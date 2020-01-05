@@ -5,6 +5,8 @@ function hout = imageschcit(varargin)
 %
 % Im can be an array or a fits filename
 % x, y can be vectors size(Im), or offset scalars
+%
+% not for rgb images (:,:,3), need to add this capability
 
 cProperties = {};
    
