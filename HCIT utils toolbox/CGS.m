@@ -71,7 +71,8 @@ classdef CGS < handle
         RemapRadialRmin % = 1.51*MM;
         RemapRadialRmax %= 14.2*MM;
         RemapRadialRpix  % = 145; % pixels pupil radius taken manually from bMask(:,x==0)
-
+        Eremap
+        
     end % properties
     
     methods
@@ -563,16 +564,15 @@ classdef CGS < handle
             
         end % DisplayAllAmpCamera
         
-        function [ampremap, pharemap, hax] = RemapRadial(S, varargin)
+        function [ampremap, pharemap] = RemapRadial(S, varargin)
             % PIAA radial remapping of amplitude and phase
-            % optional display
             % for example, see W:\phaseretrieval\test_remapgsnum_script.m
+            % result is saved as amp & phase of S.Eremap
             
             U = CConstants;
             
             % options
             bDebug = CheckOption('debug', false, varargin{:});
-            bDisplay = CheckOption('display', false, varargin{:});
             
             hax = [];
             N = size(S.bMask);
@@ -606,24 +606,35 @@ classdef CGS < handle
             
             ampremap = interp2(X, Y, S.amp, Xm, Ym);
 
-            if bDisplay,
-                hfig = figure_mxn(2,2);
-                
-                hax(1,1) = subplot(2,2,1);
-                imageschcit(S.amp), colorbartitle('Amplitude'), title('Before Remapping')
-                
-                hax(1,2) = subplot(2,2,2);
-                imageschcit(S.phw_ptt), colorbartitle('Phase (rad)'), title('Before Remapping')
-                
-                hax(2,1) = subplot(2,2,3);
-                imageschcit(ampremap), colorbartitle('Amplitude'), title('After Remapping')
-                
-                hax(2,2) = subplot(2,2,4);
-                imageschcit(pharemap), colorbartitle('Phase (rad)'), title('After Remapping')
-                
-            end
+            S.Eremap = ampremap .* exp(1j*pharemap);
 
-        end
+        end % RemapRadial
+        
+        function [hax] = DisplayRemap(S, varargin)
+            
+            if isempty(S.Eremap),
+                RemapRadial(S, varargin{:});
+            end
+            
+            ampremap = abs(S.Eremap);
+            pharemap = angle(S.Eremap);
+            
+            hfig = figure_mxn(2,2);
+            
+            hax(1,1) = subplot(2,2,1);
+            imageschcit(S.amp), colorbartitle('Amplitude'), title(['gsnum ' num2str(S.gsnum) '; Before Remapping'])
+            
+            hax(1,2) = subplot(2,2,2);
+            imageschcit(S.phw_ptt), colorbartitle('Phase (rad)'), title(['gsnum ' num2str(S.gsnum) ';Before Remapping'])
+            
+            hax(2,1) = subplot(2,2,3);
+            imageschcit(ampremap), colorbartitle('Amplitude'), title(['gsnum ' num2str(S.gsnum) ';After Remapping'])
+            
+            hax(2,2) = subplot(2,2,4);
+            imageschcit(pharemap), colorbartitle('Phase (rad)'), title(['gsnum ' num2str(S.gsnum) ';After Remapping'])
+            
+
+        end % DisplayRemap
     end % methods
     
 end % classdef
