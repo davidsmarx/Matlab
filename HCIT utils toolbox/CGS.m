@@ -201,7 +201,7 @@ classdef CGS < handle
         
             % load the radial mapping
             % should be part of the bn switch
-            rm2_rm1 = load(PathTranslator('/proj/piaacmc/phaseretrieval/2019-10-16-nutekPiaaRemappingCoords\remapping.txt'));
+            rm2_rm1 = load(PathTranslator('/proj/piaacmc/phaseretrieval/2019-10-16-nutekPiaaRemappingCoords/remapping.txt'));
             S.RemapRadialR2 = rm2_rm1(:,1);
             S.RemapRadialR1 = rm2_rm1(:,2);
             S.RemapRadialRmin = 1.51*U.MM;
