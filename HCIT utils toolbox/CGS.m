@@ -208,7 +208,10 @@ classdef CGS < handle
             S.RemapRadialR1 = rm2_rm1(:,2);
             S.RemapRadialRmin = 1.51*U.MM;
             S.RemapRadialRmax = 14.2*U.MM;
-            S.RemapRadialRpix = 145; % pixels pupil radius taken manually from bMask(:,x==0)
+            % 145 pixels pupil radius taken manually from bMask(:,x==0)
+            % 15.0mm ray trace mag * measured 0.5* 46.3mm beam diameter at
+            % pupil
+            S.RemapRadialRpix = (14.2/15.2)*145; 
 
         end % CGS instantiator
         
@@ -634,8 +637,8 @@ classdef CGS < handle
                 RemapRadial(S, varargin{:});
             end
             
-            ampremap = abs(S.Eremap);
-            pharemap = angle(S.Eremap);
+            ampremap = S.bMaskRemap .* abs(S.Eremap);
+            pharemap = S.bMaskRemap .* angle(S.Eremap);
             
             hfig = figure_mxn(2,2);
             
