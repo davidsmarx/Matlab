@@ -12,6 +12,9 @@ function [hfig, hax, sUserData] = ImageCube(imgCube, listI, varargin)
 %
 % options:
 % fImageDisplay = CheckOption('fImageDisplay', @imageschcit, varargin{:});
+% xplot = CheckOption('x', [], varargin{:});
+% yplot = CheckOption('y', [], varargin{:});
+% xylim = CheckOption('xylim', [], varargin{:});
 % clim = CheckOption('clim', [], varargin{:});
 % cmap = CheckOption('colormap', 'gray', varargin{:});
 % fTitleStr = CheckOption('fTitleStr', @(isl) ['slice #' num2str(isl) '; Label ' num2str(listI(isl))], varargin{:});
