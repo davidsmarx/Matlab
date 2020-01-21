@@ -343,10 +343,13 @@ classdef CGS < handle
             %    ('hfig', figure_mxn(2,2), varargin{:});
             %    ('usebMask', true, varargin{:});
             %    ('phplot', 'angleE', (default) 'phw_ptt'
+            %    ('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
+            %    ('dphclim', [], varargin{:});
             
             % parse options
             hfig = CheckOption('hfig', figure_mxn(2,2), varargin{:});
             usebMask = CheckOption('usebMask', true, varargin{:});
+            xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             phplot = CheckOption('phplot', 'angleE', varargin{:}); % other choice = 'phw_ptt'
             dphclim = CheckOption('dphclim', [], varargin{:});
             
