@@ -211,7 +211,7 @@ classdef CGS < handle
             % 145 pixels pupil radius taken manually from bMask(:,x==0)
             % 15.0mm ray trace mag * measured 0.5* 46.3mm beam diameter at
             % pupil
-            S.RemapRadialRpix = (14.2/15.2)*145; 
+            S.RemapRadialRpix = 192.5; 
 
         end % CGS instantiator
         
