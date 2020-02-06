@@ -13,8 +13,6 @@ function [ImCube, hfig, hax] = FitsPath2ImCube(pn, varargin)
 % ylim = CheckOption('ylim', [], varargin{:});
 % scale = CheckOption('scale', 'linear', varargin{:});
 
-
-% options
 plottype = CheckOption('plottype', 'cube', varargin{:}); % 'spread'
 plotx = CheckOption('x', 0, varargin{:});
 ploty = CheckOption('y', 0, varargin{:});
@@ -23,6 +21,11 @@ ylim = CheckOption('ylim', [], varargin{:});
 scale = CheckOption('scale', 'linear', varargin{:});
 
 %
+
+% initialize return vals
+hfig = [];
+hax = [];
+ 
 listfn = dir(PathTranslator([pn '/*.fits']));
 Nf = length(listfn);
 
@@ -67,6 +70,9 @@ switch lower(plottype),
     case 'spread'
         figure
         [hfig, hax] = PlotSpread;
+
+    case 'none',
+        % no dispaly, do nothing
         
     otherwise,
         error(['unknown plottype ' plottype]);
