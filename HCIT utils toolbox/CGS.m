@@ -57,6 +57,7 @@ classdef CGS < handle
         amp_keys
         bMask
         ampthresh
+        phunwrap
         phw_ptt
         E
         x
@@ -72,6 +73,7 @@ classdef CGS < handle
         RemapRadialRmax %= 14.2*MM;
         RemapRadialRpix  % = 145; % pixels pupil radius taken manually from bMask(:,x==0)
         Eremap
+        phunwrapremap
         bMaskRemap
         
     end % properties
@@ -182,21 +184,28 @@ classdef CGS < handle
             S.gsnum = gsnum;
             S.bn = bn;
             S.amp = fitsread(PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits']));
-            S.ph = fitsread(PathTranslator([bn num2str(gsnum,'%03d') 'ph.fits']));
-            S.phw = fitsread(PathTranslator([bn num2str(gsnum,'%03d') 'phwrap.fits']));
+            S.ph = fitsread(PathTranslator([bn num2str(gsnum,'%03d') 'ph.fits']));  % unwrapdiag(angle(eref)), unwrapped phase
+            S.phw = fitsread(PathTranslator([bn num2str(gsnum,'%03d') 'phwrap.fits'])); % = angle(eref), wrapped phase
             S.amp_keys = ampinfo.PrimaryData.Keywords;
                        
             % S.bMask, S.ampthresh
             [sResult, S.bMask] = AutoMetric(S.amp);
             S.ampthresh = sResult.thresh;
-            
+
+            % unwrap phase using better unwrap routine, but requires mask
+            phw = S.phw;
+            phw(~S.bMask) = NaN;
+            S.phunwrap = unwrap_phase(phw);
+
             % S.phw_ptt
             % use FFT to remove large amounts of PTT (integer pixels in FFT space
             % then use zernikes to remove remaining PTT
             [S.x, S.y, S.X, S.Y, S.R, S.T] = CreateGrid(S.amp);
-            S.RemovePTTfft;
-            S.phw_ptt = RemovePTTZ(S.phw_ptt, S.bMask);
-            
+            %             S.RemovePTTfft; % creates first estimate of S.phw_ptt
+            %             S.phw_ptt = RemovePTTZ(S.phw_ptt, S.bMask);
+            S.phunwrap = RemovePTTZ(S.phunwrap, S.bMask);
+            S.phw_ptt  = mod2pi(S.phunwrap);
+
             % S.E
             %S.E = S.amp .* exp(1i*S.phw_ptt);
             S.E = S.amp .* exp(1i*S.phw);
@@ -239,6 +248,7 @@ classdef CGS < handle
             S.ph  = CropImage(S.ph, [], [0 0], 2*wc, 2*wc);
             S.phw = CropImage(S.phw, [], [0 0], 2*wc, 2*wc);
             S.phw_ptt = CropImage(S.phw_ptt, [], [0 0], 2*wc, 2*wc);
+            S.phunwrap = CropImage(S.phunwrap, [], [0 0], 2*wc, 2*wc);            
             S.E   = CropImage(S.E, [], [0 0], 2*wc, 2*wc);            
             
             [S.x, S.y, S.X, S.Y, S.R, S.T] = CreateGrid(S.amp);
@@ -271,14 +281,20 @@ classdef CGS < handle
         
         function rmsP = rmsPha(S)
             
-            rmsP = rms(S.phw_ptt(S.bMask));
+            rmsP = rms(S.phunwrap(S.bMask));
             
         end % rmsPha
         
         function rmsP = rmsPhaDiff(S, Sref)
-            
+
+            % intersection of mask
             bMaskTmp = S.bMask & Sref.bMask;
-            rmsP = rms(mod2pi(S.phw_ptt(bMaskTmp) - Sref.phw_ptt(bMaskTmp)));
+            
+            % S.phunwrap(S.bMask) is already zero-mean
+            % if S.bMask is very different from Sref.bMask, then
+            % difference might not be zero mean            
+            phdiff = S.phunwrap(bMaskTmp) - Sref.phunwrap(bMaskTmp);
+            rmsP = rms(phdiff - mean(phdiff));
             
         end % rmsPha
 
@@ -289,12 +305,12 @@ classdef CGS < handle
             % xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             % climph = CheckOption('climph', [], varargin{:});
             % phplot = CheckOption('phplot', 'angleE', varargin{:}); %
-            % other choice = 'phw_ptt', 'ph', 'phw'
+            % other choice = 'phw_ptt', 'ph', 'phw', 'phunwrap'
             
             pMask = CheckOption('pMask', S.bMask, varargin{:});
             xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             climph = CheckOption('climph', [], varargin{:});
-            phplot = CheckOption('phplot', 'angleE', varargin{:}); % other choice = 'phw_ptt'
+            phplot = CheckOption('phplot', 'angleE', varargin{:}); % other choice = 'phw_ptt', 'phunwrap'
 
             %hfig = figure;
             %hax = imagescampphase(S.E, x, y, ['gsnum ' num2str(S.gsnum)]);
@@ -317,6 +333,8 @@ classdef CGS < handle
                     ph = S.ph;
                 case 'phw'
                     ph = S.phw;
+                case 'phunwrap'
+                    ph = S.phunwrap;
                 otherwise
                     error(['phplot ' phplot ' not a valid choice']);
             end
@@ -342,7 +360,7 @@ classdef CGS < handle
             % options:
             %    ('hfig', figure_mxn(2,2), varargin{:});
             %    ('usebMask', true, varargin{:});
-            %    ('phplot', 'angleE', (default) 'phw_ptt'
+            %    ('phplot', 'angleE', (default) 'phw_ptt', 'phunwrap'
             %    ('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             %    ('dphclim', [], varargin{:});
             
@@ -350,7 +368,7 @@ classdef CGS < handle
             hfig = CheckOption('hfig', figure_mxn(2,2), varargin{:});
             usebMask = CheckOption('usebMask', true, varargin{:});
             xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
-            phplot = CheckOption('phplot', 'angleE', varargin{:}); % other choice = 'phw_ptt'
+            phplot = CheckOption('phplot', 'angleE', varargin{:}); % other choice = 'phw_ptt', 'phunwrap'
             dphclim = CheckOption('dphclim', [], varargin{:});
             
             switch phplot
@@ -358,6 +376,8 @@ classdef CGS < handle
                     funPhPl = @(S) angle(S.E);
                 case 'phw_ptt'
                     funPhPl = @(S) S.phw_ptt;
+                case 'phunwrap'
+                    funPhPl = @(S) S.phunwrap;
                 otherwise
                     error(['unknown phplot option: ' phplot]);
             end
@@ -588,7 +608,8 @@ classdef CGS < handle
             [x, y, X, Y, R, T] = CreateGrid(N, S.RemapRadialRmax./S.RemapRadialRpix);
           
             % force circular bMask
-            S.bMaskRemap = R <= S.RemapRadialRmax; % (mm)
+            % bMaskRemap cannot be larger than bMask
+            S.bMaskRemap = (R <= S.RemapRadialRmax) & S.bMask; % (mm)
             
             if bDebug,
                 figure_mxn(1,2)
@@ -616,11 +637,15 @@ classdef CGS < handle
                 title('PIAA Out to In Map')
             end
             
-            % interpolate phase using complex numbers at xm, ym
-            Ei_r = interp2(X, Y, real(exp(1j*S.phw_ptt)), Xm, Ym);
-            Ei_i = interp2(X, Y, imag(exp(1j*S.phw_ptt)), Xm, Ym);
-            Ei = Ei_r + 1j*Ei_i;            
-            pharemap = angle(Ei);
+            % % interpolate phase using complex numbers at xm, ym
+            % Ei_r = interp2(X, Y, real(exp(1j*S.phw_ptt)), Xm, Ym);
+            % Ei_i = interp2(X, Y, imag(exp(1j*S.phw_ptt)), Xm, Ym);
+            % Ei = Ei_r + 1j*Ei_i;
+            % pharemap = angle(Ei);
+            
+            % interpolate unwrapped phase
+            pharemap = zeros(size(S.phunwrap));
+            pharemap(S.bMaskRemap) = interp2(X, Y, S.phunwrap, Xm(S.bMaskRemap), Ym(S.bMaskRemap));
 
             % zernike fit to phase, coordinates are in mm
             Zremap = zernikefit(X(S.bMaskRemap), Y(S.bMaskRemap), pharemap(S.bMaskRemap), 1:11, S.RemapRadialRmax, 'Noll');
@@ -628,8 +653,9 @@ classdef CGS < handle
             % interpolate amplitude onto remap grid
             ampremap = interp2(X, Y, S.amp, Xm, Ym);
             
-            % results S.Eramap and S.bMaskRemap are stored in the object
+            % results S.Eramap, S.phunwrapremap, and S.bMaskRemap are stored in the object
             % properties because CGS is < handle
+            S.phunwrapremap = pharemap;
             S.Eremap = ampremap .* exp(1j*pharemap);
 
         end % RemapRadial
@@ -641,6 +667,7 @@ classdef CGS < handle
             end
             
             ampremap = S.bMaskRemap .* abs(S.Eremap);
+            %pharemap = S.bMaskRemap .* S.phunwrapremap;
             pharemap = S.bMaskRemap .* angle(S.Eremap);
             
             hfig = figure_mxn(2,2);
@@ -669,7 +696,7 @@ function phw_ptt = RemovePTTZ(phw, bMask)
 Rz = max(R(bMask));
 Z = zernikefit(X(bMask), Y(bMask), phw(bMask), 3, Rz);
 phw_ptt = zeros(size(X));
-%phw_ptt(bMask) = phw(bMask) - zernikeval(Z, X(bMask), Y(bMask), Rz);
-phw_ptt(:) = mod2pi(phw(:) - zernikeval(Z, X(:), Y(:), Rz));
+phw_ptt(bMask) = phw(bMask) - zernikeval(Z, X(bMask), Y(bMask), Rz);
+%phw_ptt(:) = mod2pi(phw(:) - zernikeval(Z, X(:), Y(:), Rz));
 
 end % RemovePTTZ

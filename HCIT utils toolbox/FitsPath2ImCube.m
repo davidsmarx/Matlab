@@ -1,4 +1,5 @@
-function [ImCube, hfig, hax] = FitsPath2ImCube(pn, varargin)
+function varargout = FitsPath2ImCube(pn, varargin)
+% [ImCube, hfig, hax] = FitsPath2ImCube(pn, varargin)
 % ImCube = FitsPath2ImCube(pn, options)
 %
 % simple routine to collect all the fits files in a subdir
@@ -11,7 +12,7 @@ function [ImCube, hfig, hax] = FitsPath2ImCube(pn, varargin)
 % ploty = CheckOption('y', 0, varargin{:});
 % xlim = CheckOption('xlim', [], varargin{:});
 % ylim = CheckOption('ylim', [], varargin{:});
-% scale = CheckOption('scale', 'linear', varargin{:});
+% scale = CheckOption('scale', 'linear', varargin{:}); or 'log'
 
 plottype = CheckOption('plottype', 'cube', varargin{:}); % 'spread'
 plotx = CheckOption('x', 0, varargin{:});
@@ -76,6 +77,12 @@ switch lower(plottype),
         
     otherwise,
         error(['unknown plottype ' plottype]);
+end
+
+if nargout == 0,
+    varargout = {};
+else
+    varargout = {ImCube, hfig, hax};
 end
 
 return % end of main
