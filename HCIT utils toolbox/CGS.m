@@ -647,6 +647,9 @@ classdef CGS < handle
             % pharemap = zeros(size(S.phunwrap));
             % pharemap(S.bMaskRemap) = interp2(X, Y, S.phunwrap, Xm(S.bMaskRemap), Ym(S.bMaskRemap));
             
+            % mask off any nan's that result from interpolation
+            % this shouldn't be necessary, but sometimes it is, need to
+            % look into it.
             S.bMaskRemap(isnan(pharemap)) = 0;
 
             % zernike fit to phase, coordinates are in mm
