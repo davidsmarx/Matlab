@@ -12,6 +12,7 @@ function [ImCube, hfig, hax] = FitsPath2ImCube(pn, varargin)
 % xlim = CheckOption('xlim', [], varargin{:});
 % ylim = CheckOption('ylim', [], varargin{:});
 % scale = CheckOption('scale', 'linear', varargin{:});
+% hdrkwd = CheckOption('hdrkwd', 'camz', varargin{:});
 
 plottype = CheckOption('plottype', 'cube', varargin{:}); % 'spread'
 plotx = CheckOption('x', 0, varargin{:});
@@ -19,6 +20,7 @@ ploty = CheckOption('y', 0, varargin{:});
 xlim = CheckOption('xlim', [], varargin{:});
 ylim = CheckOption('ylim', [], varargin{:});
 scale = CheckOption('scale', 'linear', varargin{:});
+hdrkwd = CheckOption('hdrkwd', 'camz', varargin{:});
 
 %
 
@@ -35,10 +37,10 @@ finfo = fitsinfo(PathTranslator([pn '/' listfn(1).name]));
 [Nr, Nc] = size(imtmp);
 
 ImCube = zeros([Nf Nr Nc]);
-camz = zeros(Nf,1);
+hdrkwdval = zeros(Nf,1);
 
 ImCube(1,:,:) = imtmp;
-camz(1) = FitsGetKeywordVal(finfo.PrimaryData.Keywords,'camz');
+hdrkwdval(1) = FitsGetKeywordVal(finfo.PrimaryData.Keywords,hdrkwd);
 
 for ii = 1:Nf
 
@@ -46,7 +48,7 @@ for ii = 1:Nf
     finfo = fitsinfo(PathTranslator([pn '/' listfn(ii).name]));
 
     ImCube(ii,:,:) = imtmp;
-    camz(ii) = FitsGetKeywordVal(finfo.PrimaryData.Keywords,'camz');
+    hdrkwdval(ii) = FitsGetKeywordVal(finfo.PrimaryData.Keywords,hdrkwd);
 end
 
 % apply scale (stretch)
@@ -64,7 +66,7 @@ end
 switch lower(plottype),
     case 'cube',
         figure,
-        [hfig, hax, sUserData] = ImageCube(ImCube, camz,...
+        [hfig, hax, sUserData] = ImageCube(ImCube, hdrkwdval,...
             'x', plotx, 'y', ploty);
         
     case 'spread'
