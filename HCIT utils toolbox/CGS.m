@@ -637,15 +637,20 @@ classdef CGS < handle
                 title('PIAA Out to In Map')
             end
             
-            % % interpolate phase using complex numbers at xm, ym
-            % Ei_r = interp2(X, Y, real(exp(1j*S.phw_ptt)), Xm, Ym);
-            % Ei_i = interp2(X, Y, imag(exp(1j*S.phw_ptt)), Xm, Ym);
-            % Ei = Ei_r + 1j*Ei_i;
-            % pharemap = angle(Ei);
+            % interpolate phase using complex numbers at xm, ym
+            Ei_r = interp2(X, Y, real(exp(1j*S.phw_ptt)), Xm, Ym);
+            Ei_i = interp2(X, Y, imag(exp(1j*S.phw_ptt)), Xm, Ym);
+            Ei = Ei_r + 1j*Ei_i;
+            pharemap = angle(Ei);
             
-            % interpolate unwrapped phase
-            pharemap = zeros(size(S.phunwrap));
-            pharemap(S.bMaskRemap) = interp2(X, Y, S.phunwrap, Xm(S.bMaskRemap), Ym(S.bMaskRemap));
+            % % interpolate unwrapped phase
+            % pharemap = zeros(size(S.phunwrap));
+            % pharemap(S.bMaskRemap) = interp2(X, Y, S.phunwrap, Xm(S.bMaskRemap), Ym(S.bMaskRemap));
+            
+            % mask off any nan's that result from interpolation
+            % this shouldn't be necessary, but sometimes it is, need to
+            % look into it.
+            S.bMaskRemap(isnan(pharemap)) = 0;
 
             % zernike fit to phase, coordinates are in mm
             Zremap = zernikefit(X(S.bMaskRemap), Y(S.bMaskRemap), pharemap(S.bMaskRemap), 1:11, S.RemapRadialRmax, 'Noll');
