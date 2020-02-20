@@ -12,8 +12,9 @@ function varargout = FitsPath2ImCube(pn, varargin)
 % ploty = CheckOption('y', 0, varargin{:});
 % xlim = CheckOption('xlim', [], varargin{:});
 % ylim = CheckOption('ylim', [], varargin{:});
-% hdrkwd = CheckOption('hdrkwd', 'camz', varargin{:});
+% hdrkwd = CheckOption('hdrkwd', {'camz'}, varargin{:});
 % scale = CheckOption('scale', 'linear', varargin{:}); or 'log'
+% refImg = CheckOption('refimg', [], varargin{:}); ImCube = ImCube - refImg
 
 plottype = CheckOption('plottype', 'cube', varargin{:}); % 'spread'
 plotx = CheckOption('x', 0, varargin{:});
@@ -21,7 +22,8 @@ ploty = CheckOption('y', 0, varargin{:});
 xlim = CheckOption('xlim', [], varargin{:});
 ylim = CheckOption('ylim', [], varargin{:});
 scale = CheckOption('scale', 'linear', varargin{:});
-hdrkwd = CheckOption('hdrkwd', 'camz', varargin{:});
+hdrkwd = CheckOption('hdrkwd', {'camz'}, varargin{:});
+refImg = CheckOption('refimg', [], varargin{:}); % ImCube = ImCube - refImg
 
 %
 
@@ -37,19 +39,29 @@ imtmp = fitsread(PathTranslator([pn '/' listfn(1).name]),'image');
 finfo = fitsinfo(PathTranslator([pn '/' listfn(1).name]));
 [Nr, Nc] = size(imtmp);
 
-ImCube = zeros([Nf Nr Nc]);
-hdrkwdval = zeros(Nf,1);
+% check head keyword, make sure it's cell
+if ischar(hdrkwd), hdrkwd = {hdrkwd}; end
 
-ImCube(1,:,:) = imtmp;
-hdrkwdval(1) = FitsGetKeywordVal(finfo.PrimaryData.Keywords,hdrkwd);
+% allocate
+ImCube = zeros([Nf Nr Nc]);
+hdrkwdval = zeros(Nf,length(hdrkwd));
 
 for ii = 1:Nf
 
     imtmp = fitsread(PathTranslator([pn '/' listfn(ii).name]),'image');
     finfo = fitsinfo(PathTranslator([pn '/' listfn(ii).name]));
 
+    if ~isempty(refImg),
+        imtmp = imtmp - refImg;
+    end
+    
     ImCube(ii,:,:) = imtmp;
-    hdrkwdval(ii) = FitsGetKeywordVal(finfo.PrimaryData.Keywords,hdrkwd);
+
+    % this way, FitsGetKeywordVal always returns a cell array
+    % even if only one hdrkwd
+    ctmp = FitsGetKeywordVal(finfo.PrimaryData.Keywords,hdrkwd);
+    hdrkwdval(ii,:) = [ctmp{:}];
+    
 end
 
 % apply scale (stretch)
@@ -67,7 +79,8 @@ end
 switch lower(plottype),
     case 'cube',
         figure,
-        [hfig, hax, sUserData] = ImageCube(ImCube, hdrkwdval,...
+        [hfig, hax, sUserData] = ImageCube(ImCube, hdrkwdval, ...
+            'fTitleStr', @(isl) [join(string(hdrkwd), ', ') num2str(hdrkwdval(isl,:),'%.1f ')], ... 
             'x', plotx, 'y', ploty);
         
     case 'spread'

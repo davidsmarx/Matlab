@@ -2,11 +2,11 @@ function [val, comment, ik] = FitsGetKeywordVal(Keywords, key)
 % [val, comment, ik] = FitsGetKeywordVal(Keywords, key)
 % 
 % Keywords is cell array from finfo.PrimaryData (or Image) .Keywords
-% key is string
+% key is string or a cell array of strings
 %
-% val is the keyword value
-% comment is the comment (3rd column)
-% ik is the row index where the keyword was found
+% val is the keyword value or a cell array of values
+% comment is the comment (3rd column) or a cell array of comments
+% ik is the row index (or array of index) where the keyword was found
 %
 % if key is not found, empty matrix is returned
 % 
@@ -14,18 +14,22 @@ function [val, comment, ik] = FitsGetKeywordVal(Keywords, key)
 
 switch class(key),
     case 'char'
-        listKey = {key};
+        [val, comment, ik] = GetOneKeyVal(key);
+
     case 'cell'
         listKey = key;
+
+        val = cell(length(listKey),1);
+        comment = cell(length(listKey),1);
+        ik = zeros(length(listKey),1);
+        for ikey = 1:length(listKey),
+            [val{ikey}, comment{ikey}, ik(ikey)] = GetOneKeyVal(listKey{ikey});
+        end
+
     otherwise,
         error('usage: key must be char or cell array');
 end
 
-for ikey = 1:length(listKey),
-    [val, comment, ik] = GetOneKeyVal(listKey{ikey});
-    %S(ikey) = struct('key',listKey{ikey}, 'val',val,'comment',comment, 'ik',ik);
-    S.(listKey{ikey}) = struct('val', val, 'comment', comment, 'ik', ik);
-end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
     function [val, comment, ik] = GetOneKeyVal(key)
@@ -52,8 +56,6 @@ end
         
     end % GetOneKeyVal
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-if length(listKey) > 1, val = S; end
 
 end % main
 
