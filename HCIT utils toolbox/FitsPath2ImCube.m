@@ -13,6 +13,7 @@ function varargout = FitsPath2ImCube(pn, varargin)
 % xlim = CheckOption('xlim', [], varargin{:});
 % ylim = CheckOption('ylim', [], varargin{:});
 % hdrkwd = CheckOption('hdrkwd', {'camz'}, varargin{:});
+% hdrkwdvalfmt = CheckOption('hdrkwdvalfmt', '%.1f', varargin{:});
 % scale = CheckOption('scale', 'linear', varargin{:}); or 'log'
 % refImg = CheckOption('refimg', [], varargin{:}); ImCube = ImCube - refImg
 
@@ -23,6 +24,7 @@ xlim = CheckOption('xlim', [], varargin{:});
 ylim = CheckOption('ylim', [], varargin{:});
 scale = CheckOption('scale', 'linear', varargin{:});
 hdrkwd = CheckOption('hdrkwd', {'camz'}, varargin{:});
+hdrkwdvalfmt = CheckOption('hdrkwdvalfmt', '%.1f', varargin{:});
 refImg = CheckOption('refimg', [], varargin{:}); % ImCube = ImCube - refImg
 
 %
@@ -80,7 +82,7 @@ switch lower(plottype),
     case 'cube',
         figure,
         [hfig, hax, sUserData] = ImageCube(ImCube, hdrkwdval, ...
-            'fTitleStr', @(isl) [join(string(hdrkwd), ', ') num2str(hdrkwdval(isl,:),'%.1f ')], ... 
+            'fTitleStr', @(isl) [join(string(hdrkwd), ', ') num2str(hdrkwdval(isl,:),hdrkwdvalfmt)], ... 
             'x', plotx, 'y', ploty);
         
     case 'spread'
