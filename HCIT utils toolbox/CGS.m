@@ -637,15 +637,15 @@ classdef CGS < handle
                 title('PIAA Out to In Map')
             end
             
-            % interpolate phase using complex numbers at xm, ym
-            Ei_r = interp2(X, Y, real(exp(1j*S.phw_ptt)), Xm, Ym);
-            Ei_i = interp2(X, Y, imag(exp(1j*S.phw_ptt)), Xm, Ym);
-            Ei = Ei_r + 1j*Ei_i;
-            pharemap = angle(Ei);
+            % % interpolate phase using complex numbers at xm, ym
+            % Ei_r = interp2(X, Y, real(exp(1j*S.phw_ptt)), Xm, Ym);
+            % Ei_i = interp2(X, Y, imag(exp(1j*S.phw_ptt)), Xm, Ym);
+            % Ei = Ei_r + 1j*Ei_i;
+            % pharemap = angle(Ei);
             
-            % % interpolate unwrapped phase
-            % pharemap = zeros(size(S.phunwrap));
-            % pharemap(S.bMaskRemap) = interp2(X, Y, S.phunwrap, Xm(S.bMaskRemap), Ym(S.bMaskRemap));
+            % interpolate unwrapped phase
+            pharemap = zeros(size(S.phunwrap));
+            pharemap(S.bMaskRemap) = interp2(X, Y, S.phunwrap, Xm(S.bMaskRemap), Ym(S.bMaskRemap));
             
             % mask off any nan's that result from interpolation
             % this shouldn't be necessary, but sometimes it is, need to
@@ -672,8 +672,8 @@ classdef CGS < handle
             end
             
             ampremap = S.bMaskRemap .* abs(S.Eremap);
-            %pharemap = S.bMaskRemap .* S.phunwrapremap;
-            pharemap = S.bMaskRemap .* angle(S.Eremap);
+            pharemap = S.bMaskRemap .* S.phunwrapremap;
+            %pharemap = S.bMaskRemap .* angle(S.Eremap);
             
             hfig = figure_mxn(2,2);
             
