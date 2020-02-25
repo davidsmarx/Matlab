@@ -37,6 +37,7 @@
             bDisplay = CheckOption('display', false, varargin{:});
             com = CheckOption('com', [], varargin{:}); % should be 1-offset for use as index
             CoordOffset = CheckOption('CoordOffset', [0 0], varargin{:}); % same units as pix
+            Sstruts = CheckOption('Sstruts', [], varargin{:}); % if you want to analyze this image with struts already found with reference image
             
             
             % read image and header
@@ -103,7 +104,15 @@
                 xlabel('Camera X (\mum)'), ylabel('Camera Y (\mum)')
             end
             
-            S.Sstruts = S.FindAllStruts(varargin{:});
+            if isempty(Sstruts),
+                S.Sstruts = S.FindAllStruts(varargin{:});
+            else
+                S.Sstruts = Sstruts;
+            end
+
+            S.Sstruts.Spsf = S.DeconvAllStruts(varargin{:});
+            %Spsf(istrut) = S.StrutDeconv(Sstrut(istrut), varargin{:});
+
             
         end % CPupImAnalysis
         
@@ -336,9 +345,10 @@
             % call FindStrut() for each strut to find edges of each strut
             % call StrutDeconv for each strut, edge gradient analysis
             
-            rpad = CheckOption('radiuspad', 10*S.pix, varargin{:});
+            rpad = CheckOption('radiuspad', 10*S.pix, varargin{:}); % um
             bDebug = CheckOption('debug', false, varargin{:});
-            
+            useObjects = CheckOption('useobjects', [], varargin{:});
+            strutlengthfactor = CheckOption('strutlengthfactor', 1, varargin{:});
             %S.sDims = S.CalcDimensions;
             
             % first manipulate mask so that struts are 1, everywhere else 0
@@ -357,14 +367,22 @@
                 end
             end            
             [B,L,N,A] = bwboundaries(bwmask, 'noholes');
-                
-            if N ~= 6, 
-                figure, imageschcit(L), colorbar
-                error('wrong number of struts');
+        
+            % use only requested objects
+            if isempty(useObjects),
+                useObjects = 1:N;
+            else
+                N = length(useObjects);
             end
+            
+            %             if N ~= 6,
+            %                 figure, imageschcit(L), colorbar
+            %                 error('wrong number of struts');
+            %             end
         
             [strutxy1, strutxy2] = deal(zeros(N,2));
-            for istrut = 1:N,
+            for iobj = 1:N,
+                istrut = useObjects(iobj);
                 xstr = S.X(L==istrut);
                 ystr = S.Y(L==istrut);
                 rstr = S.R(L==istrut);
@@ -374,14 +392,14 @@
                 %                     rstr, xstr, ystr);
                 [rtmp, xtmp, ytmp] = filterdata(rstr > max(rstr) - 0.1*range(rstr), ...
                     rstr, xstr, ystr);                
-                strutxy1(istrut,:) = [mean(xtmp) mean(ytmp)];
+                strutxy1(iobj,:) = [mean(xtmp) mean(ytmp)];
 
                 %                 r2 = S.sDims.meanIDradius + 1*S.U.MM;
                 %                 [rtmp, xtmp, ytmp] = filterdata(rstr > r2 - rpad & rstr < r2 + rpad,...
                 %                     rstr, xstr, ystr);
                 [rtmp, xtmp, ytmp] = filterdata(rstr < min(rstr) + 0.1*range(rstr), ...
                     rstr, xstr, ystr);
-                strutxy2(istrut,:) = [mean(xtmp) mean(ytmp)];
+                strutxy2(iobj,:) = [mean(xtmp) mean(ytmp)];
                                                        
             end % for each strut
             
@@ -399,12 +417,17 @@
             % call FindStrut and Deconv for each strut
             if bDebug, hfigDebug = figure; imageschcit(S.x/S.U.UM, S.y/S.U.UM, S.Im); else, hfigDebug = []; end
             for istrut = 1:N,
+                % how much of the strut to use?
+                xyc = mean([strutxy1(istrut,:); strutxy2(istrut,:)]);
+                xy1tmp = xyc + strutlengthfactor*(strutxy1(istrut,:)-xyc);
+                xy2tmp = xyc + strutlengthfactor*(strutxy2(istrut,:)-xyc);
+            
                 Sstrut(istrut) = S.FindStrut(...
-                    strutxy1(istrut,:), strutxy2(istrut,:) ...
+                    xy1tmp, xy2tmp ... strutxy1(istrut,:), strutxy2(istrut,:) ...
                     , 'hfigDebug', hfigDebug, varargin{:} ...
                     );
                 
-                Spsf(istrut) = S.StrutDeconv(Sstrut(istrut), varargin{:});
+                %Spsf(istrut) = S.StrutDeconv(Sstrut(istrut), varargin{:});
                 
             end % for eah strut
             
@@ -414,11 +437,19 @@
                 ,'strutxy1', strutxy1 ...
                 ,'strutxy2', strutxy2 ...
                 ,'Sstrut', Sstrut ...
-                ,'Spsf', Spsf ...
+                ...,'Spsf', Spsf ...
                 ,'radiuspad', rpad ...
                 );
             
         end % FindAllStruts
+        
+        function Spsf = DeconvAllStruts(S, varargin)
+
+            for istrut = 1:S.Sstruts.N,
+                Spsf(istrut) = S.StrutDeconv(S.Sstruts.Sstrut(istrut), varargin{:});
+            end
+
+        end % DeconvAllStruts
         
         function Sout = FindStrut(S, xy0, xy1, varargin)
             % find left and right edges of strut, given two points in the
@@ -456,6 +487,7 @@
                 figure_mxn(hfig,2,1);
                 hax(1) = subplot(2,1,1);
                 imageschcit(S.x/S.U.UM, S.y/S.U.UM, S.Im)
+                title('FindStrut')
                 hold on
                 plot([xy0(1) xy1(1)]/S.U.UM, [xy0(2) xy1(2)]/S.U.UM, '-r')
                 
@@ -551,11 +583,17 @@
             % psf
             % Sstrut is struct returned by method FindStruct
         
+            widthd = CheckOption('widthd', 750*S.U.UM, varargin{:}); % length of cross-section line; not used except to create Ns
+            bOuterEdges = CheckOption('outeredges', false, varargin{:}); % look for outside pair of edges; for edge mask analysis
+            
+            
             ds = S.pix/8; % sample spacing for resampling and deconv kernel
-            Ls = 4*Sstrut.meanStrutWidth; % not used except to create Ns
+            %Ls = 4*Sstrut.meanStrutWidth; % not used except to create Ns
+
+            
             bDebug = CheckOption('debug', false, varargin{:});
             
-            Ns = ceil(Ls/ds); % # of samples across strut
+            Ns = ceil(widthd/ds); % # of samples across strut
             d  = CreateGrid(Ns, ds);
             
             Nlines = length(Sstrut.xStrutCenter);
@@ -586,6 +624,7 @@
                 hax = [subplot(2,1,1) subplot(2,1,2)];
                 axes(hax(1));
                 imageschcit(S.x/S.U.UM, S.y/S.U.UM, S.Im)
+                title('StrutDeconv')
 
             end
             
@@ -605,13 +644,21 @@
                 % psf from gradient
                 grAs(:,ii) = gradient(As(:,ii));
                 % location and value of gradient peaks
-                [grMaxLt(ii), xgrMaxLt(ii), ygrMaxLt(ii)] = grmax(abs(grAs(:,ii)),...
-                    d<0 & d>(-1.5*Sstrut.meanStrutWidth), ...
-                    xs, ys);
-                [grMaxRt(ii), xgrMaxRt(ii), ygrMaxRt(ii)] = grmax(abs(grAs(:,ii)),...
-                    d>0 & d<(1.5*Sstrut.meanStrutWidth), ...
-                    xs, ys);
+                [grMaxLt(ii), xgrMaxLt(ii), ygrMaxLt(ii)] = grmin(grAs(:,ii),... % bright-dark edge is negative gradient
+                    d<0 & d > -1.5*Sstrut.meanStrutWidth, xs, ys); % used to be & d > -1.5*Sstrut.meanStrutWidth
+                [grMaxRt(ii), xgrMaxRt(ii), ygrMaxRt(ii)] = grmax(grAs(:,ii),... % dark-bright edge is positive
+                    d>0 & d <  1.5*Sstrut.meanStrutWidth, xs, ys);
                 
+                if bOuterEdges,
+                    
+                    [grMaxLt_out(ii), xgrMaxLt_out(ii), ygrMaxLt_out(ii)] = grmax( grAs(:,ii),...
+                        d<0, xs, ys);
+                    [grMaxRt_out(ii), xgrMaxRt_out(ii), ygrMaxRt_out(ii)] = grmin( grAs(:,ii),...
+                        d>0, xs, ys);
+                else
+                    
+            
+                end
                 
                 if bDebug,
                     axes(hax(1));
@@ -643,6 +690,18 @@
             
             [fwhmlt, ~, xelt, dhalflt] = fwhm(d(d < 0), -meangrAs(d < 0));
             [fwhmrt, ~, xert, dhalfrt] = fwhm(d(d > 0),  meangrAs(d > 0));
+            
+            % if there are outside edges to the left and right bright
+            % areas, for example the pupil image quality edge test mask has
+            % dark-bright edges outside the strut edges
+            if bOuterEdges,
+                [fwhmlt_out, ~, xelt_out, dhalflt_out] = fwhm(d(d < 0),  meangrAs(d < 0));
+                [fwhmrt_out, ~, xert_out, dhalfrt_out] = fwhm(d(d > 0), -meangrAs(d > 0));
+            else
+                [fwhmlt_out, xelt_out, dhalflt_out, fwhmrt_out, xert_out, dhalfrt_out] = deal([]);
+            
+            end
+            
             strutwidth = abs(xert - xelt);
 
             Spsf = struct(...
@@ -666,6 +725,12 @@
                 ,'dhalflt', dhalflt ...
                 ,'dhalfrt', dhalfrt ...
                 ,'strutwidth', strutwidth ...
+                ,'grMaxRt_out', grMaxLt_out...
+                ,'grMaxLt_out', grMaxRt_out...
+                ,'fwhmlt_out', fwhmlt_out ...
+                ,'fwhmrt_out', fwhmrt_out ...
+                ,'dhalflt_out', dhalflt_out ...
+                ,'dhalfrt_out', dhalfrt_out ...
                 );
             
         end % StrutDeconv
@@ -707,8 +772,15 @@
             hpl.LineWidth = 1;
             plot(Spsf.dhalflt(1)*[1 1]/S.U.UM, ylim, '--r', Spsf.dhalflt(2)*[1 1]/S.U.UM, ylim, '--r')
             plot(Spsf.dhalfrt(1)*[1 1]/S.U.UM, ylim, '--r', Spsf.dhalfrt(2)*[1 1]/S.U.UM, ylim, '--r')
-            text(Spsf.dhalflt(2)/S.U.UM, 0.75*ylim(2), [' ' num2str(Spsf.fwhmlt/S.U.UM,'%.1f') '\mum'],'fontsize',12,'color','r')
+            text(Spsf.dhalflt(2)/S.U.UM, 0.75*ylim(1), [' ' num2str(Spsf.fwhmlt/S.U.UM,'%.1f') '\mum'],'fontsize',12,'color','r')
             text(Spsf.dhalfrt(2)/S.U.UM, 0.75*ylim(2), [' ' num2str(Spsf.fwhmrt/S.U.UM,'%.1f') '\mum'],'fontsize',12,'color','r')
+
+            if ~any([isempty(Spsf.dhalflt_out) isempty(Spsf.dhalfrt_out)])
+                plot(Spsf.dhalflt_out(1)*[1 1]/S.U.UM, ylim, '--r', Spsf.dhalflt_out(2)*[1 1]/S.U.UM, ylim, '--r')
+                plot(Spsf.dhalfrt_out(1)*[1 1]/S.U.UM, ylim, '--r', Spsf.dhalfrt_out(2)*[1 1]/S.U.UM, ylim, '--r')
+                text(Spsf.dhalflt_out(2)/S.U.UM, 0.75*ylim(2), [' ' num2str(Spsf.fwhmlt_out/S.U.UM,'%.1f') '\mum'],'fontsize',12,'color','r')
+                text(Spsf.dhalfrt_out(2)/S.U.UM, 0.75*ylim(1), [' ' num2str(Spsf.fwhmrt_out/S.U.UM,'%.1f') '\mum'],'fontsize',12,'color','r')                
+            end
             
             xlabel('Cross Section (\mum)'), ylabel('Gradient Intensity')
             if ~isempty(xlim), set(gca,'xlim',xlim/S.U.UM), end
@@ -757,3 +829,14 @@ function [peakgr, varargout] = grmax(gr, iuse, varargin)
     end
     
 end % grmax
+
+function [peakgr, varargout] = grmin(gr, iuse, varargin)
+
+    cArgout = filterdata(iuse, gr, varargin{:});
+    [peakgr, imax] = min(cArgout{1});
+    %dpeak = dtmp(imax);
+    for ii = 1:length(varargin)
+        varargout{ii} = varargin{ii}(imax);
+    end
+    
+end % grmin
