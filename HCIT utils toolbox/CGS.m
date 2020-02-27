@@ -194,8 +194,9 @@ classdef CGS < handle
 
             % unwrap phase using better unwrap routine, but requires mask
             phw = S.phw;
-            phw(~S.bMask) = NaN;
+            %phw(~S.bMask) = NaN;
             S.phunwrap = unwrap_phase(phw);
+            S.phunwrap(~S.bMask) = NaN;
 
             % S.phw_ptt
             % use FFT to remove large amounts of PTT (integer pixels in FFT space
