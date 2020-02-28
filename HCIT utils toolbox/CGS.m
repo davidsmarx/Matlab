@@ -197,7 +197,7 @@ classdef CGS < handle
             %phw(~S.bMask) = NaN;
             S.phunwrap = unwrap_phase(phw);
             S.phunwrap(~S.bMask) = NaN;
-            
+
             % S.phw_ptt
             % use FFT to remove large amounts of PTT (integer pixels in FFT space
             % then use zernikes to remove remaining PTT

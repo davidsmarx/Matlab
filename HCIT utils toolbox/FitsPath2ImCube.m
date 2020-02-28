@@ -1,5 +1,5 @@
 function varargout = FitsPath2ImCube(pn, varargin)
-% [ImCube, hfig, hax] = FitsPath2ImCube(pn, varargin)
+% [ImCube, sParms] = FitsPath2ImCube(pn, varargin)
 % ImCube = FitsPath2ImCube(pn, options)
 %
 % simple routine to collect all the fits files in a subdir
@@ -82,7 +82,7 @@ switch lower(plottype),
     case 'cube',
         figure,
         [hfig, hax, sUserData] = ImageCube(ImCube, hdrkwdval, ...
-            'fTitleStr', @(isl) [join(string(hdrkwd), ', ') num2str(hdrkwdval(isl,:),hdrkwdvalfmt)], ... 
+            'fTitleStr', @(isl) [['#' num2str(isl)] join(string(hdrkwd), ', ') num2str(hdrkwdval(isl,:),hdrkwdvalfmt)], ... 
             'x', plotx, 'y', ploty);
         
     case 'spread'
@@ -96,11 +96,21 @@ switch lower(plottype),
         error(['unknown plottype ' plottype]);
 end
 
+% return values, depends on options
 if nargout == 0,
     varargout = {};
 else
-    varargout = {ImCube, hfig, hax};
+    % 
+    sParms = struct(...
+        'hfig', hfig ...
+        ,'hax', hax ...
+        ,'hdrkwd', hdrkwd ...
+        ,'hdrkwdval', hdrkwdval ...
+        );
+
+    varargout = {ImCube, sParms};
 end
+
 
 return % end of main
 
