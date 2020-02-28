@@ -194,9 +194,10 @@ classdef CGS < handle
 
             % unwrap phase using better unwrap routine, but requires mask
             phw = S.phw;
-            phw(~S.bMask) = NaN;
+            %phw(~S.bMask) = NaN;
             S.phunwrap = unwrap_phase(phw);
-
+            S.phunwrap(~S.bMask) = NaN;
+            
             % S.phw_ptt
             % use FFT to remove large amounts of PTT (integer pixels in FFT space
             % then use zernikes to remove remaining PTT
@@ -212,6 +213,7 @@ classdef CGS < handle
         
             % load the radial mapping
             % should be part of the bn switch
+            % see email from Dan Sirbu "RE double check r2 r1 definition"
             rm2_rm1 = load(PathTranslator('/proj/piaacmc/phaseretrieval/2019-10-16-nutekPiaaRemappingCoords/remapping.txt'));
             S.RemapRadialR2 = rm2_rm1(:,1);
             S.RemapRadialR1 = rm2_rm1(:,2);
