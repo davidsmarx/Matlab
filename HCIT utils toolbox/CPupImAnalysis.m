@@ -630,10 +630,13 @@
             
             Kc = [];
             rhs = [];
-            [grAs, As] = deal(zeros(Ns, Nlines));
+            [grAs, As, Is] = deal(zeros(Ns, Nlines));
             for ii = 1:Nlines,
                 xs = Sstrut.xStrutCenter(ii) + ddx*d;
                 ys = Sstrut.yStrutCenter(ii) + ddy*d;
+                
+                % intensity along cut
+                Is(:,ii) = interp2(S.X, S.Y, S.Im, xs, ys);
                 
                 % image amplitude along cut
                 As(:,ii) = interp2(S.X, S.Y, sqrt(S.Im), xs, ys);
@@ -709,6 +712,7 @@
                 ,'d', d ...
                 ,'ddx', ddx ...
                 ,'ddy', ddy ...
+                ,'Is', Is ...
                 ,'As', As ...
                 ,'grAs', grAs ...
                 ,'meangrAs', meangrAs ...
@@ -782,7 +786,7 @@
                 text(Spsf.dhalfrt_out(2)/S.U.UM, 0.75*ylim(1), [' ' num2str(Spsf.fwhmrt_out/S.U.UM,'%.1f') '\mum'],'fontsize',12,'color','r')                
             end
             
-            xlabel('Cross Section (\mum)'), ylabel('Gradient Intensity')
+            xlabel('Cross Section (\mum)'), ylabel('Gradient Amplitude')
             if ~isempty(xlim), set(gca,'xlim',xlim/S.U.UM), end
             %set(gca,'ylim',ylim)
             
