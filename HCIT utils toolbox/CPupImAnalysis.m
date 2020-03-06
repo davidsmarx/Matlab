@@ -348,7 +348,7 @@
             rpad = CheckOption('radiuspad', 10*S.pix, varargin{:}); % um
             bDebug = CheckOption('debug', false, varargin{:});
             useObjects = CheckOption('useobjects', [], varargin{:});
-            strutlengthfactor = CheckOption('strutlengthfactor', 1, varargin{:});
+            strutlengthfactor = CheckOption('strutlengthfactor', 1, varargin{:}); % how much of the strut to use
             %S.sDims = S.CalcDimensions;
             
             % first manipulate mask so that struts are 1, everywhere else 0
@@ -412,6 +412,9 @@
                 plot(strutxy1(:,1)/S.U.MM, strutxy1(:,2)/S.U.MM, '+w', ...
                     strutxy2(:,1)/S.U.MM, strutxy2(:,2)/S.U.MM, 'ow')
                 hold off
+                
+                uiwait(msgbox('OK?','Check Struts','modal'));
+                
             end
 
             % call FindStrut and Deconv for each strut
@@ -631,6 +634,7 @@
             Kc = [];
             rhs = [];
             [grAs, As, Is] = deal(zeros(Ns, Nlines));
+            [grMaxLt_out, xgrMaxLt_out, ygrMaxLt_out, grMaxRt_out, xgrMaxRt_out, ygrMaxRt_out] = deal([]);
             for ii = 1:Nlines,
                 xs = Sstrut.xStrutCenter(ii) + ddx*d;
                 ys = Sstrut.yStrutCenter(ii) + ddy*d;
@@ -647,20 +651,17 @@
                 % psf from gradient
                 grAs(:,ii) = gradient(As(:,ii));
                 % location and value of gradient peaks
-                [grMaxLt(ii), xgrMaxLt(ii), ygrMaxLt(ii)] = grmin(grAs(:,ii),... % bright-dark edge is negative gradient
-                    d<0 & d > -1.5*Sstrut.meanStrutWidth, xs, ys); % used to be & d > -1.5*Sstrut.meanStrutWidth
-                [grMaxRt(ii), xgrMaxRt(ii), ygrMaxRt(ii)] = grmax(grAs(:,ii),... % dark-bright edge is positive
-                    d>0 & d <  1.5*Sstrut.meanStrutWidth, xs, ys);
+                [grMaxLt(ii), xgrMaxLt(ii), ygrMaxLt(ii), dLttmp] = grmin(grAs(:,ii),... % bright-dark edge is negative gradient
+                    d<0 & d > -1.5*Sstrut.meanStrutWidth, xs, ys, d); % used to be & d > -1.5*Sstrut.meanStrutWidth
+                [grMaxRt(ii), xgrMaxRt(ii), ygrMaxRt(ii), dRttmp] = grmax(grAs(:,ii),... % dark-bright edge is positive
+                    d>0 & d <  1.5*Sstrut.meanStrutWidth, xs, ys, d);
                 
-                if bOuterEdges,
-                    
+                % outer edges are for pupil image quality edge test mask
+                if bOuterEdges,                    
                     [grMaxLt_out(ii), xgrMaxLt_out(ii), ygrMaxLt_out(ii)] = grmax( grAs(:,ii),...
-                        d<0, xs, ys);
+                        d<(dLttmp-20*S.U.UM), xs, ys);
                     [grMaxRt_out(ii), xgrMaxRt_out(ii), ygrMaxRt_out(ii)] = grmin( grAs(:,ii),...
-                        d>0, xs, ys);
-                else
-                    
-            
+                        d>(dRttmp+20*S.U.UM), xs, ys);
                 end
                 
                 if bDebug,
@@ -729,8 +730,12 @@
                 ,'dhalflt', dhalflt ...
                 ,'dhalfrt', dhalfrt ...
                 ,'strutwidth', strutwidth ...
-                ,'grMaxRt_out', grMaxLt_out...
-                ,'grMaxLt_out', grMaxRt_out...
+                ,'grMaxLt_out', grMaxLt_out...
+                ,'xgrMaxLt_out', xgrMaxLt_out ...
+                ,'ygrMaxLt_out', ygrMaxLt_out ...
+                ,'grMaxRt_out', grMaxRt_out...
+                ,'xgrMaxRt_out', xgrMaxRt_out ...
+                ,'ygrMaxRt_out', ygrMaxRt_out ...
                 ,'fwhmlt_out', fwhmlt_out ...
                 ,'fwhmrt_out', fwhmrt_out ...
                 ,'dhalflt_out', dhalflt_out ...
@@ -828,8 +833,8 @@ function [peakgr, varargout] = grmax(gr, iuse, varargin)
     cArgout = filterdata(iuse, gr, varargin{:});
     [peakgr, imax] = max(cArgout{1});
     %dpeak = dtmp(imax);
-    for ii = 1:length(varargin)
-        varargout{ii} = varargin{ii}(imax);
+    for ii = 2:length(cArgout)
+        varargout{ii-1} = cArgout{ii}(imax);
     end
     
 end % grmax
@@ -839,8 +844,8 @@ function [peakgr, varargout] = grmin(gr, iuse, varargin)
     cArgout = filterdata(iuse, gr, varargin{:});
     [peakgr, imax] = min(cArgout{1});
     %dpeak = dtmp(imax);
-    for ii = 1:length(varargin)
-        varargout{ii} = varargin{ii}(imax);
+    for ii = 2:length(cArgout)
+        varargout{ii-1} = cArgout{ii}(imax);
     end
     
 end % grmin
