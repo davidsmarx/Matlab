@@ -16,6 +16,10 @@ function varargout = FitsPath2ImCube(pn, varargin)
 % hdrkwdvalfmt = CheckOption('hdrkwdvalfmt', '%.1f', varargin{:});
 % scale = CheckOption('scale', 'linear', varargin{:}); or 'log'
 % refImg = CheckOption('refimg', [], varargin{:}); ImCube = ImCube - refImg
+% 
+% output:
+% ImCube = [Nimages nr nc]
+% sParms = struct(
 
 plottype = CheckOption('plottype', 'cube', varargin{:}); % 'spread'
 plotx = CheckOption('x', 0, varargin{:});
@@ -41,7 +45,7 @@ imtmp = fitsread(PathTranslator([pn '/' listfn(1).name]),'image');
 finfo = fitsinfo(PathTranslator([pn '/' listfn(1).name]));
 [Nr, Nc] = size(imtmp);
 
-% check head keyword, make sure it's cell
+% check header keyword, make sure it's cell
 if ischar(hdrkwd), hdrkwd = {hdrkwd}; end
 
 % allocate
@@ -82,7 +86,7 @@ switch lower(plottype),
     case 'cube',
         figure,
         [hfig, hax, sUserData] = ImageCube(ImCube, hdrkwdval, ...
-            'fTitleStr', @(isl) [['#' num2str(isl)] join(string(hdrkwd), ', ') num2str(hdrkwdval(isl,:),hdrkwdvalfmt)], ... 
+            'fTitleStr', @(isl) [['#' num2str(isl)] join(string(hdrkwd), ', ') sprintf(hdrkwdvalfmt, hdrkwdval(isl,:))], ... 
             'x', plotx, 'y', ploty);
         
     case 'spread'
@@ -104,9 +108,10 @@ else
     sParms = struct(...
         'hfig', hfig ...
         ,'hax', hax ...
-        ,'hdrkwd', hdrkwd ...
-        ,'hdrkwdval', hdrkwdval ...
         );
+    for ikwd = 1:length(hdrkwd) % hdrkwd is a cell array
+        sParms.(hdrkwd{ikwd}) = hdrkwdval(:,ikwd);
+    end
 
     varargout = {ImCube, sParms};
 end
