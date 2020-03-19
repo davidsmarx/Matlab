@@ -105,8 +105,11 @@ switch event.Key
     case 'm'
         % save as movie?
         [fn, pn] = uiputfile({'*.avi'});
+        a = inputdlg('enter frames per sec');
+        fps = str2double(a{1});
         if ~isequal(fn,0),
             v = VideoWriter([pn fn]);
+            v.FrameRate = fps; % frames/sec
             open(v);            
         end
         
