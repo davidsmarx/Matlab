@@ -77,5 +77,7 @@ while ~feof(fid),
     
 end % while ~feof
 
+fclose(fid);
+
 end % main
 
