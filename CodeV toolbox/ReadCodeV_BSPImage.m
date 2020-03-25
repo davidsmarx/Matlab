@@ -1,14 +1,48 @@
-function [Im, sParms] = ReadCodeV_BSPImage(fn)
-% [Im, sParms] = ReadCodeVIntensityTxt(fn)
+function [Im, sParms] = ReadCodeV_BSPImage(fn, varargin)
+% [Im, sParms] = ReadCodeV_BSPImage(fn, options)
+%
+% options
+%   bDisplay = CheckOption('display', false, varargin{:});
+%   titlestr = CheckOption('title', pwd2titlestr(fn), varargin{:});
 
-U = CConstants;
+% options
+bDisplay = CheckOption('display', false, varargin{:});
 
-if nargin == 0,
+if nargin == 0 || isempty(fn),
     [fn, pn] = uigetfile({'*.txt'});
     fn = [pn '/' fn];
 end
 
-Im = [];
+[Im, sParms] = ReadImTxt(fn);
+
+if bDisplay,
+    [hfig, hax] = DisplayImage(Im, sParms, fn, varargin);
+    sParms.hfig = hfig;
+    sParms.hax = hax;
+end
+
+end % main
+
+function [hfig, hax] = DisplayImage(Im, sParms, fn, varargin)
+
+    U = CConstants;
+
+    % options
+    titlestr = CheckOption('title', pwd2titlestr(fn), varargin{:});
+    
+    [x, y] = CreateGrid(Im, sParms.dx);
+    
+    hfig = figure;
+    imageschcit(x/U.MM, y/U.MM, Im)
+    xlabel('X (mm)'), ylabel('Y (mm)')
+    title(titlestr, 'fontsize',14)
+    hax = gca;
+    
+end % DisplayImage
+
+function [Im, sParms] = ReadImTxt(fn)
+
+U = CConstants;
 
 fid = fopen(fn,'rt');
 if isequal(fid,-1), error(['error opening file: ' fn]); end
@@ -77,6 +111,8 @@ while ~feof(fid),
     ltmp = fgetl(fid);
     
 end % while ~feof
+
+fclose(fid);
 
 end % main
 
