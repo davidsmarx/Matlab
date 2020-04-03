@@ -1,11 +1,16 @@
 function [com, x, y] = calcCOM(x, y, im, varargin)
-% [com, x, y] = calcCOM(x, y, im)
+% com = calcCOM(x, y, im)
 % [com, x, y] = calcCOM([], [], im) (default (x, y) 1:nc, 1:nr
 % [com, x, y] = calcCOM(im)
 %
 % simple function to calculate center of mass
 % usual input image is a bMask;
 % default coordinates are 1:nc, 1:nr (i.e. 1-offset)
+%
+% return
+%   com = [xc, yc] coordinates of the center of mass
+%   x   = x-coordinates (nc x 1)
+%   y   = y-coordinates (nr x 1)
 
 if nargin == 1,
     im = x;
