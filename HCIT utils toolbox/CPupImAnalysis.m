@@ -421,7 +421,11 @@
                     strutxy2(:,1)/S.U.MM, strutxy2(:,2)/S.U.MM, 'ow')
                 hold off
                 
-                uiwait(msgbox('OK?','Check Struts','modal'));
+                %uiwait(msgbox('OK?','Check Struts','modal'));
+                isok = questdlg('OK?');
+                if ~isequal(isok,'Yes'),
+                    return
+                end
                 
             end
 
@@ -719,6 +723,11 @@
 
             % angle of each edge
             function theta = CalcEdgeAngle(xgr, ygr)
+                if isempty(xgr) || isempty(ygr) || ~isequal(size(xgr),size(ygr))
+                    theta = NaN;
+                    return
+                end
+                
                 % do it parameterically
                 t = 1:length(xgr);
                 ppx = polyfit(t, xgr, 1);
