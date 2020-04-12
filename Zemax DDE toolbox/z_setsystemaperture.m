@@ -1,9 +1,11 @@
-function z_setsystemaperture(zchan, sAp)
-% z_setsystemaperture(zchan, sAp)
+function retval = z_setsystemaperture(zchan, sAp)
+% retval = z_setsystemaperture(zchan, sAp)
 %
 % sAp.type
 % sAp.stopsurf (surface #)
 % sAp.aperture (the value) (units depend on type)
+%
+% not sure how to interpret the retval
 
 U = CConstants;
 
