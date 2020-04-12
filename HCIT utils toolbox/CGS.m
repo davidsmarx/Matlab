@@ -693,6 +693,158 @@ classdef CGS < handle
             
 
         end % DisplayRemap
+    
+        function [ZZ, nzoutnzin, phfit, phresidual, A] = ZernZernRemapFit(S, varargin)            
+            % [ZZ, nzoutnzin, phfit, phresidual] = ZernZernRemapFit(CGSobject, varargin)
+            %
+            % 2020-03-28
+            % copied from
+            % /home/dmarx/PIAA/hcim_testbed_run100/phaseretrieval_analysis/ZernZernRemapFit.m
+            %
+            % options:
+            % bDisplay = CheckOption('display', false, varargin{:});
+            % S.RemapRadialRpix = CheckOption('RemapRadialRpix', S.RemapRadialRpix, varargin{:});
+            % bDebug = CheckOption('debug', false, varargin{:});
+            % nzout = CheckOption('nzout', 1:6, varargin{:});
+            % nzin = CheckOption('nzin', 2:6, varargin{:});
+            % poly_order = CheckOption('polyorder', 'Noll', varargin{:});
+            
+            U = CConstants;
+            
+            % options
+            bDisplay = CheckOption('display', true, varargin{:});
+            S.RemapRadialRpix = CheckOption('RemapRadialRpix', S.RemapRadialRpix, varargin{:});
+            bDebug = CheckOption('debug', false, varargin{:});
+            nzout = CheckOption('nzout', 1:4, varargin{:});
+            nzin = CheckOption('nzin', 2:4, varargin{:});
+            poly_order = CheckOption('polyorder', 'Noll', varargin{:});
+            
+            if isempty(S.Eremap),
+                S.RemapRadial;
+            end
+            
+            % % from CGS, apply Zernikes to unwrapped (but not re-mapped)
+            % phase, S.phunwrap
+            % 
+            % piaa out map to piaa in
+            % % coorindates for this routine are in (mm)
+            [x, y, X, Y, R, T] = CreateGrid(size(S.bMask), S.RemapRadialRmax./S.RemapRadialRpix);
+            Rm = zeros(size(R));
+            
+            % maps back-end to front end
+            %Rm(S.bMaskRemap) = interp1(S.RemapRadialR2, S.RemapRadialR1, R(S.bMaskRemap), 'pchip', nan);
+            % maps front end to back end
+            Rm(S.bMaskRemap) = interp1(S.RemapRadialR1, S.RemapRadialR2, R(S.bMaskRemap), 'pchip', nan);
+            Tm = T; % theta is same for PIAA in and out
+            
+            % matrix equation:
+            % phase(:) = [Aout Ain] * [Zout; Zin]
+            % phase(r,t) = [P(rout,t) P(rin, t)] * [Zout; Zin]
+            % N x 1       N x nzout + Nzin   (Nzout+Nzin) x 1
+            P = zernikepolynomials(poly_order);
+            Rz = S.RemapRadialRmax;
+            M = length(R(S.bMaskRemap));
+            A = zeros(M, length(nzout)+length(nzin));
+            
+            Rp = R(S.bMaskRemap)./Rz; % normalized PIAA out radial coordinates
+            Tp = T(S.bMaskRemap);
+            for ii = 1:length(nzout),
+                A(:,ii) = P{nzout(ii)}( Rp, Tp );
+            end
+            Rmp = Rm(S.bMaskRemap)./Rz;
+            Tmp = Tm(S.bMaskRemap);
+            for ii = 1:length(nzin),
+                A(:,length(nzout)+ii) = P{nzin(ii)}( Rmp, Tmp );
+            end
+            
+            % take a look at the modes being fitted:
+            if bDebug,
+                Ntmp = max([length(nzout) length(nzin)]);
+                figure_mxn(2, Ntmp)
+                for ii = 1:length(nzout)
+                    subplot(2, Ntmp, ii)
+                    imA = zeros(size(S.bMaskRemap));
+                    imA(S.bMaskRemap) = A(:,ii);
+                    imageschcit(x/U.MM, y/U.MM, imA)
+                    title(['Zout ' num2str(nzout(ii))])
+                end
+                for ii = 1:length(nzin)
+                    subplot(2, Ntmp, Ntmp+ii)
+                    imA = zeros(size(S.bMaskRemap));
+                    imA(S.bMaskRemap) = A(:, length(nzout)+ii);
+                    imageschcit(x/U.MM, y/U.MM, imA)
+                    title(['Zin ' num2str(nzin(ii))])
+                end
+                
+                
+            end
+            
+            
+            % % L1 norm solution:
+            % rhs = S.phunwrap(S.bMaskRemap);
+            % f = @(zz) sum(abs(A*zz - rhs));
+            % opts = optimset(@fminsearch);
+            % opts.MaxFunEvals = 100*opts.MaxFunEvals;
+            % ZZL1 = fminsearch(f, zeros(11,1))
+            
+            % LSE solution:
+            if any(isnan(S.phunwrap(S.bMaskRemap))),
+                error('check mask regions');
+            end
+            ZZ = A \ S.phunwrap(S.bMaskRemap);
+            
+            % best fit phase
+            phfit = zeros(size(S.bMaskRemap));
+            phfit(S.bMaskRemap) = A*ZZ;
+            
+            % residual error:
+            phresidual = zeros(size(S.bMaskRemap));
+            phresidual(S.bMaskRemap) = S.phunwrap(S.bMaskRemap) - A*ZZ;
+            
+            % return:
+            nzoutnzin = [nzout nzin];
+            
+            %%%%%% plot results
+            if bDisplay,
+                figure_mxn(2,3)
+
+                subplot(2,3,1), imageschcit(S.x, S.y, abs(S.E))
+                title(['gsnum ' num2str(S.gsnum) '; Amplitude'])
+                
+                %subplot(2,3,2), imageschcit(S.phw_ptt.*S.bMaskRemap)
+                subplot(2,3,2), imageschcit(S.x, S.y, mod2pi(S.phunwrap).*S.bMaskRemap)
+                colorbartitle('Phase (rad)')
+                set(gca,'clim',pi*[-1 1])
+                title(['gsnum ' num2str(S.gsnum) '; Phase'])               
+                
+                subplot(2,3,3), imageschcit(S.x, S.y, phresidual), 
+                colorbartitle('Phase (rad)')
+                rmse = rms(phresidual(S.bMaskRemap));
+                title(['Residual Fit, rms error = ' num2str(rmse,'%.2f') 'rad'])
+                
+                % bar graph zernike order, don't plot piston
+                %figure,
+                subplot(2,3,4), imageschcit(S.x, S.y, phfit), 
+                colorbartitle('Phase (rad)'), title('Fit Phase')
+                
+                
+                subplot(2,3,5:6)
+                hh = bar(ZZ(2:end)); grid
+                set(gca,'XTick', 1:length([nzout(2:end) nzin]))
+                set(gca, 'XTickLabel', num2str([nzout(2:end) nzin]'))
+                %set(gca,'Position',[0.05 0.15 0.9 0.8])
+                ylabel('Zernike Coeff (rms rad)')
+                xlabel('Zernike # [PIAA Out][PIAA In] (Noll Order)')
+                % set(gcf,'Position', [0 0 1600 400] + [1 1 0 0].*get(gcf,'Position'))
+                % title(['gsnum ' num2str(gsnum) ]); %'; Foc Ref ' sz])
+                set(gca,'ylim',2*[-1 1])
+                % set(gcf,'Position',0.6*get(gcf,'Position'))
+                
+            end
+            
+
+        end % ZernZernRemapFit
+    
     end % methods
     
 end % classdef
