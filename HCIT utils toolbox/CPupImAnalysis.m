@@ -600,14 +600,10 @@
         
             widthd = CheckOption('widthd', 750*S.U.UM, varargin{:}); % length of cross-section line; not used except to create Ns
             bOuterEdges = CheckOption('outeredges', false, varargin{:}); % look for outside pair of edges; for edge mask analysis
-            
-            
-            ds = S.pix/8; % sample spacing for resampling and deconv kernel
-            %Ls = 4*Sstrut.meanStrutWidth; % not used except to create Ns
-
-            
+            ds = CheckOption('dsresample', S.pix/8, varargin{:}); % sample spacing for resampling and deconv kernel            
             bDebug = CheckOption('debug', false, varargin{:});
             
+            % 
             Ns = ceil(widthd/ds); % # of samples across strut
             d  = CreateGrid(Ns, ds);
             
