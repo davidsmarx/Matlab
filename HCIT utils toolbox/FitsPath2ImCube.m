@@ -40,9 +40,15 @@ hax = [];
 listfn = dir(PathTranslator([pn '/*.fits']));
 Nf = length(listfn);
 
-% get image size
-imtmp = fitsread(PathTranslator([pn '/' listfn(1).name]),'image');
+% read one image to get image size and extension
 finfo = fitsinfo(PathTranslator([pn '/' listfn(1).name]));
+if isempty(finfo.PrimaryData.Size),
+    sExtension = 'image';
+else
+    sExtension = 'primary';
+end
+imtmp = fitsread(PathTranslator([pn '/' listfn(1).name]),sExtension);
+
 [Nr, Nc] = size(imtmp);
 
 % check header keyword, make sure it's cell
@@ -54,7 +60,7 @@ hdrkwdval = zeros(Nf,length(hdrkwd));
 
 for ii = 1:Nf
 
-    imtmp = fitsread(PathTranslator([pn '/' listfn(ii).name]),'image');
+    imtmp = fitsread(PathTranslator([pn '/' listfn(ii).name]),sExtension);
     finfo = fitsinfo(PathTranslator([pn '/' listfn(ii).name]));
 
     if ~isempty(refImg),
