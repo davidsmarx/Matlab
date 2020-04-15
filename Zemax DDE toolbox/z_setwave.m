@@ -8,7 +8,8 @@ function retval = z_setwave(zchan,lam,nwave,weight)
 %         if nwave == 0, status = [primary wavelength #,
 %                                  number of wavelengths currently defined]
 %
-% GetUpdate is called after setting the new wavelength
+% 2020-03-26, retval seems to have changed from the server, need to look
+% into this
 
 global UM;
 

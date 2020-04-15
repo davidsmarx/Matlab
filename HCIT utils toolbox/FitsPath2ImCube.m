@@ -16,6 +16,7 @@ function varargout = FitsPath2ImCube(pn, varargin)
 % hdrkwdvalfmt = CheckOption('hdrkwdvalfmt', '%.1f', varargin{:});
 % scale = CheckOption('scale', 'linear', varargin{:}); or 'log'
 % refImg = CheckOption('refimg', [], varargin{:}); ImCube = ImCube - refImg
+% comTitlestr = CheckOption('comtitlestr', '', varargin{:}); % common title to start each titlestr
 % 
 % output:
 % ImCube = [Nimages nr nc]
@@ -30,6 +31,7 @@ scale = CheckOption('scale', 'linear', varargin{:});
 hdrkwd = CheckOption('hdrkwd', {'camz'}, varargin{:});
 hdrkwdvalfmt = CheckOption('hdrkwdvalfmt', '%.1f', varargin{:});
 refImg = CheckOption('refimg', [], varargin{:}); % ImCube = ImCube - refImg
+comTitlestr = CheckOption('comtitlestr', '', varargin{:}); % common title to start each titlestr
 
 %
 
@@ -92,7 +94,7 @@ switch lower(plottype),
     case 'cube',
         figure,
         [hfig, hax, sUserData] = ImageCube(ImCube, hdrkwdval, ...
-            'fTitleStr', @(isl) [['#' num2str(isl)] join(string(hdrkwd), ', ') sprintf(hdrkwdvalfmt, hdrkwdval(isl,:))], ... 
+            'fTitleStr', @(isl) [[comTitlestr '#' num2str(isl)] join(string(hdrkwd), ', ') sprintf(hdrkwdvalfmt, hdrkwdval(isl,:))], ... 
             'x', plotx, 'y', ploty);
         
     case 'spread'

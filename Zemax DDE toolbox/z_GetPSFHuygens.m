@@ -196,7 +196,7 @@ function [zchan, textfilename, settingsfilename, settingsflag] = ValidateInputs(
 % [Field, parmsstruct] = z_GetPOPAnalysis(options)
 
 zchan = [];
-if isa(varargin{1},'double'),
+if nargin >= 1 && isa(varargin{1},'double'),
     zchan = varargin{1};
 end
 
