@@ -21,7 +21,14 @@ function [xfield, yfield, weight, vdx, vdy, vcx, vcy, van] =...
 unitsdefinitions;
 
 % first check number and type of field points
-retval = sscanf(ddereq(zchan,'GetField, 0',[1 1]),'%f,',[1 inf]);
+retstr = ddereq(zchan,'GetField, 0',[1 1]);
+if ~ischar(retstr),
+    % something is wrong
+    [xfield, yfield, weight, vdx, vdy, vcx, vcy, van] = deal([]);
+    return
+end
+
+retval = sscanf(retstr, '%f,',[1 inf]);
 type = retval(1); % type
 nn   = retval(2); % nn
 
