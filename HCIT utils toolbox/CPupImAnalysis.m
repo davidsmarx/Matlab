@@ -8,6 +8,23 @@
     % TODO:
     %   Sstrut should be a class, this class has several instances of Sstruts
     %   Spsf should be a class, 
+    %             S.pix = CheckOption('pix', 6.5*S.U.UM, varargin{:});
+    %             bDisplay = CheckOption('display', false, varargin{:});
+    %             com = CheckOption('com', [], varargin{:}); % should be 1-offset for use as index
+    %             CoordOffset = CheckOption('CoordOffset', [0 0], varargin{:}); % same units as pix
+    %             Sstruts = CheckOption('Sstruts', [], varargin{:}); % if you want to analyze this image with struts already found with reference image
+    %       bDebug = CheckOption('debug', false, varargin{:});
+    %       thc = CheckOption('thcenter', 0.6*pi, varargin{:});
+    %       thw = CheckOption('thwidth', 12*S.U.P, varargin{:});
+    %       IDorOD = CheckOption('idorod', 'od', varargin{:});
+    %         rpad = CheckOption('radiuspad', 10*S.pix, varargin{:}); % um
+    %         bDebug = CheckOption('debug', false, varargin{:});
+    %         useObjects = CheckOption('useobjects', [], varargin{:});
+    %         strutlengthfactor = CheckOption('strutlengthfactor', 1, varargin{:}); % how much of the strut to use
+    %       widthd = CheckOption('widthd', 750*S.U.UM, varargin{:});
+    %       nlines = CheckOption('nlines', 10, varargin{:});
+    %       bDebug = CheckOption('debug', false, varargin{:});
+    %       hfigDebug = CheckOption('hfigDebug', [], varargin{:});
     
     properties
     
