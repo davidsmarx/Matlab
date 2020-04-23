@@ -411,16 +411,16 @@
                                                        
             end % for each strut
             
-            if bDebug,
-                figure, imageschcit(S.x/S.U.MM, S.y/S.U.MM, L), colorbar
-                for ii = 1:N,
-                   text(strutxy1(ii,1)/S.U.MM, strutxy1(ii,2)/S.U.MM, ['strut #' num2str(ii)], 'FontSize', 10, 'Color', 'w');
-                end
-                hold on
-                plot(strutxy1(:,1)/S.U.MM, strutxy1(:,2)/S.U.MM, '+w', ...
-                    strutxy2(:,1)/S.U.MM, strutxy2(:,2)/S.U.MM, 'ow')
-                hold off
-                
+            % show strut IDs for reference
+            figure, imageschcit(S.x/S.U.MM, S.y/S.U.MM, L), colorbar
+            for ii = 1:N,
+                text(strutxy1(ii,1)/S.U.MM, strutxy1(ii,2)/S.U.MM, ['strut #' num2str(ii)], 'FontSize', 10, 'Color', 'w');
+            end
+            hold on
+            plot(strutxy1(:,1)/S.U.MM, strutxy1(:,2)/S.U.MM, '+w', ...
+                strutxy2(:,1)/S.U.MM, strutxy2(:,2)/S.U.MM, 'ow')
+            hold off
+            if bDebug,                
                 %uiwait(msgbox('OK?','Check Struts','modal'));
                 isok = questdlg('OK?');
                 if ~isequal(isok,'Yes'),
