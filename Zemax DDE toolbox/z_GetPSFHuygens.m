@@ -167,7 +167,7 @@ while ~feof(fid),
                 % if line begins with a number, assume it is in the format:
                 % wavelength um at fieldpoint_x, fieldpoint_y units.
                 if ~isnan(str2double(wordparse{1}{1})),
-                    headerinfo.Wavelegnth = str2double(wordparse{1}{1})*UM;
+                    headerinfo.Wavelength = str2double(wordparse{1}{1})*UM;
                     headerinfo.fieldpoint = str2double(wordparse{1}(4:5));
                     headerinfo.fieldpointUnits = wordparse{1}{end};
                     
