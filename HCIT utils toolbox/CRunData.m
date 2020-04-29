@@ -1113,7 +1113,20 @@ classdef CRunData < handle & CConstants
             
         end % DisplayImCubeContrast(S)
 
-        function [hfig, ha] = DisplayImCubeSigProb(S, varargin)
+        function [hfig, ha] = DisplayImCubeSigProbes(S, varargin)
+            % [hfig, ha] = DisplayImCubeSigProbes(S, varargin)
+            %
+            % S.ImCubeSigProb{iwv,ipr} = 0.5*(ImPrPlus + ImPrMinus) - S.ImCubeUnProb{iwv};
+            %
+            % options:
+            %             bPlotLog = CheckOption('bLog', false, varargin{:});
+            %             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            %             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
+            %             climopt = CheckOption('clim', [], varargin{:});
+            %             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
+            %             ipro = CheckOption('iprobe', 1:S.Nppair, varargin{:});
+            %             haxuse = CheckOption('hax', [], varargin{:});
             
             if isempty(S.ImCube),
                 S.ReadImageCube;
@@ -2366,7 +2379,12 @@ classdef CRunData < handle & CConstants
             
         end % DisplayDMvProbes
         
-        function [hfig, hax] = DisplayDelProbes(S, iwv, varargin)
+        function [hfig, hax] = DisplayImCubeDelProbes(S, iwv, varargin)
+            % [hfig, hax] = DisplayImCubeDelProbes(S, iwv, varargin)
+            % 
+            % S.ImCubeDelProb{iwv,ipr} = ImPrPlus - ImPrMinus;
+            %
+            % options:
             
             if isempty(S.ImCube),
                 S.ReadImageCube;
