@@ -815,7 +815,7 @@ classdef CGS < handle
                 subplot(2,3,2), imageschcit(S.x, S.y, mod2pi(S.phunwrap).*S.bMaskRemap)
                 colorbartitle('Phase (rad)')
                 set(gca,'clim',pi*[-1 1])
-                title(['gsnum ' num2str(S.gsnum) '; Phase'])               
+                title(['gsnum ' num2str(S.gsnum) '; Phase rms\phi = ' num2str(S.rmsPha,'%.3f')])               
                 
                 subplot(2,3,3), imageschcit(S.x, S.y, phresidual), 
                 colorbartitle('Phase (rad)')

@@ -8,6 +8,23 @@
     % TODO:
     %   Sstrut should be a class, this class has several instances of Sstruts
     %   Spsf should be a class, 
+    %             S.pix = CheckOption('pix', 6.5*S.U.UM, varargin{:});
+    %             bDisplay = CheckOption('display', false, varargin{:});
+    %             com = CheckOption('com', [], varargin{:}); % should be 1-offset for use as index
+    %             CoordOffset = CheckOption('CoordOffset', [0 0], varargin{:}); % same units as pix
+    %             Sstruts = CheckOption('Sstruts', [], varargin{:}); % if you want to analyze this image with struts already found with reference image
+    %       bDebug = CheckOption('debug', false, varargin{:});
+    %       thc = CheckOption('thcenter', 0.6*pi, varargin{:});
+    %       thw = CheckOption('thwidth', 12*S.U.P, varargin{:});
+    %       IDorOD = CheckOption('idorod', 'od', varargin{:});
+    %         rpad = CheckOption('radiuspad', 10*S.pix, varargin{:}); % um
+    %         bDebug = CheckOption('debug', false, varargin{:});
+    %         useObjects = CheckOption('useobjects', [], varargin{:});
+    %         strutlengthfactor = CheckOption('strutlengthfactor', 1, varargin{:}); % how much of the strut to use
+    %       widthd = CheckOption('widthd', 750*S.U.UM, varargin{:});
+    %       nlines = CheckOption('nlines', 10, varargin{:});
+    %       bDebug = CheckOption('debug', false, varargin{:});
+    %       hfigDebug = CheckOption('hfigDebug', [], varargin{:});
     
     properties
     
@@ -411,16 +428,16 @@
                                                        
             end % for each strut
             
-            if bDebug,
-                figure, imageschcit(S.x/S.U.MM, S.y/S.U.MM, L), colorbar
-                for ii = 1:N,
-                   text(strutxy1(ii,1)/S.U.MM, strutxy1(ii,2)/S.U.MM, ['strut #' num2str(ii)], 'FontSize', 10, 'Color', 'w');
-                end
-                hold on
-                plot(strutxy1(:,1)/S.U.MM, strutxy1(:,2)/S.U.MM, '+w', ...
-                    strutxy2(:,1)/S.U.MM, strutxy2(:,2)/S.U.MM, 'ow')
-                hold off
-                
+            % show strut IDs for reference
+            figure, imageschcit(S.x/S.U.MM, S.y/S.U.MM, L), colorbar
+            for ii = 1:N,
+                text(strutxy1(ii,1)/S.U.MM, strutxy1(ii,2)/S.U.MM, ['strut #' num2str(ii)], 'FontSize', 10, 'Color', 'w');
+            end
+            hold on
+            plot(strutxy1(:,1)/S.U.MM, strutxy1(:,2)/S.U.MM, '+w', ...
+                strutxy2(:,1)/S.U.MM, strutxy2(:,2)/S.U.MM, 'ow')
+            hold off
+            if bDebug,                
                 %uiwait(msgbox('OK?','Check Struts','modal'));
                 isok = questdlg('OK?');
                 if ~isequal(isok,'Yes'),
