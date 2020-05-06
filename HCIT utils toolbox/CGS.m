@@ -178,7 +178,12 @@ classdef CGS < handle
             end % if ~exist('bn','var') || isempty(bn),
             
             %disp(['opening: ' PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits'])]);
-            ampinfo = fitsinfo(PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits']));
+            try
+                ampinfo = fitsinfo(PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits']));
+            catch
+                fprintf('failed to open fits file: \n%s\n',PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits']));
+                return
+            end
             
  
             S.gsnum = gsnum;
@@ -513,7 +518,7 @@ classdef CGS < handle
             
         end % DisplayAmpPlane
         
-        function hax = DisplayAllPlanes(S, varargin)
+        function [hax, Imgs] = DisplayAllPlanes(S, varargin)
             % hax = DisplayAllPlanes(S, options)
             % options:
             %   'image': 'meas' (default) or 'calc'
@@ -577,6 +582,8 @@ classdef CGS < handle
                 
                 title(['Z = ' num2str(S.zAmpPlanes(ii),'%.1f')])
 
+                Imgs{ii} = Im;
+                
             end % for 
 
             % add the label
