@@ -6,7 +6,8 @@ function [x, y, X, Y, R, T] = CreateGrid(Ima, dx, dy, varargin)
 % dx (optional)
 % dy (optional)
 % options:
-%    'origin', 'center' (default), '0-offset', '1-offset'
+%    'origin', 'center' (default), '0-offset', '1-offset',
+%    'center-halfpixel'
 
 OriginLoc = CheckOption('origin','center',varargin{:});
 
@@ -41,6 +42,12 @@ switch OriginLoc
     case '1-offset'
         x = (1:nx)'*dx;
         y = (1:ny)'*dy;
+    case 'center-halfpixel',
+        % grid is half-pixel offset, so that origin is boundary between
+        % pixels, if even # pixels
+        % e.g. N=4, x = [-1.5 -0.5 0.5 1.5]
+        x = dx * (0.5 + (ceil(-nx/2):ceil(nx/2-1))');
+        y = dy * (0.5 + (ceil(-ny/2):ceil(ny/2-1))');
     otherwise
         error(['unknown origin option: ' OriginLoc]);
 end
