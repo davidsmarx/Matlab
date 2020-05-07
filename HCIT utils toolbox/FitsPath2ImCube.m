@@ -92,9 +92,16 @@ end
 
 switch lower(plottype),
     case 'cube',
-        figure,
+        if ~isempty(hdrkwd)
+            fTitleStr = @(isl) [[comTitlestr '#' num2str(isl)] join(string(hdrkwd), ', ') sprintf(hdrkwdvalfmt, hdrkwdval(isl,:))];
+        else
+            fTitleStr = @(isl) ['# ' num2str(isl)];
+            hdrkwdval = 1:Nf; % just to have labels for the image cube slices
+        end
+        
+        figure,        
         [hfig, hax, sUserData] = ImageCube(ImCube, hdrkwdval, ...
-            'fTitleStr', @(isl) [[comTitlestr '#' num2str(isl)] join(string(hdrkwd), ', ') sprintf(hdrkwdvalfmt, hdrkwdval(isl,:))], ... 
+            'fTitleStr', fTitleStr, ...
             'x', plotx, 'y', ploty);
         
     case 'spread'
