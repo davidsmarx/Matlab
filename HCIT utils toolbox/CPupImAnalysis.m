@@ -1,13 +1,10 @@
  classdef CPupImAnalysis
-    % S = CPupImAnalysis(pupilimage)
+    % S = CPupImAnalysis(pupilimage, varargin)
     %
-    % grresponse = MaskEdges(S)
-    % [psfedge, imedge, rline0, psffwhm] = EdgeDeconv(S, varargin)
-    % Sm = CalcDimensions(S, varargin)
+    % input:
+    %    pupilimage can be double array or string filename
     %
-    % TODO:
-    %   Sstrut should be a class, this class has several instances of Sstruts
-    %   Spsf should be a class, 
+    % options:
     %             S.pix = CheckOption('pix', 6.5*S.U.UM, varargin{:});
     %             bDisplay = CheckOption('display', false, varargin{:});
     %             com = CheckOption('com', [], varargin{:}); % should be 1-offset for use as index
@@ -18,13 +15,25 @@
     %       thw = CheckOption('thwidth', 12*S.U.P, varargin{:});
     %       IDorOD = CheckOption('idorod', 'od', varargin{:});
     %         rpad = CheckOption('radiuspad', 10*S.pix, varargin{:}); % um
-    %         bDebug = CheckOption('debug', false, varargin{:});
     %         useObjects = CheckOption('useobjects', [], varargin{:});
     %         strutlengthfactor = CheckOption('strutlengthfactor', 1, varargin{:}); % how much of the strut to use
     %       widthd = CheckOption('widthd', 750*S.U.UM, varargin{:});
     %       nlines = CheckOption('nlines', 10, varargin{:});
-    %       bDebug = CheckOption('debug', false, varargin{:});
     %       hfigDebug = CheckOption('hfigDebug', [], varargin{:});
+
+    % grresponse = MaskEdges(S)
+    % [psfedge, imedge, rline0, psffwhm] = EdgeDeconv(S, varargin)
+    % Sm = CalcDimensions(S, varargin)
+    %
+
+    % TODO:
+    %   Sstrut should be a class, this class has several instances of Sstruts
+    %   Spsf should be a class, 
+    %             S.pix = CheckOption('pix', 6.5*S.U.UM, varargin{:});
+    %             bDisplay = CheckOption('display', false, varargin{:});
+    %             com = CheckOption('com', [], varargin{:}); % should be 1-offset for use as index
+    %             CoordOffset = CheckOption('CoordOffset', [0 0], varargin{:}); % same units as pix
+    %             Sstruts = CheckOption('Sstruts', [], varargin{:}); % if you want to analyze this image with struts already found with reference image
     
     properties
     
@@ -845,6 +854,12 @@
         
         function [hfig, hax, han] = DisplayEdgeResponseAllStruts(S, varargin)
             % [hfig, hax, han] = DisplayEdgeResponseAllStruts(S, varargin)                      
+            %
+            % options:
+            %             titlestr = CheckOption('title', [], varargin{:});
+            %             xlim = CheckOption('xlim', [], varargin{:});
+            %             hax = CheckOption('hax', [], varargin{:});
+            %             xlim = CheckOption('xlim', [], varargin{:});
             
             titlestr = CheckOption('title', [], varargin{:});
             xlim = CheckOption('xlim', [], varargin{:});
@@ -866,6 +881,39 @@
             set(han,'Position',[0.5 - 0.5*ppp(3) ppp(2:end)])
             
         end % DisplayEdgeResponseAllStruts
+        
+        function [hfig, hax] = DisplayImStrutEdges(S, varargin)
+            % [hfig, hax] = DisplayImStrutEdges(S, varargin)
+            %             scaler = CheckOption('scaler', 0.2, varargin{:}); % radius to axes within figure
+            %             scaleaxy = CheckOption('scaleaxy', 0.25, varargin{:}); % scale size of strut image for each axes (strut)
+
+            scaler = CheckOption('scaler', 0.2, varargin{:});
+            scaleaxy = CheckOption('scaleaxy', 0.25, varargin{:});
+            
+            hfig = figure;
+            for istrut = 1:S.Sstruts.N,
+                xmin = min([S.Sstruts.Sstrut(istrut).xlt; S.Sstruts.Sstrut(istrut).xrt]);
+                xmax = max([S.Sstruts.Sstrut(istrut).xlt; S.Sstruts.Sstrut(istrut).xrt]);
+                ymin = min([S.Sstruts.Sstrut(istrut).ylt; S.Sstruts.Sstrut(istrut).yrt]);
+                ymax = max([S.Sstruts.Sstrut(istrut).ylt; S.Sstruts.Sstrut(istrut).yrt]);
+                
+                imstrut = S.Im(S.y >= ymin & S.y <= ymax, S.x >= xmin & S.x <= xmax);
+                xctmp = mean(S.Sstruts.Sstrut(istrut).xStrutCenter);
+                yctmp = mean(S.Sstruts.Sstrut(istrut).yStrutCenter);
+                rctmp = hypot(xctmp,yctmp);
+                xc(istrut) = xctmp*scaler/rctmp;
+                yc(istrut) = yctmp*scaler/rctmp;
+                
+                [nr, nc] = size(imstrut);
+                a = scaleaxy/max([nr nc]);
+                
+                hax(istrut) = axes('Position',[0.5 + xc(istrut) - 0.5*a*nc, 0.5 + yc(istrut) - 0.5*a*nr, a*nc, a*nr]);
+                imageschcit(imstrut)
+                axis off                
+                
+            end % for each strut            
+ 
+        end % DisplayImStrutEdges
         
     end % methods
     
