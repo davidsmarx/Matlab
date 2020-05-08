@@ -7,7 +7,7 @@ function varargout = FitsPath2ImCube(pn, varargin)
 % phase retrieval subdir
 %
 % options:
-% plottype = CheckOption('plottype', 'cube', varargin{:}); % 'spread'
+% plottype = CheckOption('plottype', 'cube', varargin{:}); % 'spread', 'cube', 'none'
 % plotx = CheckOption('x', 0, varargin{:});
 % ploty = CheckOption('y', 0, varargin{:});
 % xlim = CheckOption('xlim', [], varargin{:});
