@@ -889,6 +889,7 @@
 
             scaler = CheckOption('scaler', 0.2, varargin{:});
             scaleaxy = CheckOption('scaleaxy', 0.25, varargin{:});
+            titlestr = CheckOption('title', '', varargin{:});
             
             hfig = figure;
             for istrut = 1:S.Sstruts.N,
@@ -913,6 +914,18 @@
                 
             end % for each strut            
  
+            % equalize clim for each strut image
+            clims = vertcat(hax.CLim);
+            [hax.CLim] = deal([min(clims(:,1)) max(clims(:,2))]);
+
+            % annotation title at top
+            han = annotation('textbox', [0.5 0.8 0.2 0.2],'String', titlestr ,...
+                'FitBoxToText', 'on', 'LineStyle', 'none', 'FontSize', 16, 'Color', 'r', ...
+                'FontWeight', 'bold');
+            set(han,'HorizontalAlignment','center')
+            ppp = get(han,'Position');
+            set(han,'Position',[0.5 - 0.5*ppp(3) ppp(2:end)])
+
         end % DisplayImStrutEdges
         
     end % methods
