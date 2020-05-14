@@ -1,4 +1,4 @@
-function [Imcrop, bMaskcrop] = CropImage(Im, bMask, xycent, xwid, ywid)
+function [Imcrop, bMaskcrop] = CropImage(Im, bMask, xycent, xwid, ywid, varargin)
 % [Imcrop, bMaskcrop] = CropImage(Im, bMask, xycent, xwid, ywid)
 % simple square cropping of the image and its bMask
 %
@@ -9,11 +9,19 @@ function [Imcrop, bMaskcrop] = CropImage(Im, bMask, xycent, xwid, ywid)
 %   ixuse = x >= -xwid/2 & x < xwid/2;
 %   iyuse = y >= -ywid/2 & y < ywid/2;
 %
+% % options
+% x = CheckOption('x', [], varargin{:}); % default = -N/2:N/2-1 (origin = center)
+% y = CheckOption('y', [], varargin{:}); % default = -N/2:N/2-1 (origin = center)
+%
 % return:
 %    Imcrop is the cropped Im
 %    bMaskcrop is the cropped bMask
 %
 % see also PadImArray
+
+% options
+x = CheckOption('x', [], varargin{:}); % default = -N/2:N/2-1 (origin = center)
+y = CheckOption('y', [], varargin{:}); % default = -N/2:N/2-1 (origin = center)
 
 % center to the nearest pixel
 if isempty(xycent), xycent = [0 0]; end
@@ -21,7 +29,10 @@ if isempty(xycent), xycent = [0 0]; end
 % use CreateGrid instead for consistency with other code
 % x = round(nimx/2+1 + xycent(1)) + (-ww/2:ww/2-1)';
 % y = round(nimy/2+1 + xycent(2)) + (-ww/2:ww/2-1)';
-[x, y] = CreateGrid(Im);
+if isempty(x) || isempty(y),
+    [x, y] = CreateGrid(Im); % origin at center
+end
+
 x = x - xycent(1);
 y = y - xycent(2);
 
