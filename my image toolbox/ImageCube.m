@@ -1,4 +1,4 @@
-function [hfig, hax, sUserData] = ImageCube(imgCube, listI, varargin)
+function [hfig_out, hax_out, sUserData_out] = ImageCube(imgCube, listI, varargin)
 % [hfig, hax, sUserData] = ImageCube(imgCube, listI, varargin)
 %
 % imgCube (Nslices, nr, nc)
@@ -75,6 +75,10 @@ sUserData = struct(...
 
 set(hfig, 'KeyPressFcn', @KeyPressCallback);
 set(hfig, 'UserData', sUserData);
+
+if nargout > 0
+    [hfig_out, hax_out, sUserData_out] = deal(hfig, hax, sUserData);
+end
 
 end % main
 

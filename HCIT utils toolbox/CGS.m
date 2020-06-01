@@ -429,7 +429,7 @@ classdef CGS < handle
             
             
             
-        end % DisplayGS
+        end % DisplayGSrefGS
 
         function phw_ptt = RemovePTTfft(S)
             Zs = exp(1i*S.phw);
