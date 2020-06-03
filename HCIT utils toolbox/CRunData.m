@@ -78,7 +78,7 @@ classdef CRunData < handle & CConstants
         ThminSc         = [];
         ThmaxSc         = [];
         Nbscan          = 6;
-
+        PIAAMAG         = 1;   % only for PIAA testbed
         Results_pn = '';
         Rundir_pn  = 'rundir/';         % always relative to Results_pn
         Reduced_pn = 'rundir/reduced/'; % always relative to Results_pn
@@ -233,7 +233,23 @@ classdef CRunData < handle & CConstants
                     S.ppl0 = 4.45;
 
                 case 100 % PIAA
-                    error('reserved for PIAA');
+                    S.Results_pn = '/proj/piaacmc/EFC/data/run100/';
+                    S.S383temp_pn= '/home/dmarx/HCIT/PIAA/hcim_testbed_run100/results/';
+                    
+                    S.XYlimDefault = 12;
+
+                    S.PIAAMAG = 1.12; % should get this from config
+                    S.DrawradiiDefault = S.PIAAMAG*[1.8 9.0];
+                    
+                    S.RminSc    = S.PIAAMAG * 1.8; % lam/D
+                    S.RmaxSc    = S.PIAAMAG * 9.0;
+
+                    % overwritten if camera image is found
+                    S.NKTupper = [512]*S.NM; %[533.5, 555.5, 577.5]*S.NM;
+                    S.NKTlower = [512]*S.NM; %[522.5, 544.5, 566.5]*S.NM;
+                    S.NKTcenter = mean([S.NKTupper; S.NKTlower]);
+
+                    S.ppl0 = 4.96;
                     
                 case 603, % SPC_disc
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run603/';
@@ -1610,7 +1626,12 @@ classdef CRunData < handle & CConstants
             % S.DisplayImCubeUnProb
             % S.DisplayCohInt
             % S.DisplayIncInt
-            
+            % 
+            % some options
+            %    dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            %    drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            %    clim = CheckOption('clim', [], varargin{:});
+
             bPlotRadialIntensity = CheckOption('DisplayRadialIntensity', true, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             
