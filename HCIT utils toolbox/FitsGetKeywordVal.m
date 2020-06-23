@@ -23,7 +23,12 @@ switch class(key),
         comment = cell(length(listKey),1);
         ik = zeros(length(listKey),1);
         for ikey = 1:length(listKey),
-            [val{ikey}, comment{ikey}, ik(ikey)] = GetOneKeyVal(listKey{ikey});
+            [vtmp, ctmp, itmp] = GetOneKeyVal(listKey{ikey});
+            if ~isempty(vtmp),
+                [val{ikey}, comment{ikey}, ik(ikey)] = deal(vtmp, ctmp, itmp);
+            else
+                [val{ikey}, comment{ikey}, ik(ikey)] = deal(NaN, ' ', -1);
+            end
         end
 
     otherwise,
