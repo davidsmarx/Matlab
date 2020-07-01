@@ -770,6 +770,7 @@ classdef CRunData < handle & CConstants
 
         function [hfig, him, Im] = DisplayImCubeImage(S, imnum)
             % [hfig, him, Im] = DisplayImCubeImage(S, imnum)
+            % 
             
             if nargin < 2,
                 disp('usage: S.DisplayImCubeImage(imnum)');
@@ -903,7 +904,7 @@ classdef CRunData < handle & CConstants
                     Itmp(ir) = mean(ImCube{iwv}(R > re(ir) & R <= re(ir+1) & bMaskUse));
                 end % for ir
                 IntRad{iiwv} = Itmp;
-                legstrwv{iiwv} = [num2str(S.NKTcenter(iwv)/S.NM,'%.1f') 'nm'];
+                %legstrwv{iiwv} = [num2str(S.NKTcenter(iwv)/S.NM,'%.1f') 'nm'];
             end % for iwv
             rplot = mean([re(1:end-1) re(2:end)],2); % radii midway between edges
             
@@ -940,7 +941,7 @@ classdef CRunData < handle & CConstants
                 hold on
                 for irad = 1:length(drawRadii),
                     plot(drawRadii(irad)*[1 1], ylim, '--r')
-                    %legstr{end+1} = [num2str(drawRadii(irad),'%.1f')];
+                    legstr{end+1} = [num2str(drawRadii(irad),'%.1f')];
                 end
                 hold off
             end
