@@ -74,7 +74,11 @@ for ii = 1:Nf
     % this way, FitsGetKeywordVal always returns a cell array
     % even if only one hdrkwd
     ctmp = FitsGetKeywordVal(finfo.PrimaryData.Keywords,hdrkwd);
+    %     if any(cellfun(@isempty,ctmp)),
+    %         ctmp{isempty(ctmp)} = nan;
+    %     end
     hdrkwdval(ii,:) = [ctmp{:}];
+    %hdrkwdval(ii,:) = 1;
     
 end
 
