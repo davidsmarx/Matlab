@@ -30,7 +30,7 @@ Fren_y = abs( scalefactor * Gy.^2 / lambda_z );
 
 if ( Fren_x <= Nx && Fren_y <= Ny ),
     % small Fresnel number case => far field
-    %fprintf('Far Field\n');
+    fprintf('Far Field\n');
     
     % set sample spacing of output beam
     if ~isempty(dxo) && ~isempty(dyo),
@@ -59,7 +59,7 @@ if ( Fren_x <= Nx && Fren_y <= Ny ),
     
 elseif ( Fren_x > Nx && Fren_y > Ny ),
     % large Fresnel number case => near field
-    %fprintf('Near Field\n');
+    fprintf('Near Field\n');
     
     % check scale of output grid to input grid, and apply geometric
     % curvature as necessary
