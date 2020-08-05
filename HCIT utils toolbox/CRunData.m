@@ -948,7 +948,7 @@ classdef CRunData < handle & CConstants
 
             xlabel('Radius (\lambda/D)')
             ylabel(strYlabel)
-            hleg = legend(legstr{:}, 'location','north');
+            %hleg = legend(legstr{:}) %, 'location','north');
             title(strTitle)
 
             
@@ -1451,6 +1451,12 @@ classdef CRunData < handle & CConstants
         function [hfig, ha] = DisplayProbeCube(S, varargin)
             % hfig = DisplayProbeCube(S, iwvplot)
             % ProbeCube is 2nd HDU of reduced data cube
+            %
+            %             hfig = CheckOption('hfig', [], varargin{:});
+            %             iwvplot = CheckOption('iwv', ceil(S.NofW/2), varargin{:});
+            %             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            %             bLog = CheckOption('blog', true, varargin{:});
+            
             if isempty(S.ProbeModel),
                 S.ReadProbeCube;
             end
@@ -1510,10 +1516,10 @@ classdef CRunData < handle & CConstants
             end
             harad(1) = subplot(2,S.Nppair+1,S.Nppair+1);
             S.DisplayRadialPlot(ProbeModelPlot, 'hax', harad(1),'title', ['Iter #' num2str(S.iter) ', Model']);
-            legend('location','south')
+            %legend('location','south')
             harad(2) = subplot(2,S.Nppair+1,2*(S.Nppair+1));
             S.DisplayRadialPlot(ProbeMeasPlot,'hax',harad(2),'title', ['Iter #' num2str(S.iter) ', Measure']);
-            legend('location','south')
+            %legend('location','south')
             
             ylim = get(harad,'ylim');
             set(harad,'ylim',[min([ylim{:}]), max([ylim{:}])])
