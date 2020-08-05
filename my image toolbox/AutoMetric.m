@@ -166,6 +166,10 @@ function [bMask, thresh] = AutoThresholdPupil(Im, sOptions)
 end % AutoThreshold
 
 function [bMask, thresh] = AutoThresholdPSF(Im, sOptions)
+    % sOptions:
+    %   logPSF
+    %   PSF_thresh_nsig
+    %   debug
     
     if sOptions.logPSF,
         absIm = abs(Im);

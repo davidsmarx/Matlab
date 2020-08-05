@@ -4,6 +4,8 @@ function [Imout, npad_pre, npad_post] = PadImArray(Im, N)
 % N is the size of the new array
 % assumes N = [Ny Nx] >= size(Im)
 %
+% padding is s.t. original image is in the center of the new
+%
 % see also CropImage()
 
     Nim = size(Im);

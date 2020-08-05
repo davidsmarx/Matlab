@@ -1,4 +1,4 @@
-function han = FigureTitle(stitle, varargin)
+function han_out = FigureTitle(stitle, varargin)
 % han = FigureTitle(stitle, varargin)
 %
 % add an annotation text at the top of the figure, 
@@ -20,3 +20,6 @@ if ~isempty(varargin),
     set(han, varargin{:})
 end
 
+if nargout > 0,
+    han_out = han;
+end

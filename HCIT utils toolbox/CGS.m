@@ -714,8 +714,8 @@ classdef CGS < handle
             % bDisplay = CheckOption('display', false, varargin{:});
             % S.RemapRadialRpix = CheckOption('RemapRadialRpix', S.RemapRadialRpix, varargin{:});
             % bDebug = CheckOption('debug', false, varargin{:});
-            % nzout = CheckOption('nzout', 1:6, varargin{:});
-            % nzin = CheckOption('nzin', 2:6, varargin{:});
+            % nzout = CheckOption('nzout', 1:4, varargin{:});
+            % nzin = CheckOption('nzin', 2:4, varargin{:});
             % poly_order = CheckOption('polyorder', 'Noll', varargin{:});
             
             U = CConstants;
