@@ -1,12 +1,3 @@
-%   Copyright 2016, 2017 California Institute of Technology
-%   Users must agree to abide by the restrictions listed in the
-%   file "LegalStuff.txt" in the PROPER library directory.
-%
-%   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
-%   Original IDL version by John Krist
-%   Matlab translation by Gary Gutt
-
-
 function bm = prop_begin(diam, wl, np, varargin)
 %        bm = prop_begin(diam, wl, np, varargin)
 % Initialize variables for PROPER routines.  This routine must be called
@@ -25,7 +16,7 @@ function bm = prop_begin(diam, wl, np, varargin)
 %
 % Optional inputs:
 % 'beam_diam_fraction'= beam diameter fraction (default = 0.5)
-
+%
 % 2005 Feb     jek  created idl routine 
 % 2014 Apr 18  gmg  Matlab translation
 % 2017 Feb 14  gmg  Revised for keyword/value for optional inputs
