@@ -67,6 +67,7 @@ classdef CGS < handle
         R
         T
 
+        % Remap is for PIAA (upstream of PIAA tube is remapped to downstream)
         RemapRadialR2
         RemapRadialR1
         RemapRadialRmin % = 1.51*MM;
@@ -146,6 +147,7 @@ classdef CGS < handle
                         S.listSrcImDir = dir(PathTranslator(...
                             ['/proj/piaa-data/Data/' year '-*-*/bseo/' gsbn '_s_' num2str(gsnum,'%04d') '/*.fits']...
                             ));
+                        
                     case 'ttb_hlc'
                         bn = '/proj/mcb/data/dB_PR_Kern/gsomc_no00';
                         % get dir listing of raw camera images
