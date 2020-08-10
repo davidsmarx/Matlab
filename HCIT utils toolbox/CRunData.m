@@ -771,6 +771,8 @@ classdef CRunData < handle & CConstants
         function [hfig, him, Im] = DisplayImCubeImage(S, imnum)
             % [hfig, him, Im] = DisplayImCubeImage(S, imnum)
             % 
+            % raw camera images, adjusted for photometry and dark
+            % these are the images from rundir/*.fits.gz
             
             if nargin < 2,
                 disp('usage: S.DisplayImCubeImage(imnum)');
@@ -2030,10 +2032,17 @@ classdef CRunData < handle & CConstants
         function [hfig, ha, sCmetrics] = DisplayCEfields(S, Sref, varargin)
             % [hfig, ha] = DisplayCEfields(S, Sref, varargin)
             % correlation metrics DE_t .* conj(DE_m)
-            
+            %
+            %             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            %             hfig = CheckOption('hfig', [], varargin{:});
+            %             clim = CheckOption('clim', [], varargin{:});
+            %             PSF_thresh_nsig = CheckOption('PSF_thresh_nsig', 4, varargin{:});
+            %             bDebugAutoMetric = CheckOption('debug', false, varargin{:});
+
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
+            PSF_thresh_nsig = CheckOption('PSF_thresh_nsig', 4, varargin{:});
             bDebugAutoMetric = CheckOption('debug', false, varargin{:});
             
             if isempty(S.E_t),
@@ -2053,7 +2062,7 @@ classdef CRunData < handle & CConstants
             if nw ~= S.NofW, error(['number of wavelengths inconsistent']); end
 
             % title string
-            sRI = ['run #' num2str(S.runnum) ', iter #' num2str(S.iter) '--' num2str(Sref.iter)];
+            sRI = ['iter #' num2str(S.iter) '--' num2str(Sref.iter)];
             
 
             Nplr = 2;
@@ -2067,7 +2076,7 @@ classdef CRunData < handle & CConstants
             %
             dE_t = S.E_t - Sref.E_t;
             dE_m = S.E_m - Sref.E_m;
-            CE   = dE_t .* conj(dE_m);
+            CE   = conj(dE_m) .* dE_t ./sqrt( (dE_m(:)'*dE_m(:)).*(dE_t(:)'*dE_t(:)) );
             
             % from Joon:
             % CP =  <dEt.dEm>/<dEm.dEm>
@@ -2086,8 +2095,13 @@ classdef CRunData < handle & CConstants
                 'type', 'CEfields' ...
                 ,'CP', (dE_mu'*dE_tu)./(dE_mu'*dE_mu) ...
                 ,'CC', (dE_mu'*dE_tu)./sqrt( (dE_mu'*dE_mu).*(dE_tu'*dE_tu) ) ...
+                ,'angle_CC', angle((dE_mu'*dE_tu)) ...
                 ,'mag_dEm_dEt', sqrt( (dE_mu'*dE_mu)./(dE_tu'*dE_tu) ) ...
                 ,'mse', mean( abs(dE_tu - dE_mu).^2 ) ...
+                ,'CP_definition', ' <dEt.dEm>/<dEm.dEm> ' ...
+                ,'CC_definition', ' <dEt.dEm>/sqrt(<dEt.dEt><dEm.dEm>) ' ...
+                ,'mag_dEm_dEt_definition', ' sqrt(<dEm.dEm>/<dEt.dEt>) ' ...
+                ,'mse_definition', ' mean(abs(dEt - dEm).^2) ' ...
                 );
             
             for iwv = 1:S.NofW,
@@ -2098,7 +2112,7 @@ classdef CRunData < handle & CConstants
                 CEampiwv = squeeze(abs(CE(iwv,:,:)));
                 [~, bMaskce] = AutoMetric(CEampiwv, [], ...
                     struct('image_type','psf','logPSF',true,...
-                    'debug',bDebugAutoMetric,'PSF_thresh_nsig',10));
+                    'debug',bDebugAutoMetric,'PSF_thresh_nsig',PSF_thresh_nsig));
                 CEphaiwv = squeeze(angle(CE(iwv,:,:)));
                 CEphaiwv(~bMaskce) = nan;
                 
@@ -2114,12 +2128,12 @@ classdef CRunData < handle & CConstants
                 
                 ha(1,iwv) = subplot(Nplr, S.NofW, iamppl);
                 imageschcit(x,y, CEampiwvlog); colorbar
-                title([sRI ', |dE_m''dE_t|, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                title([sRI ', CE = |dE_m''dE_t|/\surd{<dE_t.dE_t><dE_m.dE_m>}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 
                 ha(2,iwv) = subplot(Nplr, S.NofW, iphapl);
                 %imageschcit(x,y,CEphaiwv/pi); 
                 surf(x, y, CEphaiwv/pi, 'linestyle','none'); view(2); % doesn't plot NaN
-                title([sRI ', \angle{dE_m''dE_t}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                title([sRI ', \angle{CE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 colorbartitle('Phase (\pi rad)')
                 % circular colormap for phase plots
                 set(ha(2,iwv),'clim',[-1 1]) % pi radians
@@ -2131,10 +2145,14 @@ classdef CRunData < handle & CConstants
             xlim = dispXYlim*[-1 1]; ylim = xlim;
             set(ha,'xlim',xlim,'ylim',ylim)
 
-            % clim for abs plots
-            if isempty(clim) && S.NofW > 1,
-                cclim = get(ha(1,:),'clim'); % returns a cell array
-                clim = [min([cclim{:}]) max([cclim{:}])];                
+            % make clim for abs plots the same for all wavelengths
+            if isempty(clim)
+                if S.NofW > 1,
+                    cclim = get(ha(1,:),'clim'); % returns a cell array
+                    clim = [min([cclim{:}]) max([cclim{:}])];
+                else
+                    clim = get(ha(1,1),'clim');
+                end
             end
             set(ha(1,:),'clim',clim)
             
