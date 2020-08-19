@@ -209,10 +209,10 @@ classdef CGS < handle
             % use FFT to remove large amounts of PTT (integer pixels in FFT space
             % then use zernikes to remove remaining PTT
             [S.x, S.y, S.X, S.Y, S.R, S.T] = CreateGrid(S.amp);
-            %             S.RemovePTTfft; % creates first estimate of S.phw_ptt
-            %             S.phw_ptt = RemovePTTZ(S.phw_ptt, S.bMask);
-            S.phunwrap = RemovePTTZ(S.phunwrap, S.bMask);
-            S.phw_ptt  = mod2pi(S.phunwrap);
+            S.RemovePTTfft; % creates first estimate of S.phw_ptt
+            S.phw_ptt = RemovePTTZ(S.phw_ptt, S.bMask);
+            %             S.phunwrap = RemovePTTZ(S.phunwrap, S.bMask);
+            %             S.phw_ptt  = mod2pi(S.phunwrap);
 
             % S.E
             %S.E = S.amp .* exp(1i*S.phw_ptt);

@@ -42,9 +42,10 @@ elseif isequal([A{2} '/' A{3}],'proj/afta-im')
     % \\s383-nfs = /proj
     winpath = '\\s383-nfs\afta-im'; %
 
-elseif isequal([A{2} '/' A{3}],'proj/mcb')
+elseif isequal([A{2} '/' A{3} '/' A{4}],'proj/mcb/data')
     % \\s383-nfs = /proj
-    winpath = strjoin({'\\muscle5.jpl.nasa.gov\mcb', A{4:end}}, '\');
+    %winpath = strjoin({'\\muscle5.jpl.nasa.gov\mcb', A{4:end}}, '\');
+    winpath = strjoin({'Y:\ln_mcb_data', A{5:end}}, '\');
 
 elseif isequal([A{2} '/' A{3}],'net/spud-data')
     % mcb camera data
