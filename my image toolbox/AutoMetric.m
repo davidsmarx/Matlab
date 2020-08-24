@@ -183,6 +183,13 @@ function [bMask, thresh] = AutoThresholdPSF(Im, sOptions)
         
     end
     
+    % if debug, show amp and histogram
+    if sOptions.debug,
+        figure_mxn(1,2)
+        subplot(1,2,1), imageschcit(real(log10(Im))), colorbartitle('log_{10} Im')
+        subplot(1,2,2), plot(xbin, cnt,'-o'), grid
+    end
+    
     % assume most pixels are dark + noise
     [cntmax, imax] = max(cnt);
     
