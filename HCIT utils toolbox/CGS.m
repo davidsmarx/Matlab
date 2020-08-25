@@ -196,14 +196,14 @@ classdef CGS < handle
             S.amp_keys = ampinfo.PrimaryData.Keywords;
                        
             % S.bMask, S.ampthresh
-            [sResult, S.bMask] = AutoMetric(S.amp, [], struct('AutoThreshold_Nbins',256));
+            [sResult, S.bMask] = AutoMetric(S.amp, [], struct('AutoThreshold_Nbins',32));
             S.ampthresh = sResult.thresh;
 
             % check that mask is reasonable
             [B,L,N,A] = bwboundaries(S.bMask, 'noholes');
             if N > 10,
                 warning(['pupil mask has ' num2str(N) ' regions']);
-                keyboard;
+                %keyboard;
             end
 
             % unwrap phase using better unwrap routine, but requires mask
@@ -869,6 +869,9 @@ classdef CGS < handle
             % remove discontinuites across region boundaries if pupil mask has separate regions
             % find objects
             % eliminate isolated pixels, etc
+
+            [B,L,N,A] = bwboundaries(S.bMask, 'noholes');
+
             bwmask = S.bMask;
             for il = 1:N,
                 objarea(il) = bwarea(L==il);
