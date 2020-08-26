@@ -437,7 +437,7 @@ classdef CGS < handle
             if isempty(dphclim), set(gca,'clim',AutoClim(dpha,'symmetric',true,'pctscale',100))
             else set(gca,'clim',dphclim)
             end
-            title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(angle(S.E(S.bMask).*conj(Sref.E(S.bMask)))),'%.3f') 'rad'])
+            title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(dpha(S.bMask)),'%.3f') 'rad'])
             
             
             
