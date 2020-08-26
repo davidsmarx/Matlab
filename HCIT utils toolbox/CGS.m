@@ -167,10 +167,10 @@ classdef CGS < handle
                         bn = '/proj/piaacmc/phaseretrieval/reduced/piaa_';
                         % get dir listing of raw camera images                        
                         S.listPupImDir = dir(PathTranslator(...
-                            ['/proj/piaacmc/scicam/*/gspiaa_p_' num2str(gsnum,'%04d') '/piaa_*.fits']...
+                            ['/proj/piaacmc/scicam/*/gspiaa_p_' num2str(gsnum,'%04d') '/piaa*.fits']...
                             ));
                         S.listSrcImDir = dir(PathTranslator(...
-                            ['/proj/piaacmc/scicam/*/gspiaa_s_' num2str(gsnum,'%04d') '/piaa_*.fits']...
+                            ['/proj/piaacmc/scicam/*/gspiaa_s_' num2str(gsnum,'%04d') '/piaa*.fits']...
                             ));
                         
                     otherwise
@@ -203,7 +203,7 @@ classdef CGS < handle
             [B,L,N,A] = bwboundaries(S.bMask, 'noholes');
             if N > 10,
                 warning(['pupil mask has ' num2str(N) ' regions']);
-                keyboard;
+                %keyboard;
             end
 
             % unwrap phase using better unwrap routine, but requires mask
