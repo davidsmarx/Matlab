@@ -21,7 +21,7 @@ classdef CGS < handle
     %    [hfig, hax] = DisplayGSrefGS(S, Sref)
     %          hfig = CheckOption('hfig', figure_mxn(2,2), varargin{:});
     %          usebMask = CheckOption('usebMask', true, varargin{:});
-    %          phplot = CheckOption('phplot', 'angleE', varargin{:}); % other choice = 'phw_ptt'
+    %          phplot = CheckOption('phplot', 'angleE', varargin{:}); % or S.(phplot)
     %          dphclim = CheckOption('dphclim', [], varargin{:});
     %
     %    [Z, rz, pharesidual] = ZernikeFit(S, nz)
@@ -51,6 +51,8 @@ classdef CGS < handle
         bn 
         amp
         ph
+        phnew % for testing new phase unwrap
+        phnewmask % new phase unwrap returns a mask
         phw
         cAmpPlanes % input and est amp images each plane (cmp.fits)
         zAmpPlanes % camz for each amp image
@@ -195,9 +197,23 @@ classdef CGS < handle
             S.phw = fitsread(PathTranslator([bn num2str(gsnum,'%03d') 'phwrap.fits'])); % = angle(eref), wrapped phase
             S.amp_keys = ampinfo.PrimaryData.Keywords;
                        
+            % temporary to test phase unwrap in WFSC
+            % new phase unwrap is in image hdu, mask in 2nd image hdu
+            finfo = fitsinfo(PathTranslator([bn num2str(gsnum,'%03d') 'ph.fits']));
+            if length(finfo.Contents) > 1,
+                fn = [bn num2str(gsnum,'%03d') 'ph.fits'];
+                S.phnew = fitsread(PathTranslator(fn),'image',1);  %
+                S.phnewmask = logical(fitsread(PathTranslator(fn),'image',2));  %                
+            end
+            
+            
             % S.bMask, S.ampthresh
             [sResult, S.bMask] = AutoMetric(S.amp, [], struct('AutoThreshold_Nbins',32));
             S.ampthresh = sResult.thresh;
+            % morphological opening to eliminate outlier 'salt' noise
+            S.bMask = imclose(S.bMask, strel('disk',3));
+            S.bMask = imopen(S.bMask, strel('disk',3));
+
 
             % check that mask is reasonable
             [B,L,N,A] = bwboundaries(S.bMask, 'noholes');
@@ -329,8 +345,9 @@ classdef CGS < handle
             pMask = CheckOption('pMask', S.bMask, varargin{:});
             xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             climph = CheckOption('climph', [], varargin{:});
-            phplot = CheckOption('phplot', 'angleE', varargin{:}); % other choice = 'phw_ptt', 'phunwrap'
-
+            phplot = CheckOption('phplot', 'angleE', varargin{:}); % or S.(phplot)
+            stitle = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
+            
             %hfig = figure;
             %hax = imagescampphase(S.E, x, y, ['gsnum ' num2str(S.gsnum)]);
             
@@ -339,23 +356,15 @@ classdef CGS < handle
             imageschcit(S.x, S.y, abs(S.E))
             colorbartitle('Amplitude')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
-            title(['gsnum ' num2str(S.gsnum)])
+            title(stitle)
 
             % bMask is only for phase plot
             % check options for what to plot
             switch phplot
                 case 'angleE'
                     ph = angle(S.E);
-                case 'phw_ptt'
-                    ph = S.phw_ptt;
-                case 'ph'
-                    ph = S.ph;
-                case 'phw'
-                    ph = S.phw;
-                case 'phunwrap'
-                    ph = S.phunwrap;
                 otherwise
-                    error(['phplot ' phplot ' not a valid choice']);
+                    ph = S.(phplot);
             end
             
             if isempty(pMask), pMask = ones(size(S.E)); end
@@ -367,7 +376,7 @@ classdef CGS < handle
                 climph = AutoClim(ph, 'symmetric', true);
             end
             set(gca,'clim',climph)
-            title(['gsnum ' num2str(S.gsnum) ' rms\phi = ' num2str(S.rmsPha,'%.3f') 'rad'])
+            title(['rms\phi = ' num2str(S.rmsPha,'%.3f') 'rad'])
             
             
             
@@ -379,7 +388,7 @@ classdef CGS < handle
             % options:
             %    ('hfig', figure_mxn(2,2), varargin{:});
             %    ('usebMask', true, varargin{:});
-            %    ('phplot', 'angleE', (default) 'phw_ptt', 'phunwrap'
+            %    ('phplot', 'angleE', (default) 'phw_ptt', 'phunwrap', S.(phplot)
             %    ('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             %    ('dphclim', [], varargin{:});
             
@@ -387,18 +396,14 @@ classdef CGS < handle
             hfig = CheckOption('hfig', figure_mxn(2,2), varargin{:});
             usebMask = CheckOption('usebMask', true, varargin{:});
             xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
-            phplot = CheckOption('phplot', 'angleE', varargin{:}); % other choice = 'phw_ptt', 'phunwrap'
+            phplot = CheckOption('phplot', 'angleE', varargin{:}); % S.(phplot)
             dphclim = CheckOption('dphclim', [], varargin{:});
             
             switch phplot
                 case 'angleE'
                     funPhPl = @(S) angle(S.E);
-                case 'phw_ptt'
-                    funPhPl = @(S) S.phw_ptt;
-                case 'phunwrap'
-                    funPhPl = @(S) S.phunwrap;
                 otherwise
-                    error(['unknown phplot option: ' phplot]);
+                    funPhPl = @(S) S.(phplot);
             end
             
             figure(hfig);
