@@ -1,13 +1,16 @@
 function haxout = imagescampphase(A,x,y,varargin)
 % hax = imagescampphase(A,x,y,options)
 %
+% x,y can be [], scalar dx(y), or vector x, y
+%
 % options:
 %   'bLog', (false) or 'true' (log10) or 'log10' or 'db'
 %   'title', titlestr
-%   ydir = CheckOption('ydir', 'reverse', varargin{:});
+%   ydir = CheckOption('ydir', 'reverse', varargin{:}); or 'normal'
 %   xlabelstr = CheckOption('xlabel', [], varargin{:});
 %   ylabelstr = CheckOption('ylabel', [], varargin{:});
 %   xylim = CheckOption('xylim', [], varargin{:});
+%   phasescale = CheckOption('phasescale', pi, varargin{:}); % display phase/phasescale
 
 [ny, nx] = size(A);
 
@@ -17,6 +20,12 @@ end
 if nargin < 3 || isempty(y),
     y = (-ny/2:ny/2-1)';
 end
+if isscalar(x),
+    x = x*(-nx/2:nx/2-1)';
+end
+if isscalar(y),    
+    y = y*(-ny/2:ny/2-1)';
+end
 
 % options
 titlestr = CheckOption('title','',varargin{:});
@@ -25,6 +34,7 @@ ydir = CheckOption('ydir', 'reverse', varargin{:});
 xlabelstr = CheckOption('xlabel', [], varargin{:});
 ylabelstr = CheckOption('ylabel', [], varargin{:});
 xylim = CheckOption('xylim', [], varargin{:});
+phasescale = CheckOption('phasescale', 'pi rad', varargin{:}); % or 'rad', 'deg'
 
 pos = get(gcf,'position');
 pos(3) = 1.75*pos(3);
@@ -46,6 +56,21 @@ switch lower(bLog)
         strColorbarAmp = '|A|';
 end
 
+% whether to plot rad or pi rad
+switch lower(phasescale),
+    case 'pi rad'
+        phasenorm = pi;
+        sCtitle = '\pi rad';
+    case 'rad'
+        phasenorm = 1;
+        sCtitle = 'rad';
+    case 'deg'
+        phasenorm = pi/180;
+        sCtitle = 'deg';
+    otherwise
+        error(['unknown phasescale option: ' phasescale]);
+end
+
 imagesc(x,y,Aplot), axis image,...
     title([pwd2titlestr(titlestr) ', Amp']), SetColorbar(strColorbarAmp);
 if ~isempty(xlabelstr), xlabel(xlabelstr), end
@@ -53,8 +78,8 @@ if ~isempty(ylabelstr), ylabel(ylabelstr), end
 
 
 hax(2) = subplot(1,2,2);
-imagesc(x,y,angle(A)./pi), axis image, title([pwd2titlestr(titlestr) ', Phase']),...
-    colorbartitle('\pi rad') %SetColorbar('\pi radians');
+imagesc(x,y,angle(A)./phasenorm), axis image, title([pwd2titlestr(titlestr) ', Phase']),...
+    colorbartitle(sCtitle) %SetColorbar('\pi radians');
 if ~isempty(xlabelstr), xlabel(xlabelstr), end
 if ~isempty(ylabelstr), ylabel(ylabelstr), end
 
