@@ -167,10 +167,10 @@ classdef CGS < handle
                         bn = '/proj/piaacmc/phaseretrieval/reduced/piaa_';
                         % get dir listing of raw camera images                        
                         S.listPupImDir = dir(PathTranslator(...
-                            ['/proj/piaacmc/scicam/*/gspiaa_p_' num2str(gsnum,'%04d') '/piaa_*.fits']...
+                            ['/proj/piaacmc/scicam/*/gspiaa_p_' num2str(gsnum,'%04d') '/piaa*.fits']...
                             ));
                         S.listSrcImDir = dir(PathTranslator(...
-                            ['/proj/piaacmc/scicam/*/gspiaa_s_' num2str(gsnum,'%04d') '/piaa_*.fits']...
+                            ['/proj/piaacmc/scicam/*/gspiaa_s_' num2str(gsnum,'%04d') '/piaa*.fits']...
                             ));
                         
                     otherwise
@@ -196,23 +196,33 @@ classdef CGS < handle
             S.amp_keys = ampinfo.PrimaryData.Keywords;
                        
             % S.bMask, S.ampthresh
-            [sResult, S.bMask] = AutoMetric(S.amp);
+            [sResult, S.bMask] = AutoMetric(S.amp, [], struct('AutoThreshold_Nbins',32));
             S.ampthresh = sResult.thresh;
+
+            % check that mask is reasonable
+            [B,L,N,A] = bwboundaries(S.bMask, 'noholes');
+            if N > 10,
+                warning(['pupil mask has ' num2str(N) ' regions']);
+                %keyboard;
+            end
 
             % unwrap phase using better unwrap routine, but requires mask
             phw = S.phw;
             %phw(~S.bMask) = NaN;
             S.phunwrap = unwrap_phase(phw);
-            S.phunwrap(~S.bMask) = NaN;
+            S.phunwrap(~S.bMask) = 0;
 
+            % 
+            %S = AdjustUnwrapRegionPiston(S);
+            
             % S.phw_ptt
             % use FFT to remove large amounts of PTT (integer pixels in FFT space
             % then use zernikes to remove remaining PTT
             [S.x, S.y, S.X, S.Y, S.R, S.T] = CreateGrid(S.amp);
-            %             S.RemovePTTfft; % creates first estimate of S.phw_ptt
-            %             S.phw_ptt = RemovePTTZ(S.phw_ptt, S.bMask);
-            S.phunwrap = RemovePTTZ(S.phunwrap, S.bMask);
-            S.phw_ptt  = mod2pi(S.phunwrap);
+            S.RemovePTTfft; % creates first estimate of S.phw_ptt
+            S.phw_ptt = RemovePTTZ(S.phw_ptt, S.bMask);
+            %             S.phunwrap = RemovePTTZ(S.phunwrap, S.bMask);
+            %             S.phw_ptt  = mod2pi(S.phunwrap);
 
             % S.E
             %S.E = S.amp .* exp(1i*S.phw_ptt);
@@ -427,7 +437,7 @@ classdef CGS < handle
             if isempty(dphclim), set(gca,'clim',AutoClim(dpha,'symmetric',true,'pctscale',100))
             else set(gca,'clim',dphclim)
             end
-            title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(angle(S.E(S.bMask).*conj(Sref.E(S.bMask)))),'%.3f') 'rad'])
+            title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(dpha(S.bMask)),'%.3f') 'rad'])
             
             
             
@@ -854,6 +864,92 @@ classdef CGS < handle
 
         end % ZernZernRemapFit
     
+        function S = AdjustUnrapRegionPiston(S)
+            
+            % remove discontinuites across region boundaries if pupil mask has separate regions
+            % find objects
+            % eliminate isolated pixels, etc
+
+            [B,L,N,A] = bwboundaries(S.bMask, 'noholes');
+
+            bwmask = S.bMask;
+            for il = 1:N,
+                objarea(il) = bwarea(L==il);
+                if objarea(il) < 100,
+                    %S.bMask(L==il) = true;
+                    bwmask(L==il) = 0;
+                end
+            end
+            [B,L,N,A] = bwboundaries(bwmask, 'noholes');
+            figure, imageschcit(1,1,L), hold on, plot(B{1}(:,2), B{1}(:,1), '-r')
+            
+            %
+            [x, y, X, Y] = CreateGrid(bwmask, 1, 1, 'origin', '1-offset');
+            
+            % find approximate inner and outer diameters
+            maskcom = calcCOM(x, y, bwmask);
+            [Xc, Yc] = meshgrid(x-maskcom(1),y-maskcom(2)); R = hypot(Xc, Yc);
+            figure, HR = histogram(R(bwmask));
+            
+            radius_id = HR.BinEdges(1)+0.5*HR.BinWidth;
+            radius_od = HR.BinEdges(end-1)+0.5*HR.BinWidth;
+            rpad = 0.1*(radius_od - radius_id);
+            bwmask(R>(radius_od-rpad)) = 1;
+            bwmask(R<(radius_id+rpad)) = 1;
+            bwmask = ~bwmask;
+            [Bs, Ls, Ns, As] = bwboundaries(bwmask, 'noholes'); % struts
+            figure, imageschcit(1,1,Ls), colorbar, hold on, plot(Bs{1}(:,2), Bs{1}(:,1), '-r')
+            if Ns ~= N, error([num2str(N) ' mask regions, but ' num2str(Ns) ' struts']); end
+            
+            % for each struct, find neighboring mask regions and check phase delta across the strut
+            for ns = 1:Ns,
+                for nn = 1:N,
+                    dmin_ii = zeros(length(Bs{ns}(:,1)),1);
+                    for ii = 1:length(Bs{ns}(:,1)),
+                        dmin_ii(ii) = min(hypot(Bs{ns}(ii,1)-B{nn}(:,1), Bs{ns}(ii,2)-B{nn}(:,2)));
+                    end
+                    dmin_nn(nn) = min(dmin_ii);
+                end % for each pupil region
+                % there should be two regions with dmin close to 1 pixel
+                [dmin, nnmin] = sortdata({dmin_nn, 1:N});
+                if dmin(2) > 2, error('something is wrong'); end
+                
+                % then neighboring mask regions are nnmin(1:2)
+                % in clockwise order:
+                nnmin = sort(nnmin(1:2));
+                
+                % mean phase of each neighboring region near the boundary
+                % center of this strut (not centroid, just simple center of the boundary points):
+                strut_xc = mean(Bs{ns}(:,2));
+                strut_yc = mean(Bs{ns}(:,1));
+                
+                % find pixels in each region near the strut
+                for inn = 1:2,
+                    [ddd, xxx, yyy] = sortdata({hypot(X(L==nnmin(inn))-strut_xc, Y(L==nnmin(inn))-strut_yc), X(L==nnmin(inn)), Y(L==nnmin(inn))});
+                    iuse = 1:ceil(0.05*length(ddd));
+                    meanph(inn) = mean(S.phunwrap(sub2ind(size(S.phunwrap), yyy(iuse),xxx(iuse))));
+                    hold on, if inn==1, plot(xxx(iuse),yyy(iuse),'or'), else, plot(xxx(iuse),yyy(iuse),'xr'), end
+                end
+                
+                deltaph = abs(diff(meanph));
+                if deltaph > pi,
+                    % adjust the region farther from zero towards zero
+                    if abs(meanph(1)) > abs(meanph(2)),
+                        inn = 1;
+                    else
+                        inn = 2;
+                    end
+                    
+                    psign = sign(meanph(inn));
+                    S.phunwrap(L==nnmin(inn)) = S.phunwrap(L==nnmin(inn)) - psign*ceil((deltaph-pi)/(2*pi))*2*pi;
+                    
+                end % if deltaph > pi
+                
+            end % for each strut
+            
+    
+        end % AdjustUnwrapRegionPiston
+        
     end % methods
     
 end % classdef
