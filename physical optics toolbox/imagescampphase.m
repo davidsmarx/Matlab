@@ -10,7 +10,7 @@ function haxout = imagescampphase(A,x,y,varargin)
 %   xlabelstr = CheckOption('xlabel', [], varargin{:});
 %   ylabelstr = CheckOption('ylabel', [], varargin{:});
 %   xylim = CheckOption('xylim', [], varargin{:});
-%   phasescale = CheckOption('phasescale', pi, varargin{:}); % display phase/phasescale
+%   phasescale = CheckOption('phasescale', 'pi rad', varargin{:}); % or 'rad', 'deg'
 
 [ny, nx] = size(A);
 
