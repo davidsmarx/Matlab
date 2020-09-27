@@ -62,6 +62,17 @@ else
     error(['listItnum type error: ' class(listItnum)]);
 end
 
+% plot graphs of metrics v itnum on the first slide
+slide = Sppt.NewSlide(1);
+hfig = figure_mxn(2,2);
+hax(1,1) = subplot(2,2,1); PlotNormIntensity(S, 'hfig', hfig, 'hax', hax(1,1));
+hax(1,2) = subplot(2,2,2); PlotBeta(S, 'hfig', hfig, 'hax', hax(1,2));
+hax(2,1) = subplot(2,2,3); probeh = PlotProbeh(S, 'hfig', hfig, 'hax', hax(2,1));
+hax(2,2) = subplot(2,2,4); rmsdDMv = PlotRMSdDMv(S, 'hfig', hfig, 'hax', hax(2,2));
+hPic = Sppt.CopyFigSlide(slide, hfig);
+
+[hfig, haxtexp, texp] = PlotTexp(S);
+
 % call the plotting methods
 if length(varargin) == 0, listHfig = []; end
 for iplot = 1:length(varargin),
@@ -70,19 +81,12 @@ for iplot = 1:length(varargin),
     end
 end
 
-% plot graphs of metrics v itnum
-[hfig, haxprobeh, probeh] = PlotProbeh(S);
-[hfig, haxrmsddmv, rmsdDMv] = PlotRMSdDMv(S);
-[hfig, haxtexp, texp] = PlotTexp(S);
-
     if nargout >= 1,
         sOut = struct(...
             'listS', S ...
             ,'listHfig', listHfig ...
             ,'Sppt', Sppt ...
             ,'probeh', probeh ...
-            ,'haxprobeh', haxprobeh ...
-            ,'haxrmsddmv', haxrmsddmv ...
             ,'rmsdDMv', rmsdDMv ...
             );
     end
@@ -198,7 +202,11 @@ function figscale = CalcFigscale(hfig, figheight)
 
 end % CalcFigscale
 
-function [hfig, hax, probeh] = PlotProbeh(S)
+function [probeh, hfig, hax] = PlotProbeh(S, varargin)
+     % [probeh, hfig, hax] = PlotProbeh(S, varargin)
+     
+     hfig = CheckOption('hfig', figure, varargin{:});
+     hax = CheckOption('hax', [], varargin{:});
 
      [itnum, probeh] = deal(zeros(size(S)));
      for ii = 1:length(S)
@@ -206,11 +214,11 @@ function [hfig, hax, probeh] = PlotProbeh(S)
          probeh(ii) = FitsGetKeywordVal(S(ii).ImKeys,'PROBEH');
      end
 
-     hfig = figure;
+     figure(hfig);
+     if ~isempty(hax), axes(hax); else, hax = gca; end
      semilogy(itnum, probeh, '-o'), grid
      xlabel('Iteration #')
      ylabel('probeh')
-     hax = gca;
      
 end % PlotProbeh
 
@@ -230,8 +238,72 @@ function [hfig, hax, texp] = PlotTexp(S)
     
 end % PlotTexp
 
-function [hfig, hax, rmsdDMv] = PlotRMSdDMv(listS, varargin)
+function [betaused, betamin, hfig, hax] = PlotBeta(listS, varargin)
+    % [betaused, betamin, hfig, hax] = PlotBeta(listS, varargin)
+    
+    hfig = CheckOption('hfig', figure, varargin{:});
+    hax = CheckOption('hax', [], varargin{:});
+
+    itnum = [listS.iter];
+    
+    [ireg0, betaused, betamin] = deal(zeros(length(itnum),1));
+    for ii = 1:length(listS)
+        ireg0(ii) = FitsGetKeywordVal(listS(ii).ReducedKeys, 'IREG0');
+        betaused(ii) = FitsGetKeywordVal(listS(ii).ReducedKeys, ['BSCAN' num2str(ireg0(ii), '%03d')]);
+        betamin(ii) = FitsGetKeywordVal(listS(ii).ReducedKeys, 'BMIN');        
+    end % 
+    
+    figure(hfig);
+    if ~isempty(hax), axes(hax); else, hax = gca; end
+    hll = plot(itnum, betaused, '-or', itnum, betamin, '-xb');
+    set(hll, 'LineWidth', 2);
+    grid on
+    xlabel('Iteration #')
+    ylabel('Regularization \beta')
+    legend('\beta used','\beta optimal')
+    
+end % PlotBeta
+
+function [hfig, hax] = PlotNormIntensity(listS, varargin)
+
+    hfig = CheckOption('hfig', figure, varargin{:});
+    hax = CheckOption('hax', [], varargin{:});
+
+    itnum = [listS.iter];
+    
+    [NInt_co, NInt_inco, NInt_total] = deal(zeros(length(itnum), max([listS.Nlamcorr]) ));
+    for ii = 1:length(itnum)
+        
+        if isempty(listS(ii).NormIntensity_total)
+            listS(ii).ReadImageCube;
+        end
+        if isempty(listS(ii).NormIntensity_co)
+            listS(ii).ReadReducedCube;
+        end
+
+        
+        for ilam = 1:listS(ii).Nlamcorr,
+            NInt_co(ii, ilam) = listS(ii).NormIntensity_co(ilam);
+            NInt_inco(ii, ilam) = listS(ii).NormIntensity_inco(ilam);
+            NInt_total(ii, ilam) = listS(ii).NormIntensity_total(ilam);
+        end % for ilam
+    end % ii
+
+    figure(hfig);
+    if ~isempty(hax), axes(hax); else, hax = gca; end
+    hl = semilogy(itnum, NInt_total, '-b', itnum, NInt_inco, '--r', itnum, NInt_co, ':g'); grid on
+    xlabel('Iteration #')
+    ylabel('Normalized Intensity')
+    set(hl,'linewidth', 2)
+    legend('Total', 'Unmodulated', 'Modulated')
+    
+end % PlotNormIntensity
+
+function [rmsdDMv, hfig, hax] = PlotRMSdDMv(listS, varargin)
     % [hfig, hax, rmsdDMv] = PlotRMSdDMv(listS, varargin)
+
+    hfig = CheckOption('hfig', figure, varargin{:});
+    hax = CheckOption('hax', [], varargin{:});
 
     % read all the DMv cubes
     for ii = 1:length(listS),
@@ -259,8 +331,9 @@ function [hfig, hax, rmsdDMv] = PlotRMSdDMv(listS, varargin)
         end
     end
     
-    hfig = figure;
-    hh = plot([listS(2:end).iter].', rmsdDMv, '-', [listS(2:end).iter].', mean(rmsdDMv,2), '--');
+    figure(hfig);
+    if ~isempty(hax), axes(hax); else, hax = gca; end
+    hh = plot([listS(2:end).iter].', rmsdDMv, '-o', [listS(2:end).iter].', mean(rmsdDMv,2), '--');
     set(hh,'LineWidth', 1.0)
     grid on
     xlabel('Iteration #')
