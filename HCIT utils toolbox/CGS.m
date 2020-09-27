@@ -564,6 +564,7 @@ classdef CGS < handle
             else
                 error(['Unknown Option image: ' plMeasOrCalc]);
             end
+            strLabel = ['gsnum ' num2str(S.gsnum) ', ' strLabel];
             
             % choose amp or intensity
             if strcmp(plAmpOrInt, 'amp')
