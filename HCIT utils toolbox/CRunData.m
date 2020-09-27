@@ -1775,6 +1775,7 @@ classdef CRunData < handle & CConstants
             varargin{end+1} = 'bLog'; varargin{end+1} = true;
             
             hfig = CheckOption('hfig', [], varargin{:});
+            %clim = CheckOption('clim', [], varargin{:});
             
             if isempty(hfig),
                 hfig = figure_mxn(3,S.Nlamcorr);
@@ -1809,8 +1810,6 @@ classdef CRunData < handle & CConstants
             % make common clim
             %climlist = get(haxlist,'clim');
             %set(haxlist,'clim',[min([climlist{:}]) max([climlist{:}])])
-
-            set(haxlist,'clim',[-9 -6.5])
 
             % Now Add Labels to Each Row!!!
             posrow1 = get(haxlist(1,1),'Position');
