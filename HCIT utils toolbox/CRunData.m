@@ -130,9 +130,9 @@ classdef CRunData < handle & CConstants
         Nlamcorr
         imgindex
         Contrast   % mean contrast each wavelength
-        Contrast_total
-        Contrast_inco
-        Contrast_co
+        NormIntensity_total
+        NormIntensity_inco
+        NormIntensity_co
         Sthpt = []; % struct with fields Sthpt.fovx(:), Sthpt.fovy(:), Sthpt.thpt(:)
         
         Ndm    % # of DM's, see ReadDMvCube
@@ -600,9 +600,7 @@ classdef CRunData < handle & CConstants
             
             %nbscan = 5;
             %numperwv = 1 + S.Nppair + 2 + 2 + 2*(1 + nbscan) + 2;
-            
-            S.bPampzero = false(S.Nlamcorr, nr, nc);
-            
+
             if isempty(S.bMask),  S.ReadMaskCube; end
             for iwl = 1:S.Nlamcorr,
 
@@ -632,15 +630,24 @@ classdef CRunData < handle & CConstants
                 %                 isl = S.Nppair + 2*(1 + 1 + 1 + S.Nbscan + 1+1)-1;
                 %                 S.bPampzero(iwl,:,:) = logical(RedData(:,:,isl * S.Nlamcorr+iwl)); % + 1i*RedData(:,:,(isl + 1)*S.Nlamcorr+iwl);
 
-                % mean coherent and incoherent contrast
-                S.Contrast_inco(iwl) = mean(nonzeros(S.IncInt{iwl}.*S.mdMask));
-                S.Contrast_co(iwl)   = mean(nonzeros(S.CohInt{iwl}.*S.mdMask));
+                % recreate bPampzero, note: this might differ from the
+                % pampzero used in EFC
+                % don't use pixels where, abs(CohInt)==0, IncInt < 0
+                % pampzero = false for good pixels, mdMask is control
+                % region, bMask is logical(mdMask)
+                S.bPampzero{iwl} = ~S.bMask | abs(S.CohInt{iwl}) == 0 | S.IncInt{iwl} < 0;
                 
+                % mean coherent and incoherent contrast
+                %                 S.NormIntensity_inco(iwl) = mean(nonzeros(S.IncInt{iwl}.*S.mdMask));
+                %                 S.NormIntensity_co(iwl)   = mean(nonzeros(S.CohInt{iwl}.*S.mdMask));
+                S.NormIntensity_inco(iwl) = mean(S.IncInt{iwl}(~S.bPampzero{iwl}));
+                S.NormIntensity_co(iwl)   = mean(S.CohInt{iwl}(~S.bPampzero{iwl}));
+
                 % if require all probes is true, pixels where abs(CohInt) == 0,
                 % are pixels where probe amp < 0 for at least one probe,
                 % image at this pixel is considered all incoherent.
                 % Separate into two components
-                bProbNeg = S.mdMask .* ~( abs(S.CohInt{iwl}) > 0 );
+                bProbNeg = S.bMask .* ~( abs(S.CohInt{iwl}) > 0 );
                 S.IncIntMix{iwl} = (~bProbNeg).*S.IncInt{iwl}; % inc int = 0 at these points
                 
                 % if probe estimates coherent intensity is larger than
@@ -734,6 +741,8 @@ classdef CRunData < handle & CConstants
             %total       = ddtotal(:,:,1:7:(NofW*7));
             % # of images in ImCube = NofW * (2*nppair + 1)
             
+            if isempty(S.bMask), S.ReadMaskCube; end
+            
             S.ImCube = fitsread(S.Rundir_fn);
             
             % unprobed images, each wavelength:
@@ -747,6 +756,9 @@ classdef CRunData < handle & CConstants
                     S.ImCubeDelProb{iwv,ipr} = ImPrPlus - ImPrMinus;
                     S.ImCubeSigProb{iwv,ipr} = 0.5*(ImPrPlus + ImPrMinus) - S.ImCubeUnProb{iwv};
                 end
+                
+                S.NormIntensity_total(iwv) = mean(S.ImCubeUnProb{iwv}(S.bMask)); % bMask = logical(mdMask)
+                
             end
             
             % Useful Derived Parameters                       
@@ -984,6 +996,7 @@ classdef CRunData < handle & CConstants
             climopt = CheckOption('clim', [], varargin{:});
             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             haxuse = CheckOption('hax', [], varargin{:});
+            bPlotRadialIntensity = CheckOption('DisplayRadialIntensity', true, varargin{:});
             
             [x, y, X, Y, R] = CreateGrid(S.ImCubeUnProb{1}, 1./S.ppl0);
             xlim = dispXYlim*[-1 1]; ylim = xlim;
@@ -1034,7 +1047,9 @@ classdef CRunData < handle & CConstants
             end
 
             % radial plot
-            [hfigrad, harad] = S.DisplayRadialPlot(S.ImCubeUnProb);
+            if bPlotRadialIntensity,
+                [hfigrad, harad] = S.DisplayRadialPlot(S.ImCubeUnProb);
+            end
             
         end % DisplayImCubeUnProb(S)
         

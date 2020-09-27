@@ -20,6 +20,13 @@ classdef Cppt
             
         end % Cppt
         
+        function new_slide = NewSlide(S, slide_num)
+
+            layout = S.AppPpt.ActivePresentation.SlideMaster.CustomLayouts.Item(5); % was 10
+            new_slide=S.AppPpt.ActivePresentation.Slides.AddSlide(slide_num, layout);
+
+        end % NewSlide
+        
         function [hPic, new_slide] = CopyFigNewSlide(S, hfig)
             % Add a new slide (with title object):
             slide_count = get(S.Presentation.Slides,'Count');
@@ -28,10 +35,10 @@ classdef Cppt
             layout = S.AppPpt.ActivePresentation.SlideMaster.CustomLayouts.Item(5); % was 10
             new_slide=S.AppPpt.ActivePresentation.Slides.AddSlide(slide_count, layout);
 
-            %             % Get height and width of slide:
-            %             slide_H = S.Presentation.PageSetup.SlideHeight;
-            %             slide_W = S.Presentation.PageSetup.SlideWidth;
-
+            % Get height and width of slide:
+            slide_H = S.Presentation.PageSetup.SlideHeight;
+            slide_W = S.Presentation.PageSetup.SlideWidth;
+            
             % Insert text into the title object:
             %             titletext = get(figure(nfigs(n)),'name');
             %             set(new_slide.Shapes.Title.TextFrame.TextRange,'Text',titletext);
@@ -58,6 +65,9 @@ classdef Cppt
 
             %             % Set picture to width of slide, justify left, and 90% from the top, then close figure
             %             set(pic,'Width',720);
+            set(hPic, 'Height', slide_H); % makes height of pic = height of slide
+            set(hPic, 'Top', 0); % puts top of pic at top of slide
+            
             %             set(pic,'Left',(slide_W-get(pic,'Width'))/2)
             %             set(pic,'Top',slide_H-slide_H*.905);
             
@@ -95,11 +105,18 @@ classdef Cppt
             hgexport(hfig,'-clipboard', options);
             hPic = invoke(slide.Shapes,'Paste');
 
+            % Get height and width of slide:
+            slide_H = S.Presentation.PageSetup.SlideHeight;
+            slide_W = S.Presentation.PageSetup.SlideWidth;
             %             % Set picture to width of slide, justify left, and 90% from the top, then close figure
             %             set(pic,'Width',720);
             %             set(pic,'Left',(slide_W-get(pic,'Width'))/2)
             %             set(pic,'Top',slide_H-slide_H*.905);
-            
+
+            set(hPic, 'Height', slide_H); % makes height of pic = height of slide
+            set(hPic, 'Top', 0); % puts top of pic at top of slide
+            hPic.Left = 0;
+
         end % CopyFigSlide
 
     end % methods
