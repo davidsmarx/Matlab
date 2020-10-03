@@ -211,9 +211,12 @@ classdef CGS < handle
             [sResult, S.bMask] = AutoMetric(S.amp, [], struct('AutoThreshold_Nbins',32));
             S.ampthresh = sResult.thresh;
             % morphological opening to eliminate outlier 'salt' noise
-            S.bMask = imclose(S.bMask, strel('disk',3));
-            S.bMask = imopen(S.bMask, strel('disk',3));
-
+            try
+                S.bMask = imclose(S.bMask, strel('disk',3));
+                S.bMask = imopen(S.bMask, strel('disk',3));
+            catch
+                warning('maybe no image processing license, skipping imclose, imopen for bMask');
+            end
 
             % check that mask is reasonable
             [B,L,N,A] = bwboundaries(S.bMask, 'noholes');
@@ -616,7 +619,23 @@ classdef CGS < handle
                 ,'Color','k' ...
                 );
             
-        end % DisplayAllAmpCamera
+        end % DisplayAllPlanes
+        
+        function [r, Ir, hax] = DisplayRadialIntensity(S, varargin)
+            % display mean intensity vs radius
+            
+            [r, Ir] = RadialMean(abs(S.amp).^2);
+            
+            figure, hl = semilogy(r, Ir);
+            grid on
+            hl.LineWidth = 2;
+            xlabel('Radius (pix)')
+            ylabel('Mean Intensity')
+            hax = gca;
+            
+            
+            
+        end % DisplayRadialIntensity
         
         function [Zremap, ampremap, pharemap] = RemapRadial(S, varargin)
             % PIAA radial remapping of amplitude and phase
