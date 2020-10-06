@@ -95,7 +95,7 @@ more on
 
 end % main
 
-function [hfig, hax, sMetrics] = CreaetePlots(S, sDisplayFun, Sppt, varargin)
+function [hfig, hax, sCmetrics] = CreaetePlots(S, sDisplayFun, Sppt, varargin)
     % create the plots
     % some plots are differential
     % some plots we also plot metrics v itnum
@@ -124,7 +124,7 @@ function [hfig, hax, sMetrics] = CreaetePlots(S, sDisplayFun, Sppt, varargin)
             %if any(strcmp(sDisplayFun, listDiff)),
             for ii = 1:N-1,
                 [hfig, hax, sMtmp] = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
-                sMetrics(ii) = sMtmp;
+                sCmetrics(ii) = sMtmp;
                 
                 figscale = CalcFigscale(hfig, figheight);
                 set(hfig, 'Position', figscale*get(hfig,'position'));
@@ -139,10 +139,10 @@ function [hfig, hax, sMetrics] = CreaetePlots(S, sDisplayFun, Sppt, varargin)
             if strcmp(sMtmp(1).type, 'dEfields'),
                 nw = S(1).NofW; % for convenience
                 figure, 
-                hh = semilogy([S(2:N).iter], [sMetrics.rmsdE_t].^2, '-', ...
-                    [S(2:N).iter], mean([sMetrics.rmsdE_t].^2, 1), '-', ...
-                    [S(2:N).iter], [sMetrics.rmsdE_m].^2, '--', ...
-                    [S(2:N).iter], mean([sMetrics.rmsdE_m].^2, 1), '--');
+                hh = semilogy([S(2:N).iter], [sCmetrics.rmsdE_t].^2, '-', ...
+                    [S(2:N).iter], mean([sCmetrics.rmsdE_t].^2, 1), '-', ...
+                    [S(2:N).iter], [sCmetrics.rmsdE_m].^2, '--', ...
+                    [S(2:N).iter], mean([sCmetrics.rmsdE_m].^2, 1), '--');
                 
                 grid on
                 set(hh(nw+1),'linewidth',2)
@@ -162,7 +162,7 @@ function [hfig, hax, sMetrics] = CreaetePlots(S, sDisplayFun, Sppt, varargin)
 
             for ii = 1:N-1,
                 [hfig, hax, sCtmp] = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
-                sMetrics(ii) = sCtmp;
+                sCmetrics(ii) = sCtmp;
                 
                 figscale = CalcFigscale(hfig, figheight);
                 set(hfig, 'Position', figscale*get(hfig,'position'));
@@ -174,11 +174,11 @@ function [hfig, hax, sMetrics] = CreaetePlots(S, sDisplayFun, Sppt, varargin)
                 end
             end % for ii iter
 
-            figure, plotampphase([S(2:N).iter], [sMetrics.CC],...
+            figure, plotampphase([S(2:N).iter], [sCmetrics.CC],...
                 'xlabel','Iteration #','title',[trialname ', \DeltaE Testbed Model Correlation (CC)']);
             
         otherwise, % one call per iteration
-            sMetrics = struct;
+            sCmetrics = struct;
             for ii = 1:N,
                 hfig = S(ii).(sDisplayFun)(varargin{:},'hfig',hfig);
                 figscale = CalcFigscale(hfig, figheight);
