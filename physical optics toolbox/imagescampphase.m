@@ -30,6 +30,7 @@ end
 % options
 titlestr = CheckOption('title','',varargin{:});
 bLog = CheckOption('bLog',false,varargin{:});
+if ~bLog, bLog = CheckOption('scale',false,varargin{:}); end % alternate option keyword
 ydir = CheckOption('ydir', 'reverse', varargin{:});
 xlabelstr = CheckOption('xlabel', [], varargin{:});
 ylabelstr = CheckOption('ylabel', [], varargin{:});
@@ -45,13 +46,14 @@ if islogical(bLog) && bLog,
     bLog = 'log10';
 end
 switch lower(bLog)
-    case 'log10',
+    case {'log','log10'},
         Aplot = real(log10(abs(A).^2));
         strColorbarAmp = 'log_{10} Intensity';
     case 'db',
         Aplot = real(20*log10(abs(A)));
         strColorbarAmp = '|A|^2 (dB)';
     otherwise
+        % 'linear' is default
         Aplot = abs(A);
         strColorbarAmp = '|A|';
 end
