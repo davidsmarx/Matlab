@@ -10,6 +10,7 @@ function hout = imageschcit(varargin)
 % not for rgb images (:,:,3), need to add this capability
 
 cProperties = {};
+hax = [];
    
 x = []; y = [];
 if nargin == 1,
@@ -26,7 +27,13 @@ elseif nargin == 3,
 elseif nargin > 3,
     [x, y, Im] = deal(varargin{1:3});
     cProperties = {varargin{4:end}};
-    
+    % if hax option is specified, get it and remove from the list
+    iv = find(strcmp(cProperties, 'hax'));
+    if ~isempty(iv),
+        hax = cProperties{iv+1};
+        cProperties(iv:(iv+1)) = [];
+    end
+
 else,
     error('usage: hh = imageschcit(x, y, Im);');
 end
@@ -64,7 +71,12 @@ if maxIm > eps*maxRe && maxRe > eps*maxIm,
     [hax, hh] = ImageReIm(x, y, Im);
     
 else
-    hh = imagesc(x, y, Im);
+    if ~isempty(hax),
+        hh = imagesc(hax, x, y, Im);
+    else
+        hh = imagesc(x, y, Im);
+    end
+    
     axis image
     set(gca,'ydir','normal')
     colormap(jet)
