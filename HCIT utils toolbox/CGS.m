@@ -250,16 +250,20 @@ classdef CGS < handle
             % load the radial mapping
             % should be part of the bn switch
             % see email from Dan Sirbu "RE double check r2 r1 definition"
-            rm2_rm1 = load(PathTranslator('/proj/piaacmc/phaseretrieval/2019-10-16-nutekPiaaRemappingCoords/remapping.txt'));
-            S.RemapRadialR2 = rm2_rm1(:,1);
-            S.RemapRadialR1 = rm2_rm1(:,2);
-            S.RemapRadialRmin = 1.51*U.MM;
-            S.RemapRadialRmax = 14.2*U.MM;
-            % 145 pixels pupil radius taken manually from bMask(:,x==0)
-            % 15.0mm ray trace mag * measured 0.5* 46.3mm beam diameter at
-            % pupil
-            S.RemapRadialRpix = 192.5; 
-
+            try
+                rm2_rm1 = load(PathTranslator('/proj/piaacmc/phaseretrieval/2019-10-16-nutekPiaaRemappingCoords/remapping.txt'));
+                S.RemapRadialR2 = rm2_rm1(:,1);
+                S.RemapRadialR1 = rm2_rm1(:,2);
+                S.RemapRadialRmin = 1.51*U.MM;
+                S.RemapRadialRmax = 14.2*U.MM;
+                % 145 pixels pupil radius taken manually from bMask(:,x==0)
+                % 15.0mm ray trace mag * measured 0.5* 46.3mm beam diameter at
+                % pupil
+                S.RemapRadialRpix = 192.5;
+            catch
+                warning('could not load remapping.txt');
+            end
+            
         end % CGS instantiator
         
         function Scopy = Copy(S)
@@ -509,21 +513,35 @@ classdef CGS < handle
             % compare camera and estimated
             % options:
             %   Option('value', 'amp' (default), 'intensity'
+            %   Option('clim', [], varargin{:});
+            %   Option('scale', 'log', varargin{:});
             
             if isempty(S.cAmpPlanes), S.ReadAmpImages; end
             
             plAmpOrInt = CheckOption('value', 'amp', varargin{:});
+            clim = CheckOption('clim', [], varargin{:});
+            scale = CheckOption('scale', 'log', varargin{:});
             
             % each hdu is N x N x 3
             % (:,:,1) = measured amplitude
             % (:,:,2) = calculated amplitude
             % (:,:,3) = calculated phase
-
-             % choose amp or intensity
+            
+            % scale
+            switch scale
+                case 'linear'
+                    fScale = @(a) a;
+                case {'log', 'log10'},
+                    fScale = @(a) real(log10(a));
+                otherwise
+                    error('unknown scale');
+            end
+            
+            % choose amp or intensity
             if strcmp(plAmpOrInt, 'amp')
-                funPlot = @(A, icc) squeeze(A(:,:,icc));
+                funPlot = @(A, icc) fScale(squeeze(A(:,:,icc)));
             elseif strcmp(plAmpOrInt, 'intensity')
-                funPlot = @(A, icc) log10(squeeze(A(:,:,icc)).^2);
+                funPlot = @(A, icc) fScale(squeeze(A(:,:,icc)).^2);
             end
             
             Nplanes = length(ipl);
@@ -532,8 +550,17 @@ classdef CGS < handle
             for iipl = 1:Nplanes,
                 hax(1,iipl) = subplot(2,Nplanes,iipl);
                 imageschcit(funPlot(S.cAmpPlanes{ipl(iipl)},1)), title(['Camera, ipl = ' num2str(ipl(iipl))])
+                colorbar
                 hax(2,iipl) = subplot(2,Nplanes,Nplanes + iipl);
                 imageschcit(funPlot(S.cAmpPlanes{ipl(iipl)},2)), title(['Estimated, ipl = ' num2str(ipl(iipl))])
+                colorbar
+            end
+            
+            cclim = get(hax,'clim');
+            if isempty(clim),
+                set(hax,'clim', [max([cclim{1}(1) cclim{2}(1)]) max([cclim{:}])]);
+            else
+                set(hax,'clim',clim)
             end
             
         end % DisplayAmpPlane
