@@ -249,8 +249,27 @@ classdef CRunData < handle & CConstants
                     S.NKTlower = [512]*S.NM; %[522.5, 544.5, 566.5]*S.NM;
                     S.NKTcenter = mean([S.NKTupper; S.NKTlower]);
 
-                    S.ppl0 = 4.96;
+                    S.ppl0 = 6.15; %4.96;
                     
+                case 101 % PIAA Dan's
+                    S.Results_pn = '/proj/piaacmc/EFC/data/run101/';
+                    S.S383temp_pn= '/home/dmarx/HCIT/PIAA/hcim_testbed_run101/results/';
+                    
+                    S.XYlimDefault = 12;
+
+                    S.PIAAMAG = 1.12; % should get this from config
+                    S.DrawradiiDefault = S.PIAAMAG*[1.8 9.0];
+                    
+                    S.RminSc    = S.PIAAMAG * 1.8; % lam/D
+                    S.RmaxSc    = S.PIAAMAG * 9.0;
+
+                    % overwritten if camera image is found
+                    S.NKTupper = [635]*S.NM; %[533.5, 555.5, 577.5]*S.NM;
+                    S.NKTlower = [635]*S.NM; %[522.5, 544.5, 566.5]*S.NM;
+                    S.NKTcenter = mean([S.NKTupper; S.NKTlower]);
+
+                    S.ppl0 = 6.15; %4.96;
+
                 case 603, % SPC_disc
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run603/';
                     S.XYlimDefault = 22;

@@ -9,5 +9,5 @@ U1 = zeros(size(U0));
 n0 = rn < (lens.D/2);
 
 phi = (pi./lam./lens.f).*(rn(n0).^2);
-U1(n0) = U0(n0).*exp(-j*phi);
+U1(n0) = U0(n0).*exp(-1i*phi);
 
