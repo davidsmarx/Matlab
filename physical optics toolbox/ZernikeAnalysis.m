@@ -10,6 +10,12 @@ function [ZZ, phaimg, phares, sOptions] = ZernikeAnalysis(field, varargin)
 % Rnorm = CheckOption('Rnorm', [], varargin{:});
 % Nz = CheckOption('modes', 1:36, varargin{:});
 % polyorder = CheckOption('polyorder', 'Noll', varargin{:});
+%
+% return:
+% ZZ = Zernike coeffs, (rad normalized rms), ZZ(1:3) == 0
+% phaimg = phase with ZZ(1:3) = 0, (rad), phaimg(~bMask) = 0
+% phares = residual phase = phaimg - zernikeval(ZZ)
+% sOptions = struct('bMask', bMask, 'Rnorm', Rnorm, 'Nz', Nz);
 
 
 % options
@@ -40,6 +46,7 @@ ZZ = zernikefit(Xim(bMask), Yim(bMask), phaimg(bMask), Nz, Rnorm, polyorder);
 % remove ptt from phaimg
 phaimg(bMask) = phaimg(bMask) - zernikeval(ZZ(1:3), Xim(bMask), Yim(bMask), Rnorm, polyorder);
 ZZ(1:3) = 0;
+phaimg(~bMask) = 0;
 
 % residual of the rest of the moes
 phares = zeros(size(phaimg));
