@@ -251,6 +251,13 @@ classdef CRunData < handle & CConstants
 
                     S.ppl0 = 6.15; %4.96;
                     
+                    % require on-sky lam/D = 9.0
+                    % system lam/D = PIAAMAG * on-sky lam/D
+                    % system lam/D = 6.15
+                    % want on-sky control region = 9 lam/D
+                    % system control region = PIAAMAG * 9 lam/D
+                    
+                    
                 case 101 % PIAA Dan's
                     S.Results_pn = '/proj/piaacmc/EFC/data/run101/';
                     S.S383temp_pn= '/home/dmarx/HCIT/PIAA/hcim_testbed_run101/results/';
@@ -270,6 +277,26 @@ classdef CRunData < handle & CConstants
 
                     S.ppl0 = 6.15; %4.96;
 
+                case 102 % PIAA model 2
+                    S.Results_pn = '/proj/piaacmc/EFC/data/run102/';
+                    S.S383temp_pn= '/home/dmarx/HCIT/PIAA/hcim_testbed_run102/results/';
+                    
+                    S.XYlimDefault = 12;
+
+                    S.PIAAMAG = 1.12; % should get this from config
+                    S.DrawradiiDefault = S.PIAAMAG*[1.8 9.0];
+                    
+                    S.RminSc    = S.PIAAMAG * 1.8; % lam/D
+                    S.RmaxSc    = S.PIAAMAG * 9.0;
+
+                    % overwritten if camera image is found
+                    S.NKTupper = [628.65]*S.NM; %[533.5, 555.5, 577.5]*S.NM;
+                    S.NKTlower = [641.35]*S.NM; %[522.5, 544.5, 566.5]*S.NM;
+                    S.NKTcenter = mean([S.NKTupper; S.NKTlower]);
+
+                    
+                    
+                    
                 case 603, % SPC_disc
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run603/';
                     S.XYlimDefault = 22;
@@ -1157,6 +1184,7 @@ classdef CRunData < handle & CConstants
             end
             ImMean = ImMean ./ S.NofW;
             imageschcit(x, y, log10(abs(ImMean.*S.bMaskSc))), axis image,
+            set(gca,'xlim',xlim,'ylim',ylim)
             xlabel('\lambda/D'), ylabel('\lambda/D')
             colorbartitle('log_{10} Contrast')
             DrawCircles(gca, drawRadii);

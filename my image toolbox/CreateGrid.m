@@ -23,6 +23,9 @@ switch nargin,
             dx = dx(1);
         end
 end
+
+if isempty(dx), dx = 1; end
+if isempty(dy), dy = 1; end
         
 if isscalar(Ima),
     ny = Ima; nx = Ima;

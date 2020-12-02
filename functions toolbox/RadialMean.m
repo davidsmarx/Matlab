@@ -12,6 +12,7 @@ Nr = 128;
 IsMatrix = @(a) ~isscalar(a) && ~isvector(a);
 IsVector = @(a) ~isscalar(a) && min(size(a)) == 1;
 
+options = {}; % default
 switch nargin,
     case 1,
         A = varargin{1};
@@ -43,7 +44,16 @@ switch nargin,
         [x, y, A, Nr] = deal(varargin{:});
         [X, Y] = meshgrid(x, y); R = sqrt(X.^2 + Y.^2);
         
+    otherwise
+        [x, y, A, Nr] = deal(varargin{1:4});
+        [X, Y] = meshgrid(x, y); R = sqrt(X.^2 + Y.^2); T = atan2(Y, X);
+        options = varargin(5:end);
+        
 end
+
+% options
+thetastartstop = CheckOption('thetastartstop', [], options{:});
+
 
 rmax = max(abs([x(:); y(:)]));
 dr   = rmax./Nr;
@@ -52,6 +62,13 @@ r = linspace(dr/2,rmax-dr/2,Nr).';
 Ar = zeros(size(r));
 
 for ir = 1:Nr,
-    Ar(ir) = mean( A(R>r(ir)-dr/2 & R<=r(ir)+dr/2) );
+    iuse = R>r(ir)-dr/2 & R<=r(ir)+dr/2;
+    if ~any(iuse(:)), continue, end
+
+    if ~isempty(thetastartstop),
+        iuse = iuse & mod2pi(T - thetastartstop(1)) >= 0 & mod2pi(T - thetastartstop(2)) <= 0;
+        %figure, imageschcit(x, y, iuse)
+    end
+    Ar(ir) = mean( A(iuse) );
 end
 
