@@ -23,6 +23,10 @@ function [hfig_out, hax_out, sUserData_out] = ImageCube(imgCube, listI, varargin
 % hax = CheckOption('hax', [], varargin{:});
 
 % validate inputs
+if ischar(imgCube)
+    imgCube = shiftdim(fitsread(imgCube),2);
+end
+
 [Nsl, nr, nc] = size(imgCube);
 if nargin == 1,
     listI = 1:Nsl;

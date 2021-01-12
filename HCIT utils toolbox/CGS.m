@@ -132,7 +132,7 @@ classdef CGS < handle
                             ['/proj/piaa-data/Data/2019-*-*/dmarx/gsomc_s_' num2str(gsnum) '/*.fits']...
                             ));
                     case 'mcb_hlc'
-                        bn = '/proj/mcb/data/dB_PR_Kern/gsomc_no00';
+                        bn = '/proj/mcb/data/dB_PR_Kern/gsomc_no0';
                         % get dir listing of raw camera images
                         if gsnum >= 843,
                             year = '2019';
@@ -577,6 +577,8 @@ classdef CGS < handle
             % (:,:,2) = calculated amplitude
             % (:,:,3) = calculated phase
 
+            U = CConstants;
+            
             if isempty(S.cAmpPlanes), S.ReadAmpImages; end
 
             % parse options
@@ -628,7 +630,7 @@ classdef CGS < handle
                     imageschcit(Im)
                 end
                 
-                title(['Z = ' num2str(S.zAmpPlanes(ii),'%.1f')])
+                title(['Z = ' num2str(S.zAmpPlanes(ii)/U.MM,'%.1f')])
 
                 Imgs{ii} = Im;
                 
