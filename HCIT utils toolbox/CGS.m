@@ -132,7 +132,8 @@ classdef CGS < handle
                             ['/proj/piaa-data/Data/2019-*-*/dmarx/gsomc_s_' num2str(gsnum) '/*.fits']...
                             ));
                     case 'mcb_hlc'
-                        bn = '/proj/mcb/data/dB_PR_Kern/gsomc_no0';
+                        bn = ['/proj/mcb/data/dB_PR_Kern/gsomc_no' num2str(gsnum,'%05d')];
+
                         % get dir listing of raw camera images
                         if gsnum >= 843,
                             year = '2019';
@@ -144,14 +145,18 @@ classdef CGS < handle
                             error('which year is this?');
                         end
                         S.listPupImDir = dir(PathTranslator(...
-                            ['/proj/piaa-data/Data/' year '-*-*/bseo/' gsbn '_p_' num2str(gsnum,'%04d') '/*.fits']...
+                            ['/proj/piaa-data/Data/' year '-*-*/bseo/' gsbn '_p_' num2str(gsnum,'%05d') '/*.fits']...
                             ));
                         S.listSrcImDir = dir(PathTranslator(...
-                            ['/proj/piaa-data/Data/' year '-*-*/bseo/' gsbn '_s_' num2str(gsnum,'%04d') '/*.fits']...
+                            ['/proj/piaa-data/Data/' year '-*-*/bseo/' gsbn '_s_' num2str(gsnum,'%05d') '/*.fits']...
                             ));
                         
+                    case 'mcb_alllens'
+                        bn = ['/home/dmarx/WFIRST/PR_lead/all_lens_PR/all_lens_20201203/reduced/prout_' num2str(gsnum)];
+                        
+                        
                     case 'ttb_hlc'
-                        bn = '/proj/mcb/data/dB_PR_Kern/gsomc_no00';
+                        bn = ['/proj/mcb/data/dB_PR_Kern/gsomc_no' num2str(gsnum,'%05d')];
                         % get dir listing of raw camera images
                         if gsnum >= 843,
                             year = '2019';
@@ -159,14 +164,14 @@ classdef CGS < handle
                             error('which year is this?');
                         end
                         S.listPupImDir = dir(PathTranslator(...
-                            ['/proj/piaa-data/Data/' year '-*-*/bseo/gsttb_p_' num2str(gsnum,'%04d') '/*.fits']...
+                            ['/proj/piaa-data/Data/' year '-*-*/bseo/gsttb_p_' num2str(gsnum,'%05d') '/*.fits']...
                             ));
                         S.listSrcImDir = dir(PathTranslator(...
-                            ['/proj/piaa-data/Data/' year '-*-*/bseo/gsttb_s_' num2str(gsnum,'%04d') '/*.fits']...
+                            ['/proj/piaa-data/Data/' year '-*-*/bseo/gsttb_s_' num2str(gsnum,'%05d') '/*.fits']...
                             ));
 
                     case 'piaacmc'
-                        bn = '/proj/piaacmc/phaseretrieval/reduced/piaa_';
+                        bn = ['/proj/piaacmc/phaseretrieval/reduced/piaa_' num2str(gsnum,'%03d')];
                         % get dir listing of raw camera images                        
                         S.listPupImDir = dir(PathTranslator(...
                             ['/proj/piaacmc/scicam/*/gspiaa_p_' num2str(gsnum,'%04d') '/piaa*.fits']...
@@ -177,31 +182,33 @@ classdef CGS < handle
                         
                     otherwise
                         % do nothing, let bn = bn
+                        bn = [bn num2str(gsnum,'%d')];
                         %disp(bn);
                 end % switch bn
             end % if ~exist('bn','var') || isempty(bn),
             
             %disp(['opening: ' PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits'])]);
             try
-                ampinfo = fitsinfo(PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits']));
+                %ampinfo = fitsinfo(PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits']));
+                ampinfo = fitsinfo(PathTranslator([bn 'amp.fits']));
             catch
-                fprintf('failed to open fits file: \n%s\n',PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits']));
+                fprintf('failed to open fits file: \n%s\n',PathTranslator([bn 'amp.fits']));
                 return
             end
             
  
             S.gsnum = gsnum;
             S.bn = bn;
-            S.amp = fitsread(PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits']));
-            S.ph = fitsread(PathTranslator([bn num2str(gsnum,'%03d') 'ph.fits']));  % unwrapdiag(angle(eref)), unwrapped phase
-            S.phw = fitsread(PathTranslator([bn num2str(gsnum,'%03d') 'phwrap.fits'])); % = angle(eref), wrapped phase
+            S.amp = fitsread(PathTranslator([bn 'amp.fits']));
+            S.ph = fitsread(PathTranslator([bn 'ph.fits']));  % unwrapdiag(angle(eref)), unwrapped phase
+            S.phw = fitsread(PathTranslator([bn 'phwrap.fits'])); % = angle(eref), wrapped phase
             S.amp_keys = ampinfo.PrimaryData.Keywords;
                        
             % temporary to test phase unwrap in WFSC
             % new phase unwrap is in image hdu, mask in 2nd image hdu
-            finfo = fitsinfo(PathTranslator([bn num2str(gsnum,'%03d') 'ph.fits']));
+            finfo = fitsinfo(PathTranslator([bn 'ph.fits']));
             if length(finfo.Contents) > 1,
-                fn = [bn num2str(gsnum,'%03d') 'ph.fits'];
+                fn = [bn 'ph.fits'];
                 S.phnew = fitsread(PathTranslator(fn),'image',1);  %
                 S.phnewmask = logical(fitsread(PathTranslator(fn),'image',2));  %                
             end
@@ -225,12 +232,6 @@ classdef CGS < handle
                 %keyboard;
             end
 
-            % unwrap phase using better unwrap routine, but requires mask
-            phw = S.phw;
-            %phw(~S.bMask) = NaN;
-            S.phunwrap = unwrap_phase(phw);
-            S.phunwrap(~S.bMask) = 0;
-
             % 
             %S = AdjustUnwrapRegionPiston(S);
             
@@ -243,9 +244,17 @@ classdef CGS < handle
             %             S.phunwrap = RemovePTTZ(S.phunwrap, S.bMask);
             %             S.phw_ptt  = mod2pi(S.phunwrap);
 
+            %             % unwrap phase using better unwrap routine, but requires mask
+            %             %phw = S.phw;
+            %             phw = S.phw_ptt + 1 - 1;
+            %             phw(~S.bMask) = NaN;
+            %             S.phunwrap = unwrap_phase(phw);
+            %             S.phunwrap(~S.bMask) = 0;
+            S.phunwrap = S.phw_ptt;
+
             % S.E
-            %S.E = S.amp .* exp(1i*S.phw_ptt);
-            S.E = S.amp .* exp(1i*S.phw);
+            S.E = S.amp .* exp(1i*S.phw_ptt);
+            %S.E = S.amp .* exp(1i*S.phw);
         
             % load the radial mapping
             % should be part of the bn switch
@@ -299,8 +308,13 @@ classdef CGS < handle
         
         function ReadAmpImages(S)
             % read the cmp.fits file
-            cmp_fn = [S.bn num2str(S.gsnum,'%03d') 'cmp.fits'];
+            cmp_fn = [S.bn 'cmp.fits'];
 
+            if ispc,
+                copyfile(cmp_fn, 'C:\Users\dmarx\HCITdatatemp\cmp.fits');
+                cmp_fn = 'C:\Users\dmarx\HCITdatatemp\cmp.fits';
+            end
+            
             finfo = fitsinfo(PathTranslator(cmp_fn));            
             NIm = length(finfo.Contents);
 
@@ -476,19 +490,78 @@ classdef CGS < handle
             
         end % RemovePTTfft
         
-        function [Z, rz, pharesidual] = ZernikeFit(S, nz)
-           
-            rz = max(S.R(S.bMask));
-            Z = zernikefit(S.X(S.bMask), S.Y(S.bMask), S.phw(S.bMask), nz, rz, 'noll');
-            phwfit = nan(size(S.X));
-            phwfit(S.bMask) = zernikeval(Z, S.X(S.bMask), S.Y(S.bMask), rz, 'noll');
-            pharesidual = nan(size(S.X));
-            pharesidual(S.bMask) = mod2pi(S.phw(S.bMask) - phwfit(S.bMask));
+        function [ZZ, rz, pharesidual] = ZernikeFit(S, nz, varargin)
+            % [ZZ, rz, pharesidual] = ZernikeFit(S, nz, varargin)
+            %
+            % zernike fit using bMask pixes
+            %
+            % bDisplay = CheckOption('display', true, varargin{:});
+            % titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
 
+            bDisplay = CheckOption('display', true, varargin{:});
+            titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
+            
+            % fit should always include piston, tip, tilt, even if not
+            % included in requested nz
+            nzfit = nz(:);
+            if ~any(nzfit == 3), nzfit = [3; nzfit]; end
+            if ~any(nzfit == 2), nzfit = [2; nzfit]; end
+            if ~any(nzfit == 1), nzfit = [1; nzfit]; end
+            
+            %
+            rz = max(S.R(S.bMask));
+            ZZ = zernikefit(S.X(S.bMask), S.Y(S.bMask), S.phw_ptt(S.bMask), nzfit, rz, 'noll');
+            phwfit = nan(size(S.X));
+            phwfit(S.bMask) = zernikeval(ZZ, S.X(S.bMask), S.Y(S.bMask), rz, 'noll', 'nz', nzfit);
+            pharesidual = nan(size(S.X));
+            pharesidual(S.bMask) = mod2pi(S.phw_ptt(S.bMask) - phwfit(S.bMask));
+
+            
+            %%%%%% plot results
+            if bDisplay,
+                figure_mxn(2,3)
+
+                subplot(2,3,1), imageschcit(S.x, S.y, abs(S.E))
+                title([titlestr '; Amplitude'])
+
+                % phase
+                subplot(2,3,2), imageschcit(S.x, S.y, mod2pi(S.phunwrap).*S.bMask)
+                colorbartitle('Phase (rad)')
+                set(gca,'clim',pi*[-1 1])
+                title([titlestr '; Phase rms\phi = ' num2str(S.rmsPha,'%.3f')])               
+                
+                % residual phase
+                subplot(2,3,3), imageschcit(S.x, S.y, pharesidual),
+                colorbartitle('Phase (rad)')
+                rmse = rms(pharesidual(S.bMask));
+                title(['Residual Fit, rms error = ' num2str(rmse,'%.2f') 'rad'])
+                
+                % fit phase
+                subplot(2,3,4), imageschcit(S.x, S.y, phwfit), 
+                colorbartitle('Phase (rad)'), title('Fit Phase')
+                
+                
+                % bar graph zernike order, don't plot piston
+                subplot(2,3,5:6)
+                [Zplot, NZplot] = filterdata(nzfit > 3, ZZ, nzfit);
+                hh = bar(NZplot, Zplot); grid
+                %                 set(gca,'XTick', 1:length(nz(2:end)))
+                %                 set(gca, 'XTickLabel', num2str(nz(2:end)))
+
+                ylabel('Zernike Coeff (rms rad)')
+                xlabel('Zernike # (Noll Order)')
+                set(gca,'ylim',2*[-1 1])
+
+                
+            end
+            
         end
         
         function cc = AmpCorrMetric(S)
             % cc = AmpCorrMetric(S)
+            %
+            % cc(:,1) = amplitude correlation
+            % cc(:,2) = intensity correlation
             
             if isempty(S.cAmpPlanes),
                 S.ReadAmpImages;
@@ -496,12 +569,14 @@ classdef CGS < handle
             
             CCor = @(a,b) a(:)'*b(:)./sqrt( (a(:)'*a(:)) * (b(:)'*b(:)) );
             CCorq = @(q) CCor(q(:,:,1),q(:,:,2));
-
+            CCint = @(q) CCor(abs(q(:,:,1)).^2, abs(q(:,:,2)).^2);
+            
             NIm = length(S.cAmpPlanes);
-            cc = zeros(NIm,1);
+            cc = zeros(NIm,2);
 
             for ii = 1:NIm,
-                cc(ii) = CCorq(S.cAmpPlanes{ii});
+                cc(ii,1) = CCorq(S.cAmpPlanes{ii});
+                cc(ii,2) = CCint(S.cAmpPlanes{ii});
             end
 
             
@@ -521,6 +596,7 @@ classdef CGS < handle
             plAmpOrInt = CheckOption('value', 'amp', varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             scale = CheckOption('scale', 'log', varargin{:});
+            %xylim = CheckOption('xylim', [], varargin{:});
             
             % each hdu is N x N x 3
             % (:,:,1) = measured amplitude
@@ -791,6 +867,7 @@ classdef CGS < handle
             nzout = CheckOption('nzout', 1:4, varargin{:});
             nzin = CheckOption('nzin', 2:4, varargin{:});
             poly_order = CheckOption('polyorder', 'Noll', varargin{:});
+            titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             
             if isempty(S.Eremap),
                 S.RemapRadial;
@@ -882,13 +959,13 @@ classdef CGS < handle
                 figure_mxn(2,3)
 
                 subplot(2,3,1), imageschcit(S.x, S.y, abs(S.E))
-                title(['gsnum ' num2str(S.gsnum) '; Amplitude'])
+                title([titlestr '; Amplitude'])
                 
                 %subplot(2,3,2), imageschcit(S.phw_ptt.*S.bMaskRemap)
                 subplot(2,3,2), imageschcit(S.x, S.y, mod2pi(S.phunwrap).*S.bMaskRemap)
                 colorbartitle('Phase (rad)')
                 set(gca,'clim',pi*[-1 1])
-                title(['gsnum ' num2str(S.gsnum) '; Phase rms\phi = ' num2str(S.rmsPha,'%.3f')])               
+                title([titlestr '; Phase rms\phi = ' num2str(S.rmsPha,'%.3f')])               
                 
                 subplot(2,3,3), imageschcit(S.x, S.y, phresidual), 
                 colorbartitle('Phase (rad)')

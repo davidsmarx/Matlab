@@ -1,6 +1,7 @@
-function f = zernikeval(Z,x,y,R,poly_order)
+function f = zernikeval(Z,x,y,R,varargin)
 % f = zernikeval(Z,x,y,R)
 % f = zernikeval(Z,x,y,R,poly_order)
+% f = zernikeval(Z,x,y,R,..,options)
 %
 % Z is a vector of zernike coefficients
 % Z[1] = Z0, Z[2] = Z1, ... as returned by zernikefit()
@@ -15,8 +16,14 @@ function f = zernikeval(Z,x,y,R,poly_order)
 %    'Noll', or 'Zemax' uses Noll ordering
 %    'Laplacian' uses the Laplacian of the zernike polynomials
 %
+% options:
+%    nz: list of Zernike #'s corresponding to each coeff in Z, same size as Z
+%        default: nz = 1:length(Z)
 
-if exist('poly_order','var'),
+NZ = CheckOption('nz', 1:length(Z), varargin{:});
+
+if ~isempty(varargin),
+    poly_order = varargin{1};
     switch lower(poly_order),
         case 'laplacian'
             P = zernikepolynomialsLaplacian;
@@ -27,7 +34,8 @@ if exist('poly_order','var'),
         case 'codevfringe'
             P = zernikepolynomials('codevfringe');
         otherwise
-            error(['unknown polynomial ordering: ' poly_order]);
+            fprintf('using default poly order: Noll\n');
+            P = zernikepolynomials('noll');
     end
 else,
     P = zernikepolynomials('polar');
@@ -37,14 +45,17 @@ if ~exist('R','var'),
     R = max(r(:)) % max radius to normalize coordinates
 end
 
+if ~isequal(length(Z), length(NZ)),
+    error('list of Z not same size as list of NZ');
+end
+
 r = sqrt(x.^2 + y.^2);
 t = atan2(y,x);
 
-N = length(Z);    % first N polynomials are used
-
 f = zeros(size(r));
 rp = r./R;
-for ii = 1:N,
-    f = f + Z(ii).*P{ii}(rp,t);
+for ii = 1:length(Z)
+    pp = P{NZ(ii)};
+    f = f + Z(ii).*pp(rp,t);
 end
 

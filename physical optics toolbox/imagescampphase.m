@@ -4,7 +4,7 @@ function haxout = imagescampphase(A,x,y,varargin)
 % x,y can be [], scalar dx(y), or vector x, y
 %
 % options:
-%   'bLog', (false) or 'true' (log10) or 'log10' or 'db'
+%   'bLog' or 'scale', (false) or 'true' (log10) or 'log10' or 'db'
 %   'title', titlestr
 %   ydir = CheckOption('ydir', 'reverse', varargin{:}); or 'normal'
 %   xlabelstr = CheckOption('xlabel', [], varargin{:});

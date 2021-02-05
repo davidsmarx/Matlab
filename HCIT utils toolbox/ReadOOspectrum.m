@@ -6,7 +6,9 @@ if nargin < 1 || isempty(fn),
     [fn, pn, fi] = uigetfile({'*.ProcSpec'});
 end
 
-U = CConstants;
+%U = CConstants;
+U.US = 1e-6; % microseconds
+U.NM = 1e-9; % nanometers
 
 fid = fopen([pn fn],'rt');
 
