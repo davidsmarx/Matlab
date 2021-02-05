@@ -50,10 +50,9 @@ classdef CGS < handle
         listSrcImDir
         bn 
         amp
-        ph
-        phnew % for testing new phase unwrap
-        phnewmask % new phase unwrap returns a mask
-        phw
+        ph         % unwrapped phase
+        phunwrap_bMask % mask used in unwrap (WFSC version)
+        phw        % wrapped phase
         cAmpPlanes % input and est amp images each plane (cmp.fits)
         zAmpPlanes % camz for each amp image
         amp_keys
@@ -200,17 +199,16 @@ classdef CGS < handle
             S.gsnum = gsnum;
             S.bn = bn;
             S.amp = fitsread(PathTranslator([bn 'amp.fits']));
-            S.ph = fitsread(PathTranslator([bn 'ph.fits']));  % unwrapdiag(angle(eref)), unwrapped phase
+            S.ph = fitsread(PathTranslator([bn 'ph.fits']));  % unwrapped phase
             S.phw = fitsread(PathTranslator([bn 'phwrap.fits'])); % = angle(eref), wrapped phase
             S.amp_keys = ampinfo.PrimaryData.Keywords;
                        
-            % temporary to test phase unwrap in WFSC
-            % new phase unwrap is in image hdu, mask in 2nd image hdu
+            % phase unwrap in WFSC puts the mask used for PR in the second
+            % hdu (starting Feb 2021)
             finfo = fitsinfo(PathTranslator([bn 'ph.fits']));
             if length(finfo.Contents) > 1,
                 fn = [bn 'ph.fits'];
-                S.phnew = fitsread(PathTranslator(fn),'image',1);  %
-                S.phnewmask = logical(fitsread(PathTranslator(fn),'image',2));  %                
+                S.phunwrap_bMask = logical(fitsread(PathTranslator(fn),'image'));
             end
             
             
