@@ -309,7 +309,7 @@ classdef CGS < handle
             cmp_fn = [S.bn 'cmp.fits'];
 
             if ispc,
-                copyfile(cmp_fn, 'C:\Users\dmarx\HCITdatatemp\cmp.fits');
+                copyfile(PathTranslator(cmp_fn), 'C:\Users\dmarx\HCITdatatemp\cmp.fits');
                 cmp_fn = 'C:\Users\dmarx\HCITdatatemp\cmp.fits';
             end
             
@@ -407,6 +407,7 @@ classdef CGS < handle
             % options:
             %    ('hfig', figure_mxn(2,2), varargin{:});
             %    ('usebMask', true, varargin{:});
+            %    ('removeDefocus', false, varargin{:});
             %    ('phplot', 'angleE', (default) 'phw_ptt', 'phunwrap', S.(phplot)
             %    ('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             %    ('dphclim', [], varargin{:});
@@ -414,7 +415,9 @@ classdef CGS < handle
             % parse options
             hfig = CheckOption('hfig', figure_mxn(2,2), varargin{:});
             usebMask = CheckOption('usebMask', true, varargin{:});
-            xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
+            removeDefocus = CheckOption('removeDefocus', false, varargin{:});
+            doRegister = CheckOption('doRegister', false, varargin{:});
+            xylim = CheckOption('xylim', [], varargin{:});
             phplot = CheckOption('phplot', 'angleE', varargin{:}); % S.(phplot)
             dphclim = CheckOption('dphclim', [], varargin{:});
             
@@ -428,8 +431,10 @@ classdef CGS < handle
             figure(hfig);
 
             % determine plot width
-            xylim = 1.1*max(S.R(S.bMask));
-            xylim = 5*ceil(xylim/5.0); % to the nearest multiple of 5
+            if isempty(xylim),
+                xylim = 1.1*max(S.R(S.bMask));
+                xylim = 5*ceil(xylim/5.0); % to the nearest multiple of 5
+            end
             
             hax(1) = subplot(2,2,1);
             imageschcit(S.x, S.y, abs(S.E))
@@ -443,15 +448,67 @@ classdef CGS < handle
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
             title(['gsnum ' num2str(S.gsnum)])
             
+            % if size(Sref.amp) ~= size(S.amp), make Sref same size as S
+            if ~isequal(size(Sref.amp), size(S.amp))
+                if all(size(Sref.amp) < size(S.amp)),
+                    % pad Sref
+                    warning('size does not match, padding Sref to match S');
+                    Sreftmp = struct(...
+                        'phplot', PadImArray(funPhPl(Sref), size(funPhPl(S))) ...
+                        ,'amp', PadImArray(Sref.amp, size(S.amp)) ...
+                        );                    
+                elseif all(size(Sref.amp) > size(S.amp)),
+                    % crop Sref
+                    warning('size does not match, cropping Sref to match S');
+                    [nr, nc] = size(S.amp);
+                    Sreftmp = struct(...
+                        'phplot', CropImage(funPhPl(Sref), [], [0 0], nc, nr) ...
+                        ,'amp', CropImage(Sref.amp, [nr nc]) ...
+                        );
+                else
+                    % not square? something is wrong
+                    error(['sizes do not match, size(Sref.amp) = ' num2str(size(Sref.amp))]);
+                end
+                
+            else % same size
+                Sreftmp = struct(...
+                    'phplot', funPhPl(Sref) ...
+                    ,'amp', Sref.amp ...
+                    );
+                
+            end
+            
+            % match COM, translate Sreftmp to match S
+            if doRegister,
+                [xt, yt, Xt, Yt] = CreateGrid(S.bMask);
+                comS = calcCOM(xt, yt, S.bMask);
+                [~, bMaskref] = AutoMetric(Sreftmp.amp);
+                comRef = calcCOM(xt, yt, bMaskref);
+                xyshift = comRef - comS;
+                % fft linear shift to translate
+                fDoShift = @(A) fftshift(ifft2(ifftshift(ifftshift(fft2(fftshift(A))).*exp(-1j*pi*(xyshift(1)*Xt/xt(1) + xyshift(2)*Yt/yt(1))))));
+                Etmp = fDoShift(Sreftmp.amp .* exp(1j*Sreftmp.phplot));
+                Sreftmp.phplot = angle(Etmp);
+                Sreftmp.amp    = abs(Etmp);
+            end
+            
+            % plot amplitude difference
             hax(3) = subplot(2,2,3);
-            imageschcit(S.x, S.y, S.amp - Sref.amp)
+            imageschcit(S.x, S.y, S.amp - Sreftmp.amp)
             colorbartitle('\Delta Amplitude')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
             title(['gsnum ' num2str(S.gsnum) ' Amp -  Ref gsnum ' num2str(Sref.gsnum) ' Amp'])
             
             
-            hax(4) = subplot(2,2,4);
-            dpha = mod2pi(funPhPl(S) - funPhPl(Sref));
+            % optional remove defocus difference
+            if removeDefocus
+                Ediff = S.E .* Sreftmp.amp.*exp(-1j*Sreftmp.phplot);
+                [ZZ, phaimg, dpha, sOptions] = ZernikeAnalysis(Ediff, 'Nz', 1:4, 'bMask', S.bMask);
+            else
+                dpha = mod2pi(funPhPl(S) - Sreftmp.phplot);
+            end
+            
+            hax(4) = subplot(2,2,4);            
             if usebMask,
                 dpha = S.bMask .* dpha;
             end
@@ -498,6 +555,8 @@ classdef CGS < handle
 
             bDisplay = CheckOption('display', true, varargin{:});
             titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
+            xylim = CheckOption('xylim', [], varargin{:});
+            phresclim = CheckOption('phresclim', [], varargin{:});
             
             % fit should always include piston, tip, tilt, even if not
             % included in requested nz
@@ -517,27 +576,40 @@ classdef CGS < handle
             
             %%%%%% plot results
             if bDisplay,
+
+                % determine plot width
+                if isempty(xylim),
+                    xylim = 1.1*max(S.R(S.bMask));
+                    xylim = 5*ceil(xylim/5.0); % to the nearest multiple of 5
+                    xylim = xylim*[-1 1];
+                end
+
+                
                 figure_mxn(2,3)
 
                 subplot(2,3,1), imageschcit(S.x, S.y, abs(S.E))
                 title([titlestr '; Amplitude'])
+                set(gca,'xlim',xylim,'ylim',xylim);
 
                 % phase
                 subplot(2,3,2), imageschcit(S.x, S.y, mod2pi(S.phunwrap).*S.bMask)
                 colorbartitle('Phase (rad)')
                 set(gca,'clim',pi*[-1 1])
                 title([titlestr '; Phase rms\phi = ' num2str(S.rmsPha,'%.3f')])               
+                set(gca,'xlim',xylim,'ylim',xylim);
                 
                 % residual phase
                 subplot(2,3,3), imageschcit(S.x, S.y, pharesidual),
                 colorbartitle('Phase (rad)')
                 rmse = rms(pharesidual(S.bMask));
-                title(['Residual Fit, rms error = ' num2str(rmse,'%.2f') 'rad'])
+                title(['Residual Fit, rms error = ' num2str(rmse,'%.3f') 'rad'])
+                set(gca,'xlim',xylim,'ylim',xylim);
+                if ~isempty(phresclim), set(gca,'clim',phresclim); end
                 
                 % fit phase
                 subplot(2,3,4), imageschcit(S.x, S.y, phwfit), 
                 colorbartitle('Phase (rad)'), title('Fit Phase')
-                
+                set(gca,'xlim',xylim,'ylim',xylim);                
                 
                 % bar graph zernike order, don't plot piston
                 subplot(2,3,5:6)
