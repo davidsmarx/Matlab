@@ -82,7 +82,7 @@ classdef CGS < handle
     
     methods
         
-        function S = CGS(gsnum, bn)
+        function S = CGS(gsnum, bn, varargin)
             % S = CGS(gsnum, bn)
             %
             % example:
@@ -151,9 +151,19 @@ classdef CGS < handle
                             ));
                         
                     case 'mcb_alllens'
-                        bn = ['/home/dmarx/WFIRST/PR_lead/all_lens_PR/all_lens_20201203/reduced/prout_' num2str(gsnum)];
-                        
-                        
+                        % optional trial name because we might be testing different ways
+                        % to process one gsnum
+                        trialname = '';
+                        if ~isempty(varargin),  trialname = [varargin{1} '_']; end
+                        bn = ['/home/dmarx/WFIRST/PR_lead/all_lens_PR/all_lens_20201203/reduced/prout_' trialname num2str(gsnum)];
+                                                
+                        S.listPupImDir = dir(PathTranslator(...
+                            ['/proj/mcb/data/excam/2021-*-*/gsomc_p_' num2str(gsnum,'%d') '/*.fits']...
+                            ));
+                        S.listSrcImDir = dir(PathTranslator(...
+                            ['/proj/mcb/data/excam/2021-*-*/gsomc_s_' num2str(gsnum,'%d') '/*.fits']...
+                            ));
+
                     case 'ttb_hlc'
                         bn = ['/proj/mcb/data/dB_PR_Kern/gsomc_no' num2str(gsnum,'%05d')];
                         % get dir listing of raw camera images
@@ -170,7 +180,13 @@ classdef CGS < handle
                             ));
 
                     case 'piaacmc'
-                        bn = ['/proj/piaacmc/phaseretrieval/reduced/piaa_' num2str(gsnum,'%03d')];
+                        % optional trial name because we might be testing different ways
+                        % to process one gsnum
+                        trialname = '';
+                        if ~isempty(varargin),  trialname = [varargin{1} '_']; end
+
+                        bn = ['/proj/piaacmc/phaseretrieval/reduced/piaa_' trialname num2str(gsnum,'%03d')];
+                        
                         % get dir listing of raw camera images                        
                         S.listPupImDir = dir(PathTranslator(...
                             ['/proj/piaacmc/scicam/*/gspiaa_p_' num2str(gsnum,'%04d') '/piaa*.fits']...
@@ -627,11 +643,13 @@ classdef CGS < handle
             
         end
         
-        function cc = AmpCorrMetric(S)
-            % cc = AmpCorrMetric(S)
+        function [cc, MF] = AmpCorrMetric(S, varargin)
+            % [cc, MF] = AmpCorrMetric(S)
             %
             % cc(:,1) = amplitude correlation
             % cc(:,2) = intensity correlation
+            %
+            % MF = length(cc(:,1)) - sum(cc(:,1)) % add more options?
             
             if isempty(S.cAmpPlanes),
                 S.ReadAmpImages;
@@ -649,6 +667,8 @@ classdef CGS < handle
                 cc(ii,2) = CCint(S.cAmpPlanes{ii});
             end
 
+            % this is the merit function used to parameter searching
+            MF = length(cc(:,1)) - sum(cc(:,1));
             
         end % AmpCorrMetric
         
