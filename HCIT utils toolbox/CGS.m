@@ -192,7 +192,6 @@ classdef CGS < handle
                 ampinfo = fitsinfo(PathTranslator([bn 'amp.fits']));
             catch
                 fprintf('failed to open fits file: \n%s\n',PathTranslator([bn 'amp.fits']));
-                return
             end
             
  
@@ -307,10 +306,12 @@ classdef CGS < handle
         function ReadAmpImages(S)
             % read the cmp.fits file
             cmp_fn = [S.bn 'cmp.fits'];
-
+            
             if ispc,
-                copyfile(cmp_fn, 'C:\Users\dmarx\HCITdatatemp\cmp.fits');
-                cmp_fn = 'C:\Users\dmarx\HCITdatatemp\cmp.fits';
+                [~, fntmp, ~] = fileparts(S.bn);
+                cmp_fn_local = ['C:\Users\dmarx\HCITdatatemp\' fntmp 'cmp.fits'];
+                copyfile(PathTranslator(cmp_fn), cmp_fn_local);
+                cmp_fn = cmp_fn_local;
             end
             
             finfo = fitsinfo(PathTranslator(cmp_fn));            
@@ -416,7 +417,8 @@ classdef CGS < handle
             usebMask = CheckOption('usebMask', true, varargin{:});
             xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             phplot = CheckOption('phplot', 'angleE', varargin{:}); % S.(phplot)
-            dphclim = CheckOption('dphclim', [], varargin{:});
+            climdph = CheckOption('dphclim', [], varargin{:});
+            climph = CheckOption('climph', [], varargin{:});
             
             switch phplot
                 case 'angleE'
@@ -442,6 +444,7 @@ classdef CGS < handle
             colorbartitle('Phase (rad)')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
             title(['gsnum ' num2str(S.gsnum)])
+            if ~isempty(climph), set(gca,'clim', climph), end
             
             hax(3) = subplot(2,2,3);
             imageschcit(S.x, S.y, S.amp - Sref.amp)
@@ -458,8 +461,8 @@ classdef CGS < handle
             him = imageschcit(S.x, S.y, dpha);
             colorbartitle('Phase (rad)')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
-            if isempty(dphclim), set(gca,'clim',AutoClim(dpha,'symmetric',true,'pctscale',100))
-            else set(gca,'clim',dphclim)
+            if isempty(climdph), set(gca,'clim',AutoClim(dpha,'symmetric',true,'pctscale',100))
+            else set(gca,'clim',climdph)
             end
             title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(dpha(S.bMask)),'%.3f') 'rad'])
             
