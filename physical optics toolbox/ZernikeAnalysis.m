@@ -6,10 +6,10 @@ function [ZZ, phaimg, phares, sOptions] = ZernikeAnalysis(field, varargin)
 % field = complex array. We apply zernike fit to phase
 %
 % options:
-% bMask = CheckOption('bMask', [], varargin{:});
-% Rnorm = CheckOption('Rnorm', [], varargin{:});
-% Nz = CheckOption('modes', 1:36, varargin{:});
-% polyorder = CheckOption('polyorder', 'Noll', varargin{:});
+% CheckOption('bMask', [], varargin{:});
+% CheckOption('Rnorm', [], varargin{:});
+% CheckOption('modes', 1:36, varargin{:});
+% CheckOption('polyorder', 'Noll', varargin{:});
 %
 % return:
 % ZZ = Zernike coeffs, (rad normalized rms), ZZ(1:3) == 0
@@ -21,7 +21,8 @@ function [ZZ, phaimg, phares, sOptions] = ZernikeAnalysis(field, varargin)
 % options
 bMask = CheckOption('bMask', [], varargin{:});
 Rnorm = CheckOption('Rnorm', [], varargin{:});
-Nz = CheckOption('modes', 1:36, varargin{:});
+Nz = CheckOption('Nz', 1:36, varargin{:}); % either 'Nz' or 'modes'
+Nz = CheckOption('modes', Nz, varargin{:});
 polyorder = CheckOption('polyorder', 'Noll', varargin{:});
 
 %

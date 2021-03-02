@@ -67,6 +67,7 @@ classdef CGS < handle
         Y
         R
         T
+        wavelength
 
         % Remap is for PIAA (upstream of PIAA tube is remapped to downstream)
         RemapRadialR2
@@ -149,7 +150,10 @@ classdef CGS < handle
                         S.listSrcImDir = dir(PathTranslator(...
                             ['/proj/piaa-data/Data/' year '-*-*/bseo/' gsbn '_s_' num2str(gsnum,'%05d') '/*.fits']...
                             ));
-                        
+
+                        % for EMCCD, starting, 2020-11-04, gsnum 1369
+                        wavelength_kwd = 'lam';
+
                     case 'mcb_alllens'
                         % optional trial name because we might be testing different ways
                         % to process one gsnum
@@ -163,6 +167,24 @@ classdef CGS < handle
                         S.listSrcImDir = dir(PathTranslator(...
                             ['/proj/mcb/data/excam/2021-*-*/gsomc_s_' num2str(gsnum,'%d') '/*.fits']...
                             ));
+
+                        wavelength_kwd = 'lam';
+                        
+                    case 'mcb_twolens'
+                        % optional trial name because we might be testing different ways
+                        % to process one gsnum
+                        trialname = '';
+                        if ~isempty(varargin),  trialname = [varargin{1} '_']; end
+                        bn = ['/home/dmarx/WFIRST/PR_lead/all_lens_PR/two_lens_20201109/reduced/prout_' trialname num2str(gsnum)];
+                                                
+                        S.listPupImDir = dir(PathTranslator(...
+                            ['/proj/mcb/data/excam/2021-*-*/gsomc_p_' num2str(gsnum,'%d') '/*.fits']...
+                            ));
+                        S.listSrcImDir = dir(PathTranslator(...
+                            ['/proj/mcb/data/excam/2021-*-*/gsomc_s_' num2str(gsnum,'%d') '/*.fits']...
+                            ));
+
+                        wavelength_kwd = 'lam';
 
                     case 'ttb_hlc'
                         bn = ['/proj/mcb/data/dB_PR_Kern/gsomc_no' num2str(gsnum,'%05d')];
@@ -218,6 +240,7 @@ classdef CGS < handle
             S.ph = fitsread(PathTranslator([bn 'ph.fits']));  % unwrapped phase
             S.phw = fitsread(PathTranslator([bn 'phwrap.fits'])); % = angle(eref), wrapped phase
             S.amp_keys = ampinfo.PrimaryData.Keywords;
+            %S.wavelength = FitsGetKeywordVal(S.amp_keys, wavelength_kwd);
                        
             % phase unwrap in WFSC puts the mask used for PR in the second
             % hdu (starting Feb 2021)
@@ -375,17 +398,29 @@ classdef CGS < handle
             % xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             % climph = CheckOption('climph', [], varargin{:});
             % phplot = CheckOption('phplot', 'angleE', varargin{:}); %
-            % other choice = 'phw_ptt', 'ph', 'phw', 'phunwrap'
-            
+            %     other choices = 'phw_ptt', 'ph', 'phw', 'phunwrap'
+            % ampplot = CheckOption('ampplot', 'absE', varargin{:});
+            %     other choices 'amp'
+            % stitle = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
+
             pMask = CheckOption('pMask', S.bMask, varargin{:});
             xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             climph = CheckOption('climph', [], varargin{:});
             phplot = CheckOption('phplot', 'angleE', varargin{:}); % or S.(phplot)
+            ampplot = CheckOption('ampplot', 'absE', varargin{:});
             stitle = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             
             %hfig = figure;
             %hax = imagescampphase(S.E, x, y, ['gsnum ' num2str(S.gsnum)]);
-            
+
+            %ampplot = CheckOption('ampplot', 'absE', varargin{:});
+            switch lower(ampplot)
+                case 'abse'
+                    amp = abs(S.E); % default, masked
+                otherwise
+                    amp = S.(ampplot); % S.amp; not masked, right from fits file
+            end
+                   
             hfig = figure_mxn(1,2);
             hax(1) = subplot(1,2,1);
             imageschcit(S.x, S.y, abs(S.E))
@@ -401,6 +436,7 @@ classdef CGS < handle
                 otherwise
                     ph = S.(phplot);
             end
+
             
             if isempty(pMask), pMask = ones(size(S.E)); end
             hax(2) = subplot(1,2,2);
@@ -417,13 +453,14 @@ classdef CGS < handle
             
         end % DisplayGS
 
-        function [hfig, hax] = DisplayGSrefGS(S, Sref, varargin)
+        function [hfig, hax, dphaResult] = DisplayGSrefGS(S, Sref, varargin)
             % [hfig, hax] = DisplayGSrefGS(S, Sref, options)
             %
             % options:
             %    ('hfig', figure_mxn(2,2), varargin{:});
             %    ('usebMask', true, varargin{:});
             %    ('removeDefocus', false, varargin{:});
+            %    ('doRegister', false, varargin{:}); % (false), true
             %    ('phplot', 'angleE', (default) 'phw_ptt', 'phunwrap', S.(phplot)
             %    ('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             %    ('dphclim', [], varargin{:});
@@ -501,11 +538,18 @@ classdef CGS < handle
                 [~, bMaskref] = AutoMetric(Sreftmp.amp);
                 comRef = calcCOM(xt, yt, bMaskref);
                 xyshift = comRef - comS;
-                % fft linear shift to translate
-                fDoShift = @(A) fftshift(ifft2(ifftshift(ifftshift(fft2(fftshift(A))).*exp(-1j*pi*(xyshift(1)*Xt/xt(1) + xyshift(2)*Yt/yt(1))))));
-                Etmp = fDoShift(Sreftmp.amp .* exp(1j*Sreftmp.phplot));
-                Sreftmp.phplot = angle(Etmp);
-                Sreftmp.amp    = abs(Etmp);
+                
+                % % fft linear shift to translate
+                % fDoShift = @(A) fftshift(ifft2(ifftshift(ifftshift(fft2(fftshift(A))).*exp(-1j*pi*(xyshift(1)*Xt/xt(1) + xyshift(2)*Yt/yt(1))))));
+                % Etmp = fDoShift(Sreftmp.amp .* exp(1j*Sreftmp.phplot));
+                % Sreftmp.phplot = angle(Etmp);
+                % Sreftmp.amp    = abs(Etmp);
+                
+                % integer shift
+                fDoShift = @(A, dxy) circshift( circshift(A, -dxy(2)), -dxy(1), 2);
+                Sreftmp.phplot = fDoShift(Sreftmp.phplot, round(xyshift));
+                Sreftmp.amp    = fDoShift(Sreftmp.amp,    round(xyshift));
+                
             end
             
             % plot amplitude difference
@@ -518,10 +562,20 @@ classdef CGS < handle
             
             % optional remove defocus difference
             if removeDefocus
+                %                 [ZZ, rz, dphatmp] = S.ZernikeFit(1:4);
+                %                 [ZZ, rz, dpharef] = Sref.ZernikeFit(1:4);
+
                 Ediff = S.E .* Sreftmp.amp.*exp(-1j*Sreftmp.phplot);
-                [ZZ, phaimg, dpha, sOptions] = ZernikeAnalysis(Ediff, 'Nz', 1:4, 'bMask', S.bMask);
+                [ZZ, phaimg, dpha, sOptions] = ZernikeAnalysis(Ediff, 'modes', 1:4, 'bMask', S.bMask);
+                dphaResult = struct(...
+                    'ZZ', ZZ ...
+                    ,'phaimg', phaimg ...
+                    ,'dpha', dpha ...
+                    ,'sOptions', sOptions ...
+                    );
             else
                 dpha = mod2pi(funPhPl(S) - Sreftmp.phplot);
+                dphaResult = struct('dpha', dpha);
             end
             
             hax(4) = subplot(2,2,4);            
@@ -553,6 +607,7 @@ classdef CGS < handle
             ZZs = circshift( circshift(ZZ, -S.y(round(ym)), 1), -S.x(round(xm)), 2);
             %figure, imageschcit(S.x, S.y, abs(ZZs))
             
+            % remove piston
             Zss = exp(-1i*apha).*fftshift(ifft2(fftshift(ZZs)));
             %figure, imagescampphase(Sspin.amp .* Zspinss)
 
@@ -680,13 +735,14 @@ classdef CGS < handle
             %   Option('value', 'amp' (default), 'intensity'
             %   Option('clim', [], varargin{:});
             %   Option('scale', 'log', varargin{:});
+            %   Option('xylim', [], varargin{:});
             
             if isempty(S.cAmpPlanes), S.ReadAmpImages; end
             
             plAmpOrInt = CheckOption('value', 'amp', varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             scale = CheckOption('scale', 'log', varargin{:});
-            %xylim = CheckOption('xylim', [], varargin{:});
+            xylim = CheckOption('xylim', [], varargin{:});
             
             % each hdu is N x N x 3
             % (:,:,1) = measured amplitude
@@ -727,6 +783,10 @@ classdef CGS < handle
                 set(hax,'clim', [max([cclim{1}(1) cclim{2}(1)]) max([cclim{:}])]);
             else
                 set(hax,'clim',clim)
+            end
+            
+            if ~isempty(xylim)
+                set(hax, 'xlim', xylim, 'ylim', xylim)
             end
             
         end % DisplayAmpPlane
