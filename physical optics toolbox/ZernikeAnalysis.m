@@ -46,12 +46,11 @@ ZZ = zernikefit(Xim(bMask), Yim(bMask), phaimg(bMask), Nz, Rnorm, polyorder);
 
 % remove ptt from phaimg
 phaimg(bMask) = phaimg(bMask) - zernikeval(ZZ(1:3), Xim(bMask), Yim(bMask), Rnorm, polyorder);
-ZZ(1:3) = 0;
 phaimg(~bMask) = 0;
 
 % residual of the rest of the moes
 phares = zeros(size(phaimg));
-phares(bMask) = phaimg(bMask) - zernikeval(ZZ, Xim(bMask), Yim(bMask), Rnorm, polyorder);
+phares(bMask) = phaimg(bMask) - zernikeval([zeros(3,1); ZZ(4:end)], Xim(bMask), Yim(bMask), Rnorm, polyorder);
 
 % return values:
 % ZZ, phaimg, phares, sOptions
