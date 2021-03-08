@@ -94,6 +94,7 @@ classdef CGS < handle
             end
             
             U = CConstants;
+            wavelength_kwd = '';
             
             if ~exist('bn','var') || isempty(bn),
                 %bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
@@ -174,7 +175,8 @@ classdef CGS < handle
                         % optional trial name because we might be testing different ways
                         % to process one gsnum
                         trialname = '';
-                        if ~isempty(varargin),  trialname = [varargin{1} '_']; end
+                        %if ~isempty(varargin),  trialname = [varargin{1} '_']; end
+                        if ~isempty(varargin),  trialname = [varargin{1}]; end
                         bn = ['/home/dmarx/WFIRST/PR_lead/all_lens_PR/two_lens_20201109/reduced/prout_' trialname num2str(gsnum)];
                                                 
                         S.listPupImDir = dir(PathTranslator(...
@@ -239,7 +241,7 @@ classdef CGS < handle
             S.ph = fitsread(PathTranslator([bn 'ph.fits']));  % unwrapped phase
             S.phw = fitsread(PathTranslator([bn 'phwrap.fits'])); % = angle(eref), wrapped phase
             S.amp_keys = ampinfo.PrimaryData.Keywords;
-            %S.wavelength = FitsGetKeywordVal(S.amp_keys, wavelength_kwd);
+            S.wavelength = FitsGetKeywordVal(S.amp_keys, wavelength_kwd);
                        
             % phase unwrap in WFSC puts the mask used for PR in the second
             % hdu (starting Feb 2021)
@@ -469,7 +471,7 @@ classdef CGS < handle
             %    ('dphclim', [], varargin{:});
             
             % parse options
-            hfig = CheckOption('hfig', figure_mxn(2,2), varargin{:});
+            hfig = CheckOption('hfig', [], varargin{:});
             usebMask = CheckOption('usebMask', true, varargin{:});
             removeDefocus = CheckOption('removeDefocus', false, varargin{:});
             doRegister = CheckOption('doRegister', false, varargin{:});
@@ -485,7 +487,11 @@ classdef CGS < handle
                     funPhPl = @(S) S.(phplot);
             end
             
-            figure(hfig);
+            if ishandle(hfig),
+                figure(hfig);
+            else
+                hfig = figure_mxn(2,2);
+            end
 
             % determine plot width
             if isempty(xylim),
@@ -595,7 +601,8 @@ classdef CGS < handle
             end
             title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(dpha(S.bMask)),'%.3f') 'rad'])
             
-            
+            % append more to dphaResult
+            dphaResult.dpharms = rms(dpha(S.bMask));
             
         end % DisplayGSrefGS
 
@@ -728,9 +735,33 @@ classdef CGS < handle
             end
 
             % this is the merit function used to parameter searching
-            MF = length(cc(:,1)) - sum(cc(:,1));
+            MF = [length(cc(:,1)) - sum(cc(:,1)) length(cc(:,2))-sum(cc(:,2))];
             
         end % AmpCorrMetric
+        
+        function [wsqrt, imvars] = CalcWeights(S)
+            %
+            %
+            
+            if isempty(S.cAmpPlanes),
+                S.ReadAmpImages;
+            end
+            
+            rn = 2.6;
+            gaine = 0.5;
+            
+            for iim = 1:length(S.cAmpPlanes),
+                Iimg = squeeze(S.cAmpPlanes{iim}(:,:,1)).^2; % measured intensity
+                imvars{iim} = (rn.^2 + Iimg/gaine)./(sum(Iimg(:)).^2);
+                
+                amp_e = squeeze(S.cAmpPlanes{iim}(:,:,2)); % estimated amplitude
+                alpha_2 = sum(amp_e(:).^2);
+                
+                wsqrt{iim} = sqrt(1./(alpha_2.*imvars{iim}));
+                
+            end
+            
+        end
         
         function [hfig, hax] = DisplayAmpPlane(S, ipl, varargin)
             % [hfig, hax] = DisplayAmpPlane(S, list_ipl)
