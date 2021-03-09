@@ -94,6 +94,7 @@ classdef CGS < handle
             end
             
             U = CConstants;
+            wavelength_kwd = '';
             
             if ~exist('bn','var') || isempty(bn),
                 %bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
@@ -239,7 +240,7 @@ classdef CGS < handle
             S.ph = fitsread(PathTranslator([bn 'ph.fits']));  % unwrapped phase
             S.phw = fitsread(PathTranslator([bn 'phwrap.fits'])); % = angle(eref), wrapped phase
             S.amp_keys = ampinfo.PrimaryData.Keywords;
-            %S.wavelength = FitsGetKeywordVal(S.amp_keys, wavelength_kwd);
+            S.wavelength = FitsGetKeywordVal(S.amp_keys, wavelength_kwd);
                        
             % phase unwrap in WFSC puts the mask used for PR in the second
             % hdu (starting Feb 2021)
@@ -469,7 +470,7 @@ classdef CGS < handle
             %    ('dphclim', [], varargin{:});
             
             % parse options
-            hfig = CheckOption('hfig', figure_mxn(2,2), varargin{:});
+            hfig = CheckOption('hfig', [], varargin{:});
             usebMask = CheckOption('usebMask', true, varargin{:});
             removeDefocus = CheckOption('removeDefocus', false, varargin{:});
             doRegister = CheckOption('doRegister', false, varargin{:});
@@ -485,7 +486,11 @@ classdef CGS < handle
                     funPhPl = @(S) S.(phplot);
             end
             
-            figure(hfig);
+            if ishandle(hfig)
+                figure(hfig);
+            else
+                hfig = figure_mxn(2,2);
+            end
 
             % determine plot width
             if isempty(xylim),
