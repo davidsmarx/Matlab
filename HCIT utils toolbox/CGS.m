@@ -482,6 +482,7 @@ classdef CGS < handle
 
             bDisplay = CheckOption('display', true, varargin{:});
             titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
+            ylimZ = CheckOption('ylimz', [], varargin{:});
             
             % fit should always include piston, tip, tilt, even if not
             % included in requested nz
@@ -527,12 +528,12 @@ classdef CGS < handle
                 subplot(2,3,5:6)
                 [Zplot, NZplot] = filterdata(nzfit > 3, ZZ, nzfit);
                 hh = bar(NZplot, Zplot); grid
-                %                 set(gca,'XTick', 1:length(nz(2:end)))
-                %                 set(gca, 'XTickLabel', num2str(nz(2:end)))
 
                 ylabel('Zernike Coeff (rms rad)')
                 xlabel('Zernike # (Noll Order)')
-                set(gca,'ylim',2*[-1 1])
+                if ~isempty(ylimZ),
+                    set(gca,'ylim',ylimZ)
+                end
 
                 
             end
