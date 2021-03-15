@@ -234,13 +234,30 @@ function sOptions = ValidateOptions(varargin)
         );
     
     % copy given option values over the default values
-    if nargin > 0 && isstruct(varargin{1})
+    if isempty(varargin), return, end
+    
+    if isstruct(varargin{1})
         sTmp = varargin{1};
         fnames = fieldnames(sTmp);
         
         for ii = 1:length(fnames),
             sOptions.(fnames{ii}) = sTmp.(fnames{ii});
         end
+        
+    else
+
+        % TO DO allow for string type CheckOption()
+        warning('options is not a struct');
+        %         'Wgt_mask', [] ... % option to supply a real valued array to create the mask
+        %         ,'image_type', 'pupil' ... % 'pupil' or 'psf'
+        %         ,'eps_inside', 1.0e-15 ...
+        %         ,'eps_outside', 1.0e-12 ...
+        %         ,'AutoThreshold_Nbins', 21 ...
+        %         ,'bScaleAmp', false ...
+        %         ,'logPSF', false ...
+        %         ,'debug', false ...
+        %         ,'PSF_thresh_nsig', 2 ...
+        %
     end
     
     % validate option values here

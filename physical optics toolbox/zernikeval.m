@@ -21,6 +21,10 @@ function f = zernikeval(Z,x,y,R,varargin)
 %        default: nz = 1:length(Z)
 
 NZ = CheckOption('nz', 1:length(Z), varargin{:});
+if ~isequal(length(Z), length(NZ)),
+    error('list of Z not same size as list of NZ');
+end
+NZ = reshape(NZ, size(Z));
 
 if ~isempty(varargin),
     poly_order = varargin{1};
@@ -45,7 +49,7 @@ if ~exist('R','var'),
     R = max(r(:)) % max radius to normalize coordinates
 end
 
-if ~isequal(size(Z), size(NZ)),
+if ~isequal(length(Z), length(NZ)),
     error('list of Z not same size as list of NZ');
 end
 

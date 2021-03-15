@@ -49,7 +49,7 @@ end
                 if ~isempty(val) && val(end) == '&' && strcmp(Keywords{ik+1,1},'CONTINUE'),
                     % continues
                     stmp = strtrim(Keywords{ik+1,3});
-                    val = [val(1:end-1) stmp(2:end-2)];
+                    val = [val(1:end-1) stmp(2:end-1)];
                 end
             else
                 for ii = 1:length(ik)
