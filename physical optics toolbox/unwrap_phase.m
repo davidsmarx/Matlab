@@ -12,7 +12,9 @@
 %   pp. 7437-7444 (2002).                                                      %
 % * M. F. Kasim, "Fast 2D phase unwrapping implementation in MATLAB",          %
 %   https://github.com/mfkasim91/unwrap_phase/ (2017).                         %
-%                                                                              %
+% 
+% res_img = unwrap_phase(img)
+%
 % Input:                                                                       %
 % * img: The wrapped phase image either from -pi to pi or from 0 to 2*pi.      %
 %        If there are unwanted regions, it should be filled with NaNs.         %
