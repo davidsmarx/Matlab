@@ -94,6 +94,7 @@ classdef CGS < handle
             end
             
             U = CConstants;
+            wavelength_kwd = '';
             
             if ~exist('bn','var') || isempty(bn),
                 %bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
@@ -174,7 +175,8 @@ classdef CGS < handle
                         % optional trial name because we might be testing different ways
                         % to process one gsnum
                         trialname = '';
-                        if ~isempty(varargin),  trialname = [varargin{1} '_']; end
+                        %if ~isempty(varargin),  trialname = [varargin{1} '_']; end
+                        if ~isempty(varargin),  trialname = [varargin{1}]; end
                         bn = ['/home/dmarx/WFIRST/PR_lead/all_lens_PR/two_lens_20201109/reduced/prout_' trialname num2str(gsnum)];
                                                 
                         S.listPupImDir = dir(PathTranslator(...
@@ -239,7 +241,7 @@ classdef CGS < handle
             S.ph = fitsread(PathTranslator([bn 'ph.fits']));  % unwrapped phase
             S.phw = fitsread(PathTranslator([bn 'phwrap.fits'])); % = angle(eref), wrapped phase
             S.amp_keys = ampinfo.PrimaryData.Keywords;
-            %S.wavelength = FitsGetKeywordVal(S.amp_keys, wavelength_kwd);
+            S.wavelength = FitsGetKeywordVal(S.amp_keys, wavelength_kwd);
                        
             % phase unwrap in WFSC puts the mask used for PR in the second
             % hdu (starting Feb 2021)
@@ -450,7 +452,7 @@ classdef CGS < handle
                 climph = AutoClim(ph, 'symmetric', true);
             end
             set(gca,'clim',climph)
-            title(['rms\phi = ' num2str(S.rmsPha,'%.3f') 'rad'])
+            title(['rms\phi = ' num2str(rms(ph(pMask)),'%.3f') 'rad'])
             
             
             
@@ -462,19 +464,22 @@ classdef CGS < handle
             % options:
             %    ('hfig', figure_mxn(2,2), varargin{:});
             %    ('usebMask', true, varargin{:});
+            %    ('pMask', S.bMask, varargin{:}); % bMask only for phase display
             %    ('removeDefocus', false, varargin{:});
             %    ('doRegister', false, varargin{:}); % (false), true
             %    ('phplot', 'angleE', (default) 'phw_ptt', 'phunwrap', S.(phplot)
             %    ('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             %    ('dphclim', [], varargin{:});
+            %    ('climph', [], varargin{:});
             
             % parse options
-            hfig = CheckOption('hfig', figure_mxn(2,2), varargin{:});
+            hfig = CheckOption('hfig', [], varargin{:});
             usebMask = CheckOption('usebMask', true, varargin{:});
+            pMask = CheckOption('pMask', S.bMask, varargin{:}); % bMask only for phase display
             removeDefocus = CheckOption('removeDefocus', false, varargin{:});
             doRegister = CheckOption('doRegister', false, varargin{:});
-            xylim = CheckOption('xylim', [], varargin{:});
             phplot = CheckOption('phplot', 'angleE', varargin{:}); % S.(phplot)
+            xylim = CheckOption('xylim', [], varargin{:});
             climdph = CheckOption('dphclim', [], varargin{:});
             climph = CheckOption('climph', [], varargin{:});
             
@@ -485,7 +490,11 @@ classdef CGS < handle
                     funPhPl = @(S) S.(phplot);
             end
             
-            figure(hfig);
+            if ishandle(hfig),
+                figure(hfig);
+            else
+                hfig = figure_mxn(2,2);
+            end
 
             % determine plot width
             if isempty(xylim),
@@ -585,7 +594,7 @@ classdef CGS < handle
             
             hax(4) = subplot(2,2,4);            
             if usebMask,
-                dpha = S.bMask .* dpha;
+                dpha = pMask .* dpha;
             end
             him = imageschcit(S.x, S.y, dpha);
             colorbartitle('Phase (rad)')
@@ -593,9 +602,11 @@ classdef CGS < handle
             if isempty(climdph), set(gca,'clim',AutoClim(dpha,'symmetric',true,'pctscale',100))
             else set(gca,'clim',climdph)
             end
-            title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(dpha(S.bMask)),'%.3f') 'rad'])
+            title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(dpha(pMask)),'%.3f') 'rad'])
             
-            
+            % append more to dphaResult
+            dphaResult.dpharms = rms(dpha(pMask));
+            dphaResult.pMask = pMask;
             
         end % DisplayGSrefGS
 
@@ -626,13 +637,20 @@ classdef CGS < handle
             %
             % zernike fit using bMask pixes
             %
+            % phase = CheckOption('phase', 'phw_ptt', varargin{:});
             % bDisplay = CheckOption('display', true, varargin{:});
             % titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
+            % xylim = CheckOption('xylim', [], varargin{:});
+            % phresclim = CheckOption('phresclim', [], varargin{:});
+            % ylimZ = CheckOption('ylimZplot', [], varargin{:});
 
+            phasefieldname = CheckOption('phase', 'phw_ptt', varargin{:});
             bDisplay = CheckOption('display', true, varargin{:});
+            hfig = CheckOption('hfig', [], varargin{:});
             titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             xylim = CheckOption('xylim', [], varargin{:});
             phresclim = CheckOption('phresclim', [], varargin{:});
+            ylimZ = CheckOption('ylimZplot', [], varargin{:});
             
             % fit should always include piston, tip, tilt, even if not
             % included in requested nz
@@ -643,11 +661,11 @@ classdef CGS < handle
             
             %
             rz = max(S.R(S.bMask));
-            ZZ = zernikefit(S.X(S.bMask), S.Y(S.bMask), S.phw_ptt(S.bMask), nzfit, rz, 'noll');
+            ZZ = zernikefit(S.X(S.bMask), S.Y(S.bMask), S.(phasefieldname)(S.bMask), nzfit, rz, 'noll');
             phwfit = nan(size(S.X));
             phwfit(S.bMask) = zernikeval(ZZ, S.X(S.bMask), S.Y(S.bMask), rz, 'noll', 'nz', nzfit);
             pharesidual = nan(size(S.X));
-            pharesidual(S.bMask) = mod2pi(S.phw_ptt(S.bMask) - phwfit(S.bMask));
+            pharesidual(S.bMask) = mod2pi(S.(phasefieldname)(S.bMask) - phwfit(S.bMask));
 
             
             %%%%%% plot results
@@ -660,17 +678,20 @@ classdef CGS < handle
                     xylim = xylim*[-1 1];
                 end
 
-                
-                figure_mxn(2,3)
+                if isempty(hfig),
+                    hfig = figure_mxn(2,3);
+                else
+                    figure(hfig)
+                end
 
                 subplot(2,3,1), imageschcit(S.x, S.y, abs(S.E))
                 title([titlestr '; Amplitude'])
                 set(gca,'xlim',xylim,'ylim',xylim);
 
                 % phase
-                subplot(2,3,2), imageschcit(S.x, S.y, mod2pi(S.phunwrap).*S.bMask)
+                subplot(2,3,2), imageschcit(S.x, S.y, S.(phasefieldname).*S.bMask) % mod2pi(S.phunwrap).*S.bMask)
                 colorbartitle('Phase (rad)')
-                set(gca,'clim',pi*[-1 1])
+                %set(gca,'clim',pi*[-1 1])
                 title([titlestr '; Phase rms\phi = ' num2str(S.rmsPha,'%.3f')])               
                 set(gca,'xlim',xylim,'ylim',xylim);
                 
@@ -691,13 +712,13 @@ classdef CGS < handle
                 subplot(2,3,5:6)
                 [Zplot, NZplot] = filterdata(nzfit > 3, ZZ, nzfit);
                 hh = bar(NZplot, Zplot); grid
-                %                 set(gca,'XTick', 1:length(nz(2:end)))
-                %                 set(gca, 'XTickLabel', num2str(nz(2:end)))
 
                 ylabel('Zernike Coeff (rms rad)')
                 xlabel('Zernike # (Noll Order)')
-                set(gca,'ylim',2*[-1 1])
 
+                if ~isempty(ylimZ),
+                    set(gca,'ylim',ylimZ)
+                end
                 
             end
             
@@ -715,22 +736,60 @@ classdef CGS < handle
                 S.ReadAmpImages;
             end
             
+            % weights included?
+            [~, ~, nw] = size(S.cAmpPlanes{1});
+            
             CCor = @(a,b) a(:)'*b(:)./sqrt( (a(:)'*a(:)) * (b(:)'*b(:)) );
             CCorq = @(q) CCor(q(:,:,1),q(:,:,2));
             CCint = @(q) CCor(abs(q(:,:,1)).^2, abs(q(:,:,2)).^2);
+            CCwint= @(q) CCor(q(:,:,4).*abs(q(:,:,1)).^2, q(:,:,4).*abs(q(:,:,2)).^2);
             
             NIm = length(S.cAmpPlanes);
-            cc = zeros(NIm,2);
+            if nw == 4,
+                cc = zeros(NIm,3);
+            else
+                cc = zeros(NIm,2);
+            end
 
             for ii = 1:NIm,
                 cc(ii,1) = CCorq(S.cAmpPlanes{ii});
                 cc(ii,2) = CCint(S.cAmpPlanes{ii});
+                if nw == 4,
+                    cc(ii,3) = CCwint(S.cAmpPlanes{ii});
+                end
             end
 
             % this is the merit function used to parameter searching
-            MF = length(cc(:,1)) - sum(cc(:,1));
+            MF = [length(cc(:,1)) - sum(cc(:,1)) length(cc(:,2))-sum(cc(:,2))];
+            if nw == 4,
+                MF = [MF length(cc(:,3))-sum(cc(:,3))];
+            end
             
         end % AmpCorrMetric
+        
+        function [wsqrt, imvars] = CalcWeights(S)
+            %
+            %
+            
+            if isempty(S.cAmpPlanes),
+                S.ReadAmpImages;
+            end
+            
+            rn = 2.6;
+            gaine = 0.5;
+            
+            for iim = 1:length(S.cAmpPlanes),
+                Iimg = squeeze(S.cAmpPlanes{iim}(:,:,1)).^2; % measured intensity
+                imvars{iim} = (rn.^2 + Iimg/gaine)./(sum(Iimg(:)).^2);
+                
+                amp_e = squeeze(S.cAmpPlanes{iim}(:,:,2)); % estimated amplitude
+                alpha_2 = sum(amp_e(:).^2);
+                
+                wsqrt{iim} = sqrt(1./(alpha_2.*imvars{iim}));
+                
+            end
+            
+        end
         
         function [hfig, hax] = DisplayAmpPlane(S, ipl, varargin)
             % [hfig, hax] = DisplayAmpPlane(S, list_ipl)
