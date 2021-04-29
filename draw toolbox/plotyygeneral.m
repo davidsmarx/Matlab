@@ -1,6 +1,8 @@
 function [ hax, h1, h2 ] = plotyygeneral( x1, y1, bLog1, x2, y2, bLog2, varargin )
 % [ hax, h1, h2 ] = plotyygeneral( x1, y1, bLog1, x2, y2, bLog2)
 %   just like plotyy() but specify each y axis is Log or LInear
+% 
+% NOTE: need to rewrite this using yyaxis left; yyaxis right
 
 ha1 = axes;
 h1 = PlotY(ha1, x1, y1, bLog1); grid on

@@ -77,25 +77,25 @@ hPic = Sppt.CopyFigSlide(slide, hfig);
 if length(varargin) == 0, listHfig = []; end
 for iplot = 1:length(varargin),
     if iscell(varargin{iplot}),
-        listHfig(iplot) = CreaetePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end});
+        listHfig(iplot) = CreatePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end});
     end
 end
 
-    if nargout >= 1,
-        sOut = struct(...
-            'listS', S ...
-            ,'listHfig', listHfig ...
-            ,'Sppt', Sppt ...
-            ,'probeh', probeh ...
-            ,'rmsdDMv', rmsdDMv ...
-            );
-    end
+if nargout >= 1,
+    sOut = struct(...
+        'listS', S ...
+        ,'listHfig', listHfig ...
+        ,'Sppt', Sppt ...
+        ,'probeh', probeh ...
+        ,'rmsdDMv', rmsdDMv ...
+        );
+end
 
 more on
 
 end % main
 
-function [hfig, hax, sCmetrics] = CreaetePlots(S, sDisplayFun, Sppt, varargin)
+function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
     % create the plots
     % some plots are differential
     % some plots we also plot metrics v itnum
@@ -274,19 +274,25 @@ function [hfig, hax] = PlotNormIntensity(listS, varargin)
     [NInt_co, NInt_inco, NInt_total] = deal(zeros(length(itnum), max([listS.Nlamcorr]) ));
     for ii = 1:length(itnum)
         
-        if isempty(listS(ii).NormIntensity_total)
-            listS(ii).ReadImageCube;
-        end
-        if isempty(listS(ii).NormIntensity_co)
-            listS(ii).ReadReducedCube;
-        end
-
+        %         if isempty(listS(ii).NormIntensity_total)
+        %             listS(ii).ReadImageCube;
+        %         end
+        %         if isempty(listS(ii).NormIntensity_co)
+        %             listS(ii).ReadReducedCube;
+        %         end
+        %
+        %
+        %         for ilam = 1:listS(ii).Nlamcorr,
+        %             NInt_co(ii, ilam) = listS(ii).NormIntensity_co(ilam);
+        %             NInt_inco(ii, ilam) = listS(ii).NormIntensity_inco(ilam);
+        %             NInt_total(ii, ilam) = listS(ii).NormIntensity_total(ilam);
+        %         end % for ilam
         
-        for ilam = 1:listS(ii).Nlamcorr,
-            NInt_co(ii, ilam) = listS(ii).NormIntensity_co(ilam);
-            NInt_inco(ii, ilam) = listS(ii).NormIntensity_inco(ilam);
-            NInt_total(ii, ilam) = listS(ii).NormIntensity_total(ilam);
-        end % for ilam
+        sC = listS(ii).GetContrast('display',false);
+        NInt_co(ii, :) = sC.co_lam_NI;
+        NInt_inco(ii, :) = sC.inco_lam_NI;
+        NInt_total(ii, :) = sC.score_lam;
+        
     end % ii
 
     figure(hfig);

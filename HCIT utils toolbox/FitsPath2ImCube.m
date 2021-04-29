@@ -8,8 +8,8 @@ function varargout = FitsPath2ImCube(pn, varargin)
 %
 % options:
 % plottype = CheckOption('plottype', 'cube', varargin{:}); % 'spread', 'cube', 'none'
-% plotx = CheckOption('x', 0, varargin{:});
-% ploty = CheckOption('y', 0, varargin{:});
+% plotx = CheckOption('x', 0, varargin{:}); % default = 0-offset
+% ploty = CheckOption('y', 0, varargin{:}); % default = 0-offset
 % xlim = CheckOption('xlim', [], varargin{:});
 % ylim = CheckOption('ylim', [], varargin{:});
 % hdrkwd = CheckOption('hdrkwd', {'camz'}, varargin{:});

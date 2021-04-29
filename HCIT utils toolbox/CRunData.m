@@ -92,12 +92,13 @@ classdef CRunData < handle & CConstants
         
         % results:
         IncInt
-        IncIntEst   % part of inc int where all probeamp > 0
+        IncIntEst   % pixels where inc int < 0, inc int is fixed to = eps
         IncIntMix   % part of UnProbed Image where any probeamp <= 0
         IncIntFullBand 
         IncIntEstFullBand % mean across all subbands
 
         CohInt
+        CohIntEst   % pixels where inc int < 0, coh int is fixed to = unprobed
         CohIntFullBand % mean across all subbands
         E_t
         E_m
@@ -249,7 +250,7 @@ classdef CRunData < handle & CConstants
                     S.NKTlower = [512]*S.NM; %[522.5, 544.5, 566.5]*S.NM;
                     S.NKTcenter = mean([S.NKTupper; S.NKTlower]);
 
-                    S.ppl0 = 6.15; %4.96;
+                    S.ppl0 = 6.21;
                     
                     % require on-sky lam/D = 9.0
                     % system lam/D = PIAAMAG * on-sky lam/D
@@ -259,7 +260,12 @@ classdef CRunData < handle & CConstants
                     
                     
                 case 101 % PIAA Dan's
+                    %S.Results_pn = '/proj/piaacmc/EFC/data/run101/';
                     S.Results_pn = '/proj/piaacmc/EFC/data/run101/';
+                    S.Rundir_pn  = 'rundir_fix/';         % always relative to Results_pn
+                    S.Reduced_pn = 'rundir_fix/reduced_dmarx_20210422/'; % always relative to Results_pn
+
+                    
                     S.S383temp_pn= '/home/dmarx/HCIT/PIAA/hcim_testbed_run101/results/';
                     
                     S.XYlimDefault = 12;
@@ -483,10 +489,21 @@ classdef CRunData < handle & CConstants
         end % function CRunData
         
         function Contrast = GetContrast(S, varargin)
+            % % options
+            % rminsc = CheckOption('RminSc', S.RminSc, varargin{:});
+            % rmaxsc = CheckOption('RmaxSc', S.RmaxSc, varargin{:});
+            % yminsc = CheckOption('YminSc', -inf, varargin{:});
+            % ymaxsc = CheckOption('YmaxSc', inf, varargin{:});
+            % xminsc = CheckOption('XminSc', -inf, varargin{:});
+            % xmaxsc = CheckOption('XmaxSc', inf, varargin{:});
+            % bMaskScUse= CheckOption('bMaskSc', S.bMaskSc, varargin{:});
+            % bDisplay = CheckOption('display', true, varargin{:});
+            %
+            % rminsc, rmaxsc, etc are applied to bMaskSc
+            
             if isempty(S.bMask),
                 S.ReadMaskCube;
             end
-            [x, y, X, Y, R, T] = CreateGrid(S.bMaskSc, 1./S.ppl0);
             
             if isempty(S.ImCube),
                 S.ReadImageCube;
@@ -497,18 +514,21 @@ classdef CRunData < handle & CConstants
             end
 
             % options
-            rminsc = CheckOption('RminSc', [], varargin{:});
-            rmaxsc = CheckOption('RmaxSc', [], varargin{:});
+            rminsc = CheckOption('RminSc', S.RminSc, varargin{:});
+            rmaxsc = CheckOption('RmaxSc', S.RmaxSc, varargin{:});
+            yminsc = CheckOption('YminSc', -inf, varargin{:});
+            ymaxsc = CheckOption('YmaxSc', inf, varargin{:});
+            xminsc = CheckOption('XminSc', -inf, varargin{:});
+            xmaxsc = CheckOption('XmaxSc', inf, varargin{:});
+            bMaskScUse= CheckOption('bMasSc', S.bMaskSc, varargin{:});
+            bDisplay = CheckOption('display', true, varargin{:});
             
+            % coordinate system in back-end lam/D
+            [x, y, X, Y, R, T] = CreateGrid(S.bMaskSc, 1./S.ppl0);
+
             % FOV mask for calculating contrast
-            bMaskScUse = S.bMaskSc;
-            if ~isempty(rminsc)
-                bMaskScUse = bMaskScUse & (R >= rminsc);
-            end
-            if ~isempty(rmaxsc)
-                bMaskScUse = bMaskScUse & (R <= rmaxsc);
-            end
-            
+            bMaskScUse = bMaskScUse & (R >= rminsc) & (R <= rmaxsc) & (Y >= yminsc) & (Y <= ymaxsc) & (X >= xminsc) & (X <= xmaxsc);            
+
             % resample throughput data to pixels in scoring region
             if ~isempty(S.Sthpt),
 
@@ -556,40 +576,42 @@ classdef CRunData < handle & CConstants
                 S.ImCubeContrast{iwv} = S.ImCubeUnProb{iwv}./S.Sthpt.ThptSc;
                 S.ImCubeCohContrast{iwv} = S.CohInt{iwv}./S.Sthpt.ThptSc;
                 S.ImCubeIncContrast{iwv} = S.IncInt{iwv}./S.Sthpt.ThptSc;
-                Contrast.contr_lam(iwv) = mean(S.ImCubeContrast{iwv}(bMaskScUse));
+                Contrast.contr_lam(iwv) = mean(S.ImCubeContrast{iwv}(bMaskScUse)./S.Sthpt.ThptSc(bMaskScUse));
                 
             end
             Contrast.mean = mean(Contrast.contr_lam);
 
             % mean coherent and incoherent contrast
             
-            % scoring region
+            % scoring (or user-defined) region
             Contrast.inco_lam = zeros(1,S.NofW);
             Contrast.co_lam = zeros(1,S.NofW);
             for iwv = 1:S.Nlamcorr,
                 %bPampz = squeeze(S.bPampzero(iwv,:,:));
                 %bMaskUse = ~bPampz & bMaskSc;
+
+                % unprobed
                 
-                bMaskUse = bMaskScUse;
-                % total incoherent
-                Contrast.inco_lam_NI(iwv) = mean(S.IncInt{iwv}(bMaskUse));
-                Contrast.inco_lam(iwv) = mean(S.IncInt{iwv}(bMaskUse)./S.Sthpt.ThptSc(bMaskUse));
-                % estimated incoherent (those pixels where E was estimated)
+                % total incoherent, use IncIntEst:
+                % pixels where inc int < 0, fixed to = eps
+                Contrast.inco_lam_NI(iwv) = mean(S.IncIntEst{iwv}(bMaskScUse));
+                Contrast.inco_lam(iwv) = mean(S.IncIntEst{iwv}(bMaskScUse)./S.Sthpt.ThptSc(bMaskScUse));
                 
                 % Mix incoherent (those pixels where sigtbw < 0, Eest = 0)
                 
-                % coherent
-                Contrast.co_lam_NI(iwv) = mean(S.CohInt{iwv}(bMaskUse));
-                Contrast.co_lam(iwv)   = mean(S.CohInt{iwv}(bMaskUse)./S.Sthpt.ThptSc(bMaskUse));
+                % coherent, use S.CohIntEst, pixels where inc int < 0, coh int is fixed to = unprobed
+                Contrast.co_lam_NI(iwv) = mean(S.CohIntEst{iwv}(bMaskScUse));
+                Contrast.co_lam(iwv)   = mean(S.CohIntEst{iwv}(bMaskScUse)./S.Sthpt.ThptSc(bMaskScUse));
             end
             Contrast.inco_mean = mean(Contrast.inco_lam);
             Contrast.co_mean = mean(Contrast.co_lam);
 
-            % radial plot of contrast            
-            [hfigrad, harad] = S.DisplayRadialPlot(S.ImCubeContrast, ...
-                'ylabel', 'Contrast', 'dispradlim', [0 max(R(S.bMaskSc))]);
+            % radial plot of contrast
+            if bDisplay,
+                [hfigrad, harad] = S.DisplayRadialPlot(S.ImCubeContrast, ...
+                    'ylabel', 'Contrast', 'dispradlim', [0 max(R(S.bMaskSc))]);
+            end
             
-
         end % GetContrast
 
         function [Excel, sheet] = ContrastReportExcel(S, varargin)
@@ -682,10 +704,10 @@ classdef CRunData < handle & CConstants
                 % pampzero = false for good pixels, mdMask is control
                 % region, bMask is logical(mdMask)
                 S.bPampzero{iwl} = ~S.bMask | abs(S.CohInt{iwl}) == 0 | S.IncInt{iwl} < 0;
-                
+
+                %%%% NOTE: NormIntensity_ does not account for imwt, use
+                %%%% GetContrast() for more options
                 % mean coherent and incoherent contrast
-                %                 S.NormIntensity_inco(iwl) = mean(nonzeros(S.IncInt{iwl}.*S.mdMask));
-                %                 S.NormIntensity_co(iwl)   = mean(nonzeros(S.CohInt{iwl}.*S.mdMask));
                 S.NormIntensity_inco(iwl) = mean(S.IncInt{iwl}(~S.bPampzero{iwl}));
                 S.NormIntensity_co(iwl)   = mean(S.CohInt{iwl}(~S.bPampzero{iwl}));
 
@@ -701,6 +723,9 @@ classdef CRunData < handle & CConstants
                 % have option to just set inc int to zero at these poitns
                 S.IncIntEst{iwl} = S.IncInt{iwl};
                 S.IncIntEst{iwl}(S.IncInt{iwl} <= 0) = eps;
+                % and then where inc int is zero, coh int = unprobed
+                S.CohIntEst{iwl} = S.CohInt{iwl};
+                S.CohIntEst{iwl}(S.IncInt{iwl} <= 0) = S.ImCubeUnProb{iwl}(S.IncInt{iwl} <= 0);
                                        
             end % for each wl
             
@@ -1903,6 +1928,11 @@ classdef CRunData < handle & CConstants
             % 
             % testbed measured E fields
             % amp, real, imag x each wavelength
+            %
+            %   CheckOption('xylim', S.XYlimDefault, varargin{:});
+            %   CheckOption('hfig', [], varargin{:});
+            %   CheckOption('clim', [], varargin{:});
+            %   CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
                         
             if isempty(S.E_t),
                 S.ReadReducedCube;
@@ -2578,7 +2608,7 @@ function val = CheckOption(varstring, defaultval, varargin)
 % example:
 % RminSc = CheckOption('RminSc', S.RminSc, varargin{:});
 
-iv = find(strcmp(varargin, varstring));
+iv = find(strcmpi(varargin, varstring));
 
 if ~isempty(iv),
     val = varargin{iv+1};
