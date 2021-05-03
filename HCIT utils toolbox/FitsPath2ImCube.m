@@ -8,8 +8,8 @@ function varargout = FitsPath2ImCube(pn, varargin)
 %
 % options:
 % plottype = CheckOption('plottype', 'cube', varargin{:}); % 'spread', 'cube', 'none'
-% plotx = CheckOption('x', 0, varargin{:});
-% ploty = CheckOption('y', 0, varargin{:});
+% plotx = CheckOption('x', 0, varargin{:}); % default = 0-offset
+% ploty = CheckOption('y', 0, varargin{:}); % default = 0-offset
 % xlim = CheckOption('xlim', [], varargin{:});
 % ylim = CheckOption('ylim', [], varargin{:});
 % hdrkwd = CheckOption('hdrkwd', {'camz'}, varargin{:});
@@ -17,6 +17,7 @@ function varargout = FitsPath2ImCube(pn, varargin)
 % scale = CheckOption('scale', 'linear', varargin{:}); or 'log'
 % refImg = CheckOption('refimg', [], varargin{:}); ImCube = ImCube - refImg
 % comTitlestr = CheckOption('comtitlestr', '', varargin{:}); % common title to start each titlestr
+% clim = CheckOption('clim', [], varargin{:});
 % 
 % output:
 % ImCube = [Nimages nr nc]
@@ -32,6 +33,7 @@ hdrkwd = CheckOption('hdrkwd', {'camz'}, varargin{:});
 hdrkwdvalfmt = CheckOption('hdrkwdvalfmt', '%.1f ', varargin{:});
 refImg = CheckOption('refimg', [], varargin{:}); % ImCube = ImCube - refImg
 comTitlestr = CheckOption('comtitlestr', '', varargin{:}); % common title to start each titlestr
+clim = CheckOption('clim', [], varargin{:});
 
 %
 
@@ -118,6 +120,12 @@ switch lower(plottype),
     otherwise,
         error(['unknown plottype ' plottype]);
 end
+
+% set all axes to common clim
+if isempty(clim),
+    clim = AutoClim(ImCube(:), 'one-sided', true);
+end
+set(hax,'clim',clim)
 
 % return values, depends on options
 if nargout == 0,
