@@ -76,6 +76,7 @@ sUserData = struct(...
     ,'isl', islinit ... % current slice in figure
     ,'xplot', xplot ...
     ,'yplot', yplot ...
+    ,'multi_key_seq', [] ...
     );
 sUserData.fTitleStr = fTitleStr; % allows for fTitleStr is a cell array
 
@@ -92,6 +93,11 @@ function KeyPressCallback(hSrc, event)
 
 S = get(hSrc,'UserData');
 
+% are we in the middle of a multi-key sequence?
+if ~isempty(S.multi_key_seq),
+    S.multi_key_seq = [S.multi_key_seq event.Key];    
+end
+
 %disp(event.Key)
 switch event.Key
     case 'f'
@@ -106,12 +112,35 @@ switch event.Key
         if S.isl == 0, S.isl = S.Nsl; end
         
     case '1'
-        % go to first slice
-        S.isl = 1;
+        if isempty(S.multi_key_seq),
+            % go to first slice
+            S.isl = 1;
+        end
         
     case 'e'
         % go to last slice
         S.isl = S.Nsl;
+        
+    case 'g'
+        % goto frame number
+        % command is g number g
+        % start or end multi-key sequence
+        if isempty(S.multi_key_seq),
+            % start new multi-key sequence
+            S.multi_key_seq = 'g';
+        else
+            % check that multi key sequence starts with 'g'
+            if S.multi_key_seq(1) == 'g',
+                % assumes all keys in the middle are numbers
+                isl = str2double(S.multi_key_seq(2:end-1));
+                if ~isnan(isl),
+                    S.isl = isl;
+                end
+            end
+            % reset
+            S.multi_key_seq = '';
+            
+        end
         
     case 'm'
         % save as movie?
@@ -153,9 +182,11 @@ switch event.Key
         
 end
 
-Img = squeeze(S.imgCube(S.isl,:,:));
-S.himage.CData = Img;
-S.htitle.String = S.fTitleStr(S.isl);
+if S.isl >=1 && S.isl <= S.Nsl,
+    Img = squeeze(S.imgCube(S.isl,:,:));
+    S.himage.CData = Img;
+    S.htitle.String = S.fTitleStr(S.isl);
+end
 
 drawnow;
 

@@ -122,9 +122,10 @@ classdef CGS < handle
                             ));
                        
                     case 'spc_disc'
-                        bn = '/home/dmarx/HCIT/SPC_disc/gsspc_20171204/reduced/gsspc_';
+                        bn = ['/home/dmarx/HCIT/SPC_disc/gsspc_20171204/reduced/gsspc_' num2str(gsnum)];
+                        
                     case 'mcb_spc'
-                        bn = '/home/dmarx/HCIT/MCB_SPC/phaseretrieval/reduced/gsomc_no';
+                        bn = ['/home/dmarx/HCIT/MCB_SPC/phaseretrieval/reduced/gsomc_no' num2str(gsnum,'%04d')];
                         % get dir listing of raw camera images
                         S.listPupImDir = dir(PathTranslator(...
                             ['/proj/piaa-data/Data/2019-*-*/dmarx/gsomc_p_' num2str(gsnum) '/*.fits']...

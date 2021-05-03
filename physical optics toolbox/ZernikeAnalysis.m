@@ -39,7 +39,7 @@ phaimg(bMask) = mod2pi(phaimg(bMask) - mean(phaimg(bMask)));
 
 % norm radius for zernikefit
 if isempty(Rnorm),
-    Rnorm = max(Rim(bMask));
+    Rnorm = max(Rim(bMask(:)));
 end
 
 ZZ = zernikefit(Xim(bMask), Yim(bMask), phaimg(bMask), Nz, Rnorm, polyorder);
