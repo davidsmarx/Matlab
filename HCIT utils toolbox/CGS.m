@@ -55,6 +55,7 @@ classdef CGS < handle
         phw        % wrapped phase
         cAmpPlanes % input and est amp images each plane (cmp.fits)
         zAmpPlanes % camz for each amp image
+        zunits = 1;% units for reading zAmpPlanes from fits
         amp_keys
         bMask
         ampthresh
@@ -122,9 +123,11 @@ classdef CGS < handle
                             ));
                        
                     case 'spc_disc'
-                        bn = '/home/dmarx/HCIT/SPC_disc/gsspc_20171204/reduced/gsspc_';
+                        bn = ['/home/dmarx/HCIT/SPC_disc/gsspc_20171204/reduced/gsspc_' num2str(gsnum)];
+                        
                     case 'mcb_spc'
-                        bn = '/home/dmarx/HCIT/MCB_SPC/phaseretrieval/reduced/gsomc_no';
+                        bn = ['/home/dmarx/HCIT/MCB_SPC/phaseretrieval/reduced/gsomc_no' num2str(gsnum,'%04d')];
+
                         % get dir listing of raw camera images
                         S.listPupImDir = dir(PathTranslator(...
                             ['/proj/piaa-data/Data/2019-*-*/dmarx/gsomc_p_' num2str(gsnum) '/*.fits']...
@@ -154,6 +157,9 @@ classdef CGS < handle
 
                         % for EMCCD, starting, 2020-11-04, gsnum 1369
                         wavelength_kwd = 'lam';
+                        
+                        % 
+                        S.zunits = U.MM;
 
                     case 'mcb_alllens'
                         % optional trial name because we might be testing different ways
@@ -369,10 +375,10 @@ classdef CGS < handle
             % (:,:,3) = calculated phase
             
             S.cAmpPlanes{1} = fitsread(PathTranslator(cmp_fn));
-            S.zAmpPlanes(1) = FitsGetKeywordVal(finfo.PrimaryData.Keywords, 'Z');
+            S.zAmpPlanes(1) = FitsGetKeywordVal(finfo.PrimaryData.Keywords, 'Z')*S.zunits;
             for ii = 2:NIm,
                 S.cAmpPlanes{ii} = fitsread(PathTranslator(cmp_fn),'image',ii-1);
-                S.zAmpPlanes(ii) = FitsGetKeywordVal(finfo.Image(ii-1).Keywords, 'Z');
+                S.zAmpPlanes(ii) = FitsGetKeywordVal(finfo.Image(ii-1).Keywords, 'Z')*S.zunits;
             end
             
         end % ReadAmpImages
