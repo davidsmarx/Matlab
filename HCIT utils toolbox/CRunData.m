@@ -2129,12 +2129,14 @@ classdef CRunData < handle & CConstants
             %             clim = CheckOption('clim', [], varargin{:});
             %             PSF_thresh_nsig = CheckOption('PSF_thresh_nsig', 4, varargin{:});
             %             bDebugAutoMetric = CheckOption('debug', false, varargin{:});
+            %             bMaskDisplay = CheckOption('bMaskDisplay', [], varargin{:}); % default is mask from CohInt
 
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             PSF_thresh_nsig = CheckOption('PSF_thresh_nsig', 4, varargin{:});
             bDebugAutoMetric = CheckOption('debug', false, varargin{:});
+            bMaskDisplay = CheckOption('bMaskDisplay', [], varargin{:});
             
             if isempty(S.E_t),
                 S.ReadReducedCube;
@@ -2197,13 +2199,27 @@ classdef CRunData < handle & CConstants
             
             for iwv = 1:S.NofW,
                 
-                % to make the phase plot cleaner, only plot phase where
-                % there are speckles. Let's make a mask from speckle
-                % correlation intensity
+                % correlation amplitude for this iwv
                 CEampiwv = squeeze(abs(CE(iwv,:,:)));
-                [~, bMaskce] = AutoMetric(CEampiwv, [], ...
-                    struct('image_type','psf','logPSF',true,...
-                    'debug',bDebugAutoMetric,'PSF_thresh_nsig',PSF_thresh_nsig));
+
+                % to make the phase plot cleaner, only plot phase where
+                % there are speckles. 
+                if isempty(bMaskDisplay),
+                    % Let's make a mask from Coh Intensity (show where
+                    % there are bright speckles)
+                    [~, bMaskce] = AutoMetric(S.CohInt{iwv}, [], ...
+                        struct('image_type','psf','logPSF', true, ...
+                        'debug',bDebugAutoMetric,'PSF_thresh_nsig',PSF_thresh_nsig));
+                    
+                    %                     % Or, Let's make a mask from speckle
+                    %                     % correlation intensity
+                    %                     [~, bMaskce] = AutoMetric(CEampiwv, [], ...
+                    %                         struct('image_type','psf','logPSF',true,...
+                    %                         'debug',bDebugAutoMetric,'PSF_thresh_nsig',PSF_thresh_nsig));
+
+                end
+                
+                % apply display mask
                 CEphaiwv = squeeze(angle(CE(iwv,:,:)));
                 CEphaiwv(~bMaskce) = nan;
                 

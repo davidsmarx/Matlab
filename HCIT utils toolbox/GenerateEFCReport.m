@@ -75,6 +75,7 @@ hPic = Sppt.CopyFigSlide(slide, hfig);
 
 % call the plotting methods
 if length(varargin) == 0, listHfig = []; end
+listHfig = 0;
 for iplot = 1:length(varargin),
     if iscell(varargin{iplot}),
         listHfig(iplot) = CreatePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end});
@@ -249,7 +250,13 @@ function [betaused, betamin, hfig, hax] = PlotBeta(listS, varargin)
     [ireg0, betaused, betamin] = deal(zeros(length(itnum),1));
     for ii = 1:length(listS)
         ireg0(ii) = FitsGetKeywordVal(listS(ii).ReducedKeys, 'IREG0');
-        betaused(ii) = FitsGetKeywordVal(listS(ii).ReducedKeys, ['BSCAN' num2str(ireg0(ii), '%03d')]);
+        if ireg0(ii) == -1,
+            % optimal beta
+            betaused(ii) = FitsGetKeywordVal(listS(ii).ReducedKeys, 'BMIN');
+        else
+            betaused(ii) = FitsGetKeywordVal(listS(ii).ReducedKeys, ['BSCAN' num2str(ireg0(ii), '%03d')]);
+        end
+        
         betamin(ii) = FitsGetKeywordVal(listS(ii).ReducedKeys, 'BMIN');        
     end % 
     
