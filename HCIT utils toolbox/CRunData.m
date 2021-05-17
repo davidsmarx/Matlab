@@ -262,8 +262,10 @@ classdef CRunData < handle & CConstants
                 case 101 % PIAA Dan's
                     %S.Results_pn = '/proj/piaacmc/EFC/data/run101/';
                     S.Results_pn = '/proj/piaacmc/EFC/data/run101/';
+                    %                     S.Rundir_pn  = 'rundir_fix/';         % always relative to Results_pn
+                    %                     S.Reduced_pn = 'rundir_fix/reduced_dmarx_20210422/'; % always relative to Results_pn
                     S.Rundir_pn  = 'rundir_fix/';         % always relative to Results_pn
-                    S.Reduced_pn = 'rundir_fix/reduced_dmarx_20210422/'; % always relative to Results_pn
+                    S.Reduced_pn = 'rundir_fix/reduced_dmarx_20210423/'; % always relative to Results_pn
 
                     
                     S.S383temp_pn= '/home/dmarx/HCIT/PIAA/hcim_testbed_run101/results/';
@@ -652,6 +654,11 @@ classdef CRunData < handle & CConstants
                 fprintf('no reduced data');
                 return
             end
+            
+            if isempty(S.ImCube),
+                S.ReadImageCube;
+            end
+
             
             RedData = fitsread(S.Reduced_fn); % primary hdu
             [nr, nc, nslices] = size(RedData);
