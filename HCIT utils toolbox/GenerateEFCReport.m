@@ -54,7 +54,11 @@ N = length(listItnum);
 if isnumeric(listItnum),
     for ii = 1:N
         fprintf('reading itnum %d\n', listItnum(ii));
-        S(ii) = CRunData(runnum, listItnum(ii), sOptin);
+        %try
+            S(ii) = CRunData(runnum, listItnum(ii), sOptin);
+        %catch
+        %    warning(['iter# ' num2str(listItnum(ii)) ' not found']);
+        %end
     end
 elseif isa(listItnum, 'CRunData')
     S = listItnum;
@@ -212,7 +216,11 @@ function [probeh, hfig, hax] = PlotProbeh(S, varargin)
      [itnum, probeh] = deal(zeros(size(S)));
      for ii = 1:length(S)
          itnum(ii)  = S(ii).iter;
-         probeh(ii) = FitsGetKeywordVal(S(ii).ImKeys,'PROBEH');
+         if ~isempty(S(ii).ImKeys),
+             probeh(ii) = FitsGetKeywordVal(S(ii).ImKeys,'PROBEH');
+         else
+             probeh(ii) = NaN;
+         end
      end
 
      figure(hfig);
@@ -228,7 +236,12 @@ function [hfig, hax, texp] = PlotTexp(S)
     [itnum, texp] = deal(zeros(size(S)));
     for ii = 1:length(S)
         itnum(ii) = S(ii).iter;
-        texp(ii) = FitsGetKeywordVal(S(ii).ImKeys, 'texp');
+        if ~isempty(S(ii).ImKeys)
+            texp(ii) = FitsGetKeywordVal(S(ii).ImKeys, 'texp');
+        else
+            % empty instance
+            texp(ii) = NaN;
+        end
     end
     
     hfig = figure;
@@ -249,15 +262,22 @@ function [betaused, betamin, hfig, hax] = PlotBeta(listS, varargin)
     
     [ireg0, betaused, betamin] = deal(zeros(length(itnum),1));
     for ii = 1:length(listS)
-        ireg0(ii) = FitsGetKeywordVal(listS(ii).ReducedKeys, 'IREG0');
-        if ireg0(ii) == -1,
-            % optimal beta
-            betaused(ii) = FitsGetKeywordVal(listS(ii).ReducedKeys, 'BMIN');
+        if ~isempty(listS(ii).ReducedKeys),
+            ireg0(ii) = FitsGetKeywordVal(listS(ii).ReducedKeys, 'IREG0');
+            if ireg0(ii) == -1,
+                % optimal beta
+                betaused(ii) = FitsGetKeywordVal(listS(ii).ReducedKeys, 'BMIN');
+            else
+                betaused(ii) = FitsGetKeywordVal(listS(ii).ReducedKeys, ['BSCAN' num2str(ireg0(ii), '%03d')]);
+            end
+            
+            betamin(ii) = FitsGetKeywordVal(listS(ii).ReducedKeys, 'BMIN');
+            
         else
-            betaused(ii) = FitsGetKeywordVal(listS(ii).ReducedKeys, ['BSCAN' num2str(ireg0(ii), '%03d')]);
+            % empty instance
+            betaused(ii) = NaN;
+            betamin(ii) = NaN;
         end
-        
-        betamin(ii) = FitsGetKeywordVal(listS(ii).ReducedKeys, 'BMIN');        
     end % 
     
     figure(hfig);
@@ -296,9 +316,15 @@ function [hfig, hax] = PlotNormIntensity(listS, varargin)
         %         end % for ilam
         
         sC = listS(ii).GetContrast('display',false);
-        NInt_co(ii, :) = sC.co_lam_NI;
-        NInt_inco(ii, :) = sC.inco_lam_NI;
-        NInt_total(ii, :) = sC.score_lam;
+        if ~isempty(sC.co_lam_NI),
+            NInt_co(ii, :) = sC.co_lam_NI;
+            NInt_inco(ii, :) = sC.inco_lam_NI;
+            NInt_total(ii, :) = sC.score_lam;
+        else
+            NInt_co(ii, :) = NaN; % so it's not plotted
+            NInt_inco(ii, :) = NaN;
+            NInt_total(ii, :) = NaN;            
+        end
         
     end % ii
 
@@ -330,7 +356,12 @@ function [rmsdDMv, hfig, hax] = PlotRMSdDMv(listS, varargin)
     % select the unprobed DMv from each cube
     for ii = 1:length(listS),
         for idm = 1:Ndm
-            DMvtmp{idm} = squeeze(listS(ii).DMvCube{idm}(:,:,1));
+            if ~isempty(listS(ii).DMvCube),
+                DMvtmp{idm} = squeeze(listS(ii).DMvCube{idm}(:,:,1));
+            else
+                % empty instance
+                DMvtmp{idm} = NaN;
+            end
         end
         listDMv(ii,:) = DMvtmp; % listDMv is cell array
     end

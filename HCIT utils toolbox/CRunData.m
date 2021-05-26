@@ -164,6 +164,10 @@ classdef CRunData < handle & CConstants
     methods
         function S = CRunData(runnum, iter, sOptin, varargin)
             % S = CRunData(runnum, iter, sOptin, varargin)
+            %
+            % sOptin = struct, overides default class member values
+            % varargin = list of methods to execute
+           
             
             S.runnum = runnum;
             S.iter = iter;
@@ -410,17 +414,24 @@ classdef CRunData < handle & CConstants
             
             % unzip the fits files if necessary
             % first check if 'local' fits files exists,
-            if ~exist(sReduced_local_fn, 'file'),
-                sReduced_gz = [sReduced_local_fn '.gz'];
-                if ~exist(sReduced_gz, 'file') %&& ispc,
-                    copyfile([S.Reduced_fn '.gz'], sReduced_gz);
+            try,
+                if ~exist(sReduced_local_fn, 'file'),
+                    sReduced_gz = [sReduced_local_fn '.gz'];
+                    if ~exist(sReduced_gz, 'file') %&& ispc,
+                        copyfile([S.Reduced_fn '.gz'], sReduced_gz);
+                    end
+                    gunzip(sReduced_gz);
+                    % now reduced data should be unzipped, and
+                    % S.Reduced_fn = the 'local' unzipped data file
                 end
-                gunzip(sReduced_gz);
-                % now reduced data should be unzipped, and 
-                % S.Reduced_fn = the 'local' unzipped data file
-            end
-            S.Reduced_fn = sReduced_local_fn;
-
+                S.Reduced_fn = sReduced_local_fn;
+            catch ME
+                disp('File Error:');
+                disp(ME.identifier);
+                disp([S.Reduced_fn '.gz']);
+                % return empty instance
+                return
+            end 
             % repeat local logic for rundir
             if ~exist(sRundir_local_fn, 'file'),
                 sRundir_gz = [sRundir_local_fn '.gz'];
@@ -503,6 +514,20 @@ classdef CRunData < handle & CConstants
             %
             % rminsc, rmaxsc, etc are applied to bMaskSc
             
+            % initialize empty return struct
+            Contrast = struct( ...
+                'cntl_lam', [] ...
+                ,'score_lam', [] ...
+                ,'contr_lam', [] ...
+                ,'mean', [] ...
+                ,'inco_lam', [] ...
+                ,'co_lam', [] ...
+                ,'inco_lam_NI', [] ...
+                ,'co_lam_NI', [] ...
+                ,'inco_mean', [] ...
+                ,'co_mean', [] ...
+                );
+            
             if isempty(S.bMask),
                 S.ReadMaskCube;
             end
@@ -515,6 +540,11 @@ classdef CRunData < handle & CConstants
                 S.ReadReducedCube;
             end
 
+            if isempty(S.NofW),
+                % this is an empty instance
+                return
+            end
+            
             % options
             rminsc = CheckOption('RminSc', S.RminSc, varargin{:});
             rmaxsc = CheckOption('RmaxSc', S.RmaxSc, varargin{:});
@@ -660,7 +690,16 @@ classdef CRunData < handle & CConstants
             end
 
             
-            RedData = fitsread(S.Reduced_fn); % primary hdu
+            try,
+                RedData = fitsread(S.Reduced_fn); % primary hdu
+            catch ME
+                disp('File Error:');
+                disp(ME.identifier);
+                disp([S.Reduced_fn]);
+                return                
+            end
+
+            
             [nr, nc, nslices] = size(RedData);
             % each images slice is nr x nc
             
@@ -749,7 +788,14 @@ classdef CRunData < handle & CConstants
             % 1st slice is mask of control region (md)
             % next nlamcorr * 2 slices are real and imag occulter transmission profile
 
-            MaskCubeData = fitsread(S.Reduced_fn,'image',1);
+            try,
+                MaskCubeData = fitsread(S.Reduced_fn,'image',1);
+            catch ME
+                disp('File Error:');
+                disp(ME.identifier);
+                disp([S.Reduced_fn]);
+                return
+            end
             
             % 1st slice is mask of control region, i.e. model.band[ilam0].md
             S.mdMask = squeeze(MaskCubeData(:,:,1));
@@ -821,7 +867,14 @@ classdef CRunData < handle & CConstants
             
             if isempty(S.bMask), S.ReadMaskCube; end
             
-            S.ImCube = fitsread(S.Rundir_fn);
+            try,
+                S.ImCube = fitsread(S.Rundir_fn);
+            catch ME
+                disp('File Error:');
+                disp(ME.identifier);
+                disp([S.Reduced_fn]);
+                return                
+            end
             
             % unprobed images, each wavelength:
             for iwv = 1:S.NofW,
@@ -847,7 +900,15 @@ classdef CRunData < handle & CConstants
         
         function S = ReadDMvCube(S)
             
-            finfo = fitsinfo(S.Rundir_fn);
+            try,
+                finfo = fitsinfo(S.Rundir_fn);
+            catch ME
+                disp('File Error:');
+                disp(ME.identifier);
+                disp(S.Rundir_fn);
+                return                
+            end
+
             % Primary hdu is unprobed images
             % one Image hdu per DM
             S.Ndm = length(finfo.Image);

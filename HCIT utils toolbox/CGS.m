@@ -283,8 +283,8 @@ classdef CGS < handle
             % use FFT to remove large amounts of PTT (integer pixels in FFT space
             % then use zernikes to remove remaining PTT
             [S.x, S.y, S.X, S.Y, S.R, S.T] = CreateGrid(S.amp);
-            S.RemovePTTfft; % creates first estimate of S.phw_ptt
-            S.phw_ptt = RemovePTTZ(S.phw_ptt, S.bMask);
+            S.RemovePTTfft; % creates first estimate of S.phw_ptt using FFT
+            S.phw_ptt = RemovePTTZ(S.phw_ptt, S.bMask); % fine-tune using Zernike
             %             S.phunwrap = RemovePTTZ(S.phunwrap, S.bMask);
             %             S.phw_ptt  = mod2pi(S.phunwrap);
 
@@ -297,8 +297,8 @@ classdef CGS < handle
             S.phunwrap = S.phw_ptt;
 
             % S.E
-            S.E = S.amp .* exp(1i*S.phw_ptt);
-            %S.E = S.amp .* exp(1i*S.phw);
+            %S.E = S.amp .* exp(1i*S.phw_ptt);
+            S.E = S.amp .* exp(1i*S.phw);
         
             % load the radial mapping
             % should be part of the bn switch
@@ -617,9 +617,13 @@ classdef CGS < handle
         end % DisplayGSrefGS
 
         function phw_ptt = RemovePTTfft(S)
-            Zs = exp(1i*S.phw);
+            % remove large scale piston, tip, tilt by translating the fft
+            % s.t. the fft peak is at the center
+            
+            Zs = S.amp.*exp(1i*S.phw);
 
-            ZZ = fftshift(fft2(fftshift(S.bMask.*Zs)));
+            %ZZ = fftshift(fft2(fftshift(S.bMask.*Zs)));
+            ZZ = fftshift(fft2(fftshift(Zs)));
             
             %figure, imagescampphase(ZZ, x, y)
             
