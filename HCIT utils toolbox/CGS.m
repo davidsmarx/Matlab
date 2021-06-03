@@ -54,6 +54,7 @@ classdef CGS < handle
         phunwrap_bMask % mask used in unwrap (WFSC version)
         phw        % wrapped phase
         cAmpPlanes % input and est amp images each plane (cmp.fits)
+        nRot90     % rotate all fits images after reading using rot90(Im, nRot90) (default = no rotate)
         zAmpPlanes % camz for each amp image
         zunits = 1;% units for reading zAmpPlanes from fits
         amp_keys
@@ -240,12 +241,14 @@ classdef CGS < handle
                 fprintf('failed to open fits file: \n%s\n',PathTranslator([bn 'amp.fits']));
             end
             
+            % check options
+            S.nRot90 = CheckOption('rot90', 0, varargin{:});
  
             S.gsnum = gsnum;
             S.bn = bn;
-            S.amp = fitsread(PathTranslator([bn 'amp.fits']));
-            S.ph = fitsread(PathTranslator([bn 'ph.fits']));  % unwrapped phase
-            S.phw = fitsread(PathTranslator([bn 'phwrap.fits'])); % = angle(eref), wrapped phase
+            S.amp = rot90( fitsread(PathTranslator([bn 'amp.fits'])), S.nRot90);
+            S.ph = rot90( fitsread(PathTranslator([bn 'ph.fits'])), S.nRot90);  % unwrapped phase
+            S.phw = rot90( fitsread(PathTranslator([bn 'phwrap.fits'])), S.nRot90); % = angle(eref), wrapped phase
             S.amp_keys = ampinfo.PrimaryData.Keywords;
             S.wavelength = FitsGetKeywordVal(S.amp_keys, wavelength_kwd);
                        
@@ -254,7 +257,7 @@ classdef CGS < handle
             finfo = fitsinfo(PathTranslator([bn 'ph.fits']));
             if length(finfo.Contents) > 1,
                 fn = [bn 'ph.fits'];
-                S.phunwrap_bMask = logical(fitsread(PathTranslator(fn),'image'));
+                S.phunwrap_bMask = logical(rot90( fitsread(PathTranslator(fn),'image'), S.nRot90) );
             end
             
             
@@ -374,10 +377,10 @@ classdef CGS < handle
             % (:,:,2) = calculated amplitude
             % (:,:,3) = calculated phase
             
-            S.cAmpPlanes{1} = fitsread(PathTranslator(cmp_fn));
+            S.cAmpPlanes{1} = rot90( fitsread(PathTranslator(cmp_fn)), S.nRot90);
             S.zAmpPlanes(1) = FitsGetKeywordVal(finfo.PrimaryData.Keywords, 'Z')*S.zunits;
             for ii = 2:NIm,
-                S.cAmpPlanes{ii} = fitsread(PathTranslator(cmp_fn),'image',ii-1);
+                S.cAmpPlanes{ii} = rot90( fitsread(PathTranslator(cmp_fn),'image',ii-1), S.nRot90 );
                 S.zAmpPlanes(ii) = FitsGetKeywordVal(finfo.Image(ii-1).Keywords, 'Z')*S.zunits;
             end
             
