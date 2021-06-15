@@ -75,8 +75,6 @@ hax(2,1) = subplot(2,2,3); probeh = PlotProbeh(S, 'hfig', hfig, 'hax', hax(2,1))
 hax(2,2) = subplot(2,2,4); rmsdDMv = PlotRMSdDMv(S, 'hfig', hfig, 'hax', hax(2,2));
 hPic = Sppt.CopyFigSlide(slide, hfig);
 
-[hfig, haxtexp, texp] = PlotTexp(S);
-
 % call the plotting methods
 if length(varargin) == 0, listHfig = []; end
 listHfig = 0;
@@ -213,6 +211,9 @@ function [probeh, hfig, hax] = PlotProbeh(S, varargin)
      hfig = CheckOption('hfig', figure, varargin{:});
      hax = CheckOption('hax', [], varargin{:});
 
+     % get texp
+     [hfig, haxtexp, itnum_texp, texp] = PlotTexp(S);
+
      [itnum, probeh] = deal(zeros(size(S)));
      for ii = 1:length(S)
          itnum(ii)  = S(ii).iter;
@@ -225,13 +226,18 @@ function [probeh, hfig, hax] = PlotProbeh(S, varargin)
 
      figure(hfig);
      if ~isempty(hax), axes(hax); else, hax = gca; end
+     yyaxis left
      semilogy(itnum, probeh, '-o'), grid
      xlabel('Iteration #')
      ylabel('probeh')
      
+     yyaxis right
+     semilogy(itnum_texp, texp, '-x'), grid
+     ylabel('T_{exp} (s)')
+     
 end % PlotProbeh
 
-function [hfig, hax, texp] = PlotTexp(S)
+function [hfig, hax, itnum, texp] = PlotTexp(S)
 
     [itnum, texp] = deal(zeros(size(S)));
     for ii = 1:length(S)

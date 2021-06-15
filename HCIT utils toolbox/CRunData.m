@@ -72,13 +72,17 @@ classdef CRunData < handle & CConstants
         lambda          = [542 553 565 577 588]*CConstants.NM;
         %ilamcorr        = [0, 1, 2, 3, 4];
         ppl0            
+        PIAAMAG         = 1;   % only for PIAA testbed
 
-        RminSc          = 6.3; % lam/D
+        RminSc          = 6.3; % system (back-end) lam/D
         RmaxSc          = 19.5;
         ThminSc         = [];
         ThmaxSc         = [];
+        YminSc          = -Inf;
+        YmaxSc          = Inf;
+        XminSc          = -Inf;
+        XmaxSc          = Inf;
         Nbscan          = 6;
-        PIAAMAG         = 1;   % only for PIAA testbed
         Results_pn = '';
         Rundir_pn  = 'rundir/';         % always relative to Results_pn
         Reduced_pn = 'rundir/reduced/'; % always relative to Results_pn
@@ -108,6 +112,7 @@ classdef CRunData < handle & CConstants
         
         ProbeAmp % measured
         
+        % control region and score region masks
         mdMask
         bMask
         bMaskSc
@@ -246,8 +251,11 @@ classdef CRunData < handle & CConstants
                     S.PIAAMAG = 1.12; % should get this from config
                     S.DrawradiiDefault = S.PIAAMAG*[1.8 9.0];
                     
-                    S.RminSc    = S.PIAAMAG * 1.8; % lam/D
+                    % config_piaa_20210524.py
+                    S.RminSc    = S.PIAAMAG * 4.0; % back-end (system) lam/D
                     S.RmaxSc    = S.PIAAMAG * 9.0;
+                    S.YmaxSc    = S.PIAAMAG *-1.8;
+                    S.YminSc    = -Inf;
 
                     % overwritten if camera image is found
                     S.NKTupper = [512]*S.NM; %[533.5, 555.5, 577.5]*S.NM;
@@ -516,16 +524,16 @@ classdef CRunData < handle & CConstants
             
             % initialize empty return struct
             Contrast = struct( ...
-                'cntl_lam', [] ...
-                ,'score_lam', [] ...
-                ,'contr_lam', [] ...
-                ,'mean', [] ...
-                ,'inco_lam', [] ...
-                ,'co_lam', [] ...
-                ,'inco_lam_NI', [] ...
-                ,'co_lam_NI', [] ...
-                ,'inco_mean', [] ...
-                ,'co_mean', [] ...
+                'cntl_lam', [] ...   % unprobed image control region NI
+                ,'score_lam', [] ... % unprobed image score region NI
+                ,'contr_lam', [] ... % contrast score region
+                ,'mean', [] ...      % mean(contr_lam)
+                ,'inco_lam', [] ... % score region
+                ,'co_lam', [] ...   % score region
+                ,'inco_lam_NI', [] ... % score region
+                ,'co_lam_NI', [] ...   % score region
+                ,'inco_mean', [] ...   % score region
+                ,'co_mean', [] ...     % score region
                 );
             
             if isempty(S.bMask),
@@ -548,17 +556,18 @@ classdef CRunData < handle & CConstants
             % options
             rminsc = CheckOption('RminSc', S.RminSc, varargin{:});
             rmaxsc = CheckOption('RmaxSc', S.RmaxSc, varargin{:});
-            yminsc = CheckOption('YminSc', -inf, varargin{:});
-            ymaxsc = CheckOption('YmaxSc', inf, varargin{:});
-            xminsc = CheckOption('XminSc', -inf, varargin{:});
-            xmaxsc = CheckOption('XmaxSc', inf, varargin{:});
+            yminsc = CheckOption('YminSc', S.YminSc, varargin{:});
+            ymaxsc = CheckOption('YmaxSc', S.YmaxSc, varargin{:});
+            xminsc = CheckOption('XminSc', S.XminSc, varargin{:});
+            xmaxsc = CheckOption('XmaxSc', S.XmaxSc, varargin{:});
             bMaskScUse= CheckOption('bMasSc', S.bMaskSc, varargin{:});
             bDisplay = CheckOption('display', true, varargin{:});
             
             % coordinate system in back-end lam/D
-            [x, y, X, Y, R, T] = CreateGrid(S.bMaskSc, 1./S.ppl0);
+            [x, y, X, Y, R, T] = CreateGrid(bMaskScUse, 1./S.ppl0);
 
-            % FOV mask for calculating contrast
+            % FOV score mask for calculating contrast
+            % options can override object settings
             bMaskScUse = bMaskScUse & (R >= rminsc) & (R <= rmaxsc) & (Y >= yminsc) & (Y <= ymaxsc) & (X >= xminsc) & (X <= xmaxsc);            
 
             % resample throughput data to pixels in scoring region
@@ -581,17 +590,17 @@ classdef CRunData < handle & CConstants
                 if isfield(S.Sthpt,'fovx') && isfield(S.Sthpt,'fovy'),
                     % most cases
                     Finterp = scatteredInterpolant(S.Sthpt.fovx(:), S.Sthpt.fovy(:), S.Sthpt.thpt(:));
-                    S.Sthpt.ThptSc = ones(size(S.bMaskSc)); % avoid divide by zero
-                    S.Sthpt.ThptSc(S.bMaskSc) = Finterp(X(S.bMaskSc), Y(S.bMaskSc));
+                    S.Sthpt.ThptSc = ones(size(bMaskScUse)); % avoid divide by zero
+                    S.Sthpt.ThptSc(bMaskScUse) = Finterp(X(bMaskScUse), Y(bMaskScUse));
                 elseif isfield(S.Sthpt,'fovr'),
                     % SPC Disc run 603
-                    S.Sthpt.ThptSc = ones(size(S.bMaskSc)); % avoid divide by zero
-                    S.Sthpt.ThptSc(S.bMaskSc) = interp1(S.Sthpt.fovr, S.Sthpt.thpt, R(S.bMaskSc));                    
+                    S.Sthpt.ThptSc = ones(size(bMaskScUse)); % avoid divide by zero
+                    S.Sthpt.ThptSc(bMaskScUse) = interp1(S.Sthpt.fovr, S.Sthpt.thpt, R(bMaskScUse));                    
                 end
 
             else
                 warning('no throughput data, contrast is normalized intensity');
-                S.Sthpt.ThptSc = ones(size(S.bMaskSc));
+                S.Sthpt.ThptSc = ones(size(bMaskScUse));
             end
             
             % note: don't like nonzeros(...) because pixels within the dark
@@ -641,7 +650,7 @@ classdef CRunData < handle & CConstants
             % radial plot of contrast
             if bDisplay,
                 [hfigrad, harad] = S.DisplayRadialPlot(S.ImCubeContrast, ...
-                    'ylabel', 'Contrast', 'dispradlim', [0 max(R(S.bMaskSc))]);
+                    'ylabel', 'Contrast', 'dispradlim', [0 max(R(bMaskScUse))]);
             end
             
         end % GetContrast
@@ -808,10 +817,16 @@ classdef CRunData < handle & CConstants
             RmaxSc = CheckOption('RmaxSc', S.RmaxSc, varargin{:});
             TminSc = CheckOption('TminSc', S.ThminSc, varargin{:});    
             TmaxSc = CheckOption('TmaxSc', S.ThmaxSc, varargin{:});                
+            YminSc = CheckOption('YminSc', S.YminSc, varargin{:});
+            YmaxSc = CheckOption('YmaxSc', S.YmaxSc, varargin{:});
+            XminSc = CheckOption('XminSc', S.XminSc, varargin{:});
+            XmaxSc = CheckOption('XmaxSc', S.XmaxSc, varargin{:});
             
             [x, y, X, Y, R, T] = CreateGrid(S.bMask, 1./S.ppl0);
-            S.bMaskSc = S.bMask & (R >= RminSc & R <= RmaxSc);
-            %S.bMaskSc = (R >= RminSc & R <= RmaxSc);
+            S.bMaskSc = S.bMask & (R >= RminSc & R <= RmaxSc & Y >= YminSc & Y <= YmaxSc & X >= XminSc & X <= XmaxSc);
+            if ~any(S.bMaskSc(:)),
+                warning('score region mask is empty!');
+            end            
             
             if ~isempty(TminSc) && ~isempty(TmaxSc),
                 S.bMaskSc = S.bMaskSc & ...
