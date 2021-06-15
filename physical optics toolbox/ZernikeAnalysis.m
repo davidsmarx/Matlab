@@ -20,10 +20,16 @@ function [ZZ, phaimg, phares, sOptions] = ZernikeAnalysis(field, varargin)
 
 % options
 bMask = CheckOption('bMask', [], varargin{:});
+bField_is_phase = CheckOption('isphase', false, varargin{:}); % if field = real-valued phase array
 Rnorm = CheckOption('Rnorm', [], varargin{:});
 Nz = CheckOption('Nz', 1:36, varargin{:}); % either 'Nz' or 'modes'
 Nz = CheckOption('modes', Nz, varargin{:});
 polyorder = CheckOption('polyorder', 'Noll', varargin{:});
+
+% if input is phase, must include bMask
+if bField_is_phase && isempty(bMask)
+    error('if input is phase, must include bMask');
+end
 
 %
 if isempty(bMask),
@@ -33,9 +39,15 @@ end
 % make a grid
 [xim, yim, Xim, Yim, Rim] = CreateGrid(bMask);
 
-% phase and adjust piston
-phaimg = angle(field);
-phaimg(bMask) = mod2pi(phaimg(bMask) - mean(phaimg(bMask)));
+% phase
+if bField_is_phase
+    phaimg = field;
+else
+    phaimg = angle(field);
+end
+
+% remove piston (no mod2pi() because it is unwrapped phase)
+phaimg(bMask) = phaimg(bMask) - mean(phaimg(bMask));
 
 % norm radius for zernikefit
 if isempty(Rnorm),
@@ -55,4 +67,12 @@ phares(bMask) = phaimg(bMask) - zernikeval([zeros(3,1); ZZ(4:end)], Xim(bMask), 
 % return values:
 % ZZ, phaimg, phares, sOptions
 sOptions = struct('bMask', bMask, 'Rnorm', Rnorm, 'Nz', Nz);
+
+end % main
+
+function phunwrap = unwrap_(pha, bMask)
+
+phunwrap = pha;
+
+end
 

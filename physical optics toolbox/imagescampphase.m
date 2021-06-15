@@ -10,7 +10,9 @@ function haxout = imagescampphase(A,x,y,varargin)
 %   xlabelstr = CheckOption('xlabel', [], varargin{:});
 %   ylabelstr = CheckOption('ylabel', [], varargin{:});
 %   xylim = CheckOption('xylim', [], varargin{:});
-%   phasescale = CheckOption('phasescale', 'pi rad', varargin{:}); % or 'rad', 'deg'
+%   phasescale = CheckOption('phasescale', 'pi rad', varargin{:}); % or
+%        'rad', 'deg', 'nm' (requires lam value in (m))
+%   lam = CheckOption('lam', [], varargin{:}) % required if 'phasescale' is 'nm'
 
 [ny, nx] = size(A);
 
@@ -35,7 +37,8 @@ ydir = CheckOption('ydir', 'reverse', varargin{:});
 xlabelstr = CheckOption('xlabel', [], varargin{:});
 ylabelstr = CheckOption('ylabel', [], varargin{:});
 xylim = CheckOption('xylim', [], varargin{:});
-phasescale = CheckOption('phasescale', 'pi rad', varargin{:}); % or 'rad', 'deg'
+phasescale = CheckOption('phasescale', 'pi rad', varargin{:}); % or 'rad', 'deg', 'nm'
+lam = CheckOption('lam', [], varargin{:}); % required if phasescale = 'nm'
 
 pos = get(gcf,'position');
 pos(3) = 1.75*pos(3);
@@ -69,6 +72,10 @@ switch lower(phasescale),
     case 'deg'
         phasenorm = pi/180;
         sCtitle = 'deg';
+    case 'nm'
+        if isempty(lam), error('must specify lam to use phasescale = ''nm'' '); end
+        phasenorm = 2*pi./(lam/1e-9);
+        sCtitle = 'nm';
     otherwise
         error(['unknown phasescale option: ' phasescale]);
 end
