@@ -177,8 +177,11 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                 end
             end % for ii iter
 
-            figure, plotampphase([S(2:N).iter], [sCmetrics.CC],...
+            hfig_ce = figure;
+            plotampphase([S(2:N).iter], [sCmetrics.CC],...
                 'xlabel','Iteration #','title',[trialname ', \DeltaE Testbed Model Correlation (CC)']);
+            newslide = Sppt.NewSlide(2);
+            Sppt.CopyFigSlide(newslide, hfig_ce);
             
         otherwise, % one call per iteration
             sCmetrics = struct;
@@ -227,12 +230,12 @@ function [probeh, hfig, hax] = PlotProbeh(S, varargin)
      figure(hfig);
      if ~isempty(hax), axes(hax); else, hax = gca; end
      yyaxis left
-     semilogy(itnum, probeh, '-o'), grid
+     semilogy(itnum, probeh, '-o'), grid on
      xlabel('Iteration #')
      ylabel('probeh')
      
      yyaxis right
-     semilogy(itnum_texp, texp, '-x'), grid
+     semilogy(itnum_texp, texp, '-x'), grid on
      ylabel('T_{exp} (s)')
      
 end % PlotProbeh
