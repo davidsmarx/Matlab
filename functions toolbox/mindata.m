@@ -1,10 +1,9 @@
 function varargout = mindata(x,varargin)
 % varargout = mindata(x,varargin)
 %
-% [ap, bp, cp, ...] = filterdata(iuse, a, b, c, ...)
-% where [~, iuse] = min(x);
-%
-% ap = filterdata(iuse, a{:})
+% [ap, bp, cp, ...] = mindata(x, a, b, c, ...)
+% where [~, imin] = min(x);
+% ap = a(imin), bp = b(imin, ...
 %
 
 [~, imin] = min(x);

@@ -82,7 +82,9 @@ classdef CRunData < handle & CConstants
         YmaxSc          = Inf;
         XminSc          = -Inf;
         XmaxSc          = Inf;
-        Nbscan          = 6;
+        bscan           = [];
+        Nbscan          = 0;
+        betamin
         Results_pn = '';
         Rundir_pn  = 'rundir/';         % always relative to Results_pn
         Reduced_pn = 'rundir/reduced/'; % always relative to Results_pn
@@ -109,7 +111,10 @@ classdef CRunData < handle & CConstants
         dE_ro
         dE_r1
         bPampzero
-        
+        dE_optimal
+        dE_bscan
+        bMask_badpix
+
         ProbeAmp % measured
         
         % control region and score region masks
@@ -465,6 +470,20 @@ classdef CRunData < handle & CConstants
             ppl0tmp = FitsGetKeywordVal(S.ReducedKeys,'ppl0');
             if ~isempty(ppl0tmp), S.ppl0 = ppl0tmp; end
             
+            % bscan list
+            if ~isempty(S.ReducedKeys)
+                ireg = 0;
+                while true
+                    btmp = FitsGetKeywordVal(S.ReducedKeys, ['BSCAN' num2str(ireg,'%03d')]);
+                    if isempty(btmp), break, end
+                    S.bscan(ireg+1) = btmp;
+                    ireg = ireg + 1;
+                end
+                S.Nbscan = length(S.bscan);
+            end
+            S.betamin = FitsGetKeywordVal(S.ReducedKeys, 'BMIN');
+            
+            
             % number of probes, and images per wavelength if probed
             % from lyotserver_IFS.py
             S.Nppair = (FitsGetKeywordVal(S.ImKeys,'NUMIM')+FitsGetKeywordVal(S.ImKeys,'PROBEF'));
@@ -628,10 +647,6 @@ classdef CRunData < handle & CConstants
             Contrast.inco_lam = zeros(1,S.NofW);
             Contrast.co_lam = zeros(1,S.NofW);
             for iwv = 1:S.Nlamcorr,
-                %bPampz = squeeze(S.bPampzero(iwv,:,:));
-                %bMaskUse = ~bPampz & bMaskSc;
-
-                % unprobed
                 
                 % total incoherent, use IncIntEst:
                 % pixels where inc int < 0, fixed to = eps
@@ -740,31 +755,34 @@ classdef CRunData < handle & CConstants
 
                 % should be mask.* sqrt(photcorr(ii,iwl)).*
                 S.E_t(iwl,:,:)	= (RedData(:,:,(1+S.Nppair)*S.Nlamcorr+iwl)+1i*RedData(:,:,(1+S.Nppair+1)*S.Nlamcorr+iwl));
-                S.E_m(iwl,:,:) 	= (RedData(:,:,(3+S.Nppair)*S.Nlamcorr+iwl)+1i*RedData(:,:,(3+S.Nppair+1)*S.Nlamcorr+iwl));
+                S.E_m(iwl,:,:) 	= (RedData(:,:,(3+S.Nppair)*S.Nlamcorr+iwl)+1i*RedData(:,:,(3+S.Nppair+1)*S.Nlamcorr+iwl)); % starting efield
 
-                %                 S.dE_ro(iwl,:,:) = (RedData(:,:,8*S.Nlamcorr+iwl)+1i*RedData(:,:,9*S.Nlamcorr+iwl));	% regularization optimal
-                %                 S.dE_r1(iwl,:,:) = (RedData(:,:,10*S.Nlamcorr+iwl)+1i*RedData(:,:,11*S.Nlamcorr+iwl));	% regularization 1
-                %                 % need to read mask first
+                % dedall optimal beta,
+                S.dE_optimal(iwl,:,:) = (RedData(:,:,(5+S.Nppair)*S.Nlamcorr+iwl)+1i*RedData(:,:,(5+S.Nppair+1)*S.Nlamcorr+iwl));
+                % dedall each bscan
+                for ireg = 1:S.Nbscan,
+                    nnn = 2*(ireg-1);
+                    S.dE_bscan(iwl,:,:) = (RedData(:,:,(7+nnn+S.Nppair)*S.Nlamcorr+iwl)+1i*RedData(:,:,(7+nnn+S.Nppair+1)*S.Nlamcorr+iwl));
+                end
 
-                % pampzero 1 + Nppair + 2*(1 + 1 + 1 + Nbscan + 1)-1
                 % pampzero is logical, imag and real are the same logical
                 % pampzero = true for pixels where: eest == 0 OR iinc < -()
                 %    OR eestcond < eestcondlim
-                %                 isl = S.Nppair + 2*(1 + 1 + 1 + S.Nbscan + 1+1)-1;
-                %                 S.bPampzero(iwl,:,:) = logical(RedData(:,:,isl * S.Nlamcorr+iwl)); % + 1i*RedData(:,:,(isl + 1)*S.Nlamcorr+iwl);
+                nnn = 2*S.Nbscan;
+                S.bPampzero(iwl,:,:) = logical(RedData(:,:,(7+nnn+S.Nppair)*S.Nlamcorr+iwl));
 
                 % recreate bPampzero, note: this might differ from the
                 % pampzero used in EFC
                 % don't use pixels where, abs(CohInt)==0, IncInt < 0
                 % pampzero = false for good pixels, mdMask is control
                 % region, bMask is logical(mdMask)
-                S.bPampzero{iwl} = ~S.bMask | abs(S.CohInt{iwl}) == 0 | S.IncInt{iwl} < 0;
-
+                S.bMask_badpix(iwl,:,:) = ~S.bMask | abs(S.CohInt{iwl}) == 0 | S.IncInt{iwl} < 0;
+                
                 %%%% NOTE: NormIntensity_ does not account for imwt, use
                 %%%% GetContrast() for more options
                 % mean coherent and incoherent contrast
-                S.NormIntensity_inco(iwl) = mean(S.IncInt{iwl}(~S.bPampzero{iwl}));
-                S.NormIntensity_co(iwl)   = mean(S.CohInt{iwl}(~S.bPampzero{iwl}));
+                S.NormIntensity_inco(iwl) = mean(S.IncInt{iwl}(~S.bPampzero(iwl,:,:)));
+                S.NormIntensity_co(iwl)   = mean(S.CohInt{iwl}(~S.bPampzero(iwl,:,:)));
 
                 % if require all probes is true, pixels where abs(CohInt) == 0,
                 % are pixels where probe amp < 0 for at least one probe,
@@ -1818,6 +1836,13 @@ classdef CRunData < handle & CConstants
             varargin{end+1} = 'bLog'; varargin{end+1} = true;
             varargin{end+1} = 'clim'; varargin{end+1} = [-9 -6.5];
             
+            % check that this instance is not empty
+            if isempty(S.Nlamcorr)
+                hfig = [];
+                haxlist = [];
+                return
+            end %
+            
             if isempty(hfig),
                 hfig = figure_mxn(3,S.Nlamcorr);
             else
@@ -2084,11 +2109,17 @@ classdef CRunData < handle & CConstants
         function [hfig, ha, sMetrics] = DisplayDEfields(S, Sref, varargin)
             % [hfig, ha] = DisplayDEfields(S, Sref, varargin)
             % 4 x NofW, dE_t real, imag, dE_m real, imag
-            
+            % 
+            % CheckOption('xylim', S.XYlimDefault, varargin{:});
+            % CheckOption('hfig', [], varargin{:});
+            % CheckOption('clim', [], varargin{:});
+            % CheckOption('nodisplay', false, varargin{:});
+
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
-            
+            bNodisplay = CheckOption('nodisplay', false, varargin{:});
+
             if isempty(S.E_t),
                 S.ReadReducedCube;
             end
@@ -2100,16 +2131,60 @@ classdef CRunData < handle & CConstants
             [nw, nr, nc] = size(S.E_t);
             if nw ~= S.NofW, error(['number of wavelengths inconsistent']); end
             
+            % check S and Sref match
+            % check that S.E_t and Sref.E_t are same size
+            % also catches if one is no data
+            if ~isequal(size(S.E_t), size(Sref.E_t)),
+                disp(['iter ' num2str(S.iter) ' and iter ' num2str(Sref.iter) ' mismatch, skipping DisplayCEfields']);
+                [hfig, ha] = deal([]);
+
+                sMetrics = struct(...
+                    'type', 'dEfields' ...
+                    ,'rmsdE_t', nan ...
+                    ,'rmsdE_m', nan ...
+                );
+
+                return
+            end
+
             %sRI = ['run #' num2str(S.runnum) ', iter #' num2str(S.iter) '--' num2str(Sref.iter)];
             sRI = ['\DeltaE Iter #' num2str(S.iter) ' - ' num2str(Sref.iter)];
             %sRI = '';
+                        
+            %
+            dE_t = S.E_t - Sref.E_t;
+            dE_m = S.E_m - Sref.E_m;
+            
+            % calculate dE metrics
+            % pixels to use for metrics
+            bMaskuse = S.bMaskSc & Sref.bMaskSc;
+            [rmsdE_t, rmsdE_m] = deal(zeros(S.NofW,1));
+            for iwv = 1:S.NofW,
+                % use only score region for rms dE
+                bMaskiwl = bMaskuse & (S.IncInt{iwv} >= 0) & (Sref.IncInt{iwv} >= 0);
+                rmsdE_t(iwv) = sqrt(mean(abs(dE_t(iwv,bMaskiwl)).^2));
+                rmsdE_m(iwv) = sqrt(mean(abs(dE_m(iwv,bMaskiwl)).^2));
+            end
+            sMetrics = struct(...
+                'type', 'dEfields' ...
+                ,'rmsdE_t', rmsdE_t ...
+                ,'rmsdE_m', rmsdE_m ...
+                );
+            
+            % if no display, return metrics and skip graphs
+            if bNodisplay,
+                hfig = [];
+                ha = [];
+                return
+            end
+            
             
             % top row = real(DE_t)
             % 2nd row = imag(DE_t)
             % 3rd row = real(DE_m)
             % 4ty row = imag(DE_m)
 
-            
+            % prepare figure
             Nplr = 4;
             if isa(hfig,'matlab.ui.Figure'),
                 figure(hfig)
@@ -2118,16 +2193,6 @@ classdef CRunData < handle & CConstants
             end
             [x, y] = CreateGrid([nc nr], 1./S.ppl0);
             ha = zeros(Nplr,S.NofW);
-            
-            %
-            dE_t = S.E_t - Sref.E_t;
-            dE_m = S.E_m - Sref.E_m;
-            
-            % pixels to use for metrics
-            bMaskuse = S.bMaskSc & Sref.bMaskSc;
-            
-            climE = zeros(2*S.NofW,2);
-            [rmsdE_t, rmsdE_m] = deal(zeros(S.NofW,1));
             for iwv = 1:S.NofW,
                 % subplot #
                 iptr = iwv+0*S.NofW;
@@ -2152,10 +2217,6 @@ classdef CRunData < handle & CConstants
                 imageschcit(x,y,squeeze(imag(dE_m(iwv,:,:)))); %colorbar
                 title(['Model: imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 
-                % use only score region for rms dE
-                bMaskiwl = bMaskuse & (S.IncInt{iwv} >= 0) & (Sref.IncInt{iwv} >= 0);
-                rmsdE_t(iwv) = sqrt(mean(abs(dE_t(iwv,bMaskiwl)).^2));
-                rmsdE_m(iwv) = sqrt(mean(abs(dE_m(iwv,bMaskiwl)).^2));
             end            
 
             % xlim, ylim
@@ -2195,24 +2256,19 @@ classdef CRunData < handle & CConstants
             % so it can be found and deleted later
             set(get(han,'parent'),'HandleVisibility','on')
 
-            sMetrics = struct(...
-                'type', 'dEfields' ...
-                ,'rmsdE_t', rmsdE_t ...
-                ,'rmsdE_m', rmsdE_m ...
-                );
-
         end % DisplayDEfields
 
         function [hfig, ha, sCmetrics] = DisplayCEfields(S, Sref, varargin)
             % [hfig, ha] = DisplayCEfields(S, Sref, varargin)
             % correlation metrics DE_t .* conj(DE_m)
             %
-            %             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
-            %             hfig = CheckOption('hfig', [], varargin{:});
-            %             clim = CheckOption('clim', [], varargin{:});
-            %             PSF_thresh_nsig = CheckOption('PSF_thresh_nsig', 4, varargin{:});
-            %             bDebugAutoMetric = CheckOption('debug', false, varargin{:});
-            %             bMaskDisplay = CheckOption('bMaskDisplay', [], varargin{:}); % default is mask from CohInt
+            %             CheckOption('xylim', S.XYlimDefault, varargin{:});
+            %             CheckOption('hfig', [], varargin{:});
+            %             CheckOption('clim', [], varargin{:});
+            %             CheckOption('PSF_thresh_nsig', 4, varargin{:});
+            %             CheckOption('debug', false, varargin{:});
+            %             CheckOption('bMaskDisplay', [], varargin{:}); % default is mask from CohInt
+            %             CheckOption('nodisplay', false, varargin{:}); % calc metrics and return, don't display graph
 
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
@@ -2220,6 +2276,7 @@ classdef CRunData < handle & CConstants
             PSF_thresh_nsig = CheckOption('PSF_thresh_nsig', 4, varargin{:});
             bDebugAutoMetric = CheckOption('debug', false, varargin{:});
             bMaskDisplay = CheckOption('bMaskDisplay', [], varargin{:});
+            bNodisplay = CheckOption('nodisplay', false, varargin{:});
             
             if isempty(S.E_t),
                 S.ReadReducedCube;
@@ -2237,19 +2294,32 @@ classdef CRunData < handle & CConstants
             [nw, nr, nc] = size(S.E_t);
             if nw ~= S.NofW, error(['number of wavelengths inconsistent']); end
 
+            % check that S.E_t and Sref.E_t are same size
+            % also catches if one is no data
+            if ~isequal(size(S.E_t), size(Sref.E_t))
+                disp(['iter ' num2str(S.iter) ' and iter ' num2str(Sref.iter) ' mismatch, skipping DisplayCEfields']);
+                [hfig, ha] = deal([]);
+
+                sCmetrics = struct(...
+                    'type', 'CEfields' ...
+                    ,'CP', nan ...
+                    ,'CC', nan ...
+                    ,'angle_CC', nan ...
+                    ,'mag_dEm_dEt', nan ...
+                    ,'mse', nan ...
+                    ,'CP_definition', ' <dEt.dEm>/<dEm.dEm> ' ...
+                    ,'CC_definition', ' <dEt.dEm>/sqrt(<dEt.dEt><dEm.dEm>) ' ...
+                    ,'mag_dEm_dEt_definition', ' sqrt(<dEm.dEm>/<dEt.dEt>) ' ...
+                    ,'mse_definition', ' mean(abs(dEt - dEm).^2) ' ...
+                );
+
+                return
+            end
+            
             % title string
             sRI = ['iter #' num2str(S.iter) '--' num2str(Sref.iter)];
             
-
-            Nplr = 2;
-            if isa(hfig,'matlab.ui.Figure'),
-                figure(hfig)
-            else,
-                hfig = figure_mxn(Nplr,S.NofW);
-            end
-            [x, y] = CreateGrid([nc nr], 1./S.ppl0);
-            ha = zeros(Nplr,S.NofW);
-            %
+            % calculate correlation metrics
             dE_t = S.E_t - Sref.E_t;
             dE_m = S.E_m - Sref.E_m;
             CE   = conj(dE_m) .* dE_t ./sqrt( (dE_m(:)'*dE_m(:)).*(dE_t(:)'*dE_t(:)) );
@@ -2280,6 +2350,22 @@ classdef CRunData < handle & CConstants
                 ,'mse_definition', ' mean(abs(dEt - dEm).^2) ' ...
                 );
             
+            if bNodisplay,
+                hfig = [];
+                ha = [];
+                return
+            end
+            
+            % prepare display figure
+            Nplr = 2;
+            if isa(hfig,'matlab.ui.Figure'),
+                figure(hfig)
+            else
+                hfig = figure_mxn(Nplr,S.NofW);
+            end
+            [x, y] = CreateGrid([nc nr], 1./S.ppl0);
+            ha = zeros(Nplr,S.NofW);
+
             for iwv = 1:S.NofW,
                 
                 % correlation amplitude for this iwv
@@ -2470,11 +2556,24 @@ classdef CRunData < handle & CConstants
             % [hfig, hax] = S.DisplayDMv([], varargin)
             % [hfig, hax] = S.DisplayDMv(Sref, varargin)
             % [hfig, hax] = S.DisplayDMv({refDM1v_fits, refDM2v_fits}, varargin)
-
+            %
+            % CheckOption('climdelta', [], varargin{:});
+            % CheckOption('hfig', [], varargin{:});
+            
             if nargin < 2, dmvref = []; end
             
             if isempty(S.DMvCube)
                 S.ReadDMvCube;
+            end
+            % check if empty instance
+            if isempty(S.DMvCube),
+                hfig = [];
+                hax = [];
+                sMetrics = struct(...
+                    'type', 'DMv' ...
+                    );
+
+                return
             end
             
             climDelta = CheckOption('climdelta', [], varargin{:});

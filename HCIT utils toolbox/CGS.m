@@ -226,6 +226,8 @@ classdef CGS < handle
                             ['/proj/piaacmc/scicam/*/gspiaa_s_' num2str(gsnum,'%04d') '/piaa*.fits']...
                             ));
                         
+                        wavelength_kwd = 'lam';
+
                     otherwise
                         % do nothing, let bn = bn
                         bn = [bn num2str(gsnum,'%d')];
@@ -480,6 +482,10 @@ classdef CGS < handle
             %    ('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             %    ('dphclim', [], varargin{:});
             %    ('climph', [], varargin{:});
+            %    ('dph_units', 1, varargin{:}); % default = radians, 'nm', 'waves', or double
+            %    ('dph_units_str', 'Phase (rad)', varargin{:});
+            
+            U = CConstants;
             
             % parse options
             hfig = CheckOption('hfig', [], varargin{:});
@@ -491,6 +497,8 @@ classdef CGS < handle
             xylim = CheckOption('xylim', [], varargin{:});
             climdph = CheckOption('dphclim', [], varargin{:});
             climph = CheckOption('climph', [], varargin{:});
+            dph_units = CheckOption('dph_units', 1, varargin{:}); % default = radians, 'nm', 'waves', or double
+            dph_units_str = CheckOption('dph_units_str', 'Phase (rad)', varargin{:});
             
             switch phplot
                 case 'angleE'
@@ -605,10 +613,25 @@ classdef CGS < handle
             if usebMask,
                 dpha = pMask .* dpha;
             end
-            him = imageschcit(S.x, S.y, dpha);
-            colorbartitle('Phase (rad)')
+            if ischar(dph_units),
+                switch dph_units
+                    case 'nm'
+                        dph_units = U.NM./(S.wavelength./(2*pi));
+                        dph_units_str = 'WFE (nm)';
+                        
+                    case {'wave', 'waves'},
+                        dph_units = 2*pi;
+                        dph_units_str = 'WFE (waves)';
+                        
+                    otherwise
+                        error(['unknown phase units: ' dph_units]);
+                end
+            end % ischar(dph_units)
+            
+            him = imageschcit(S.x, S.y, dpha./dph_units);
+            colorbartitle(dph_units_str)
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
-            if isempty(climdph), set(gca,'clim',AutoClim(dpha,'symmetric',true,'pctscale',100))
+            if isempty(climdph), set(gca,'clim',AutoClim(dpha./dph_units,'symmetric',true,'pctscale',100))
             else set(gca,'clim',climdph)
             end
             title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(dpha(pMask)),'%.3f') 'rad'])
