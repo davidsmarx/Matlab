@@ -94,7 +94,7 @@ classdef CRunData < handle & CConstants
         Reduced_fn = '';
         
         runnum
-        iter
+        iter      = 0;
         
         % results:
         IncInt
