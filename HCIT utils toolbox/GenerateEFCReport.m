@@ -74,17 +74,17 @@ end
 % plot graphs of metrics v itnum on the first slide
 slide = Sppt.NewSlide(1);
 hfig = figure_mxn(2,2);
-hax(1,1) = subplot(2,2,1); PlotNormIntensity(S, 'hfig', hfig, 'hax', hax(1,1));
+hax(1,1) = subplot(2,2,1); [~, ~, ~, itnum_min] = PlotNormIntensity(S, 'hfig', hfig, 'hax', hax(1,1));
 hax(1,2) = subplot(2,2,2); PlotBeta(S, 'hfig', hfig, 'hax', hax(1,2));
 hax(2,1) = subplot(2,2,3); probeh = PlotProbeh(S, 'hfig', hfig, 'hax', hax(2,1));
 hax(2,2) = subplot(2,2,4); rmsdDMv = PlotRMSdDMv(S, 'hfig', hfig, 'hax', hax(2,2));
 hPic = Sppt.CopyFigSlide(slide, hfig);
 
 % call the plotting methods
-if length(varargin) == 0, listHfig = []; end
+listHfig = {};
 for iplot = 1:length(varargin),
     if iscell(varargin{iplot}),
-        listHfig{iplot} = CreatePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end});
+        listHfig{end+1} = CreatePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end});        
     end
 end
 
@@ -95,6 +95,11 @@ if nargout >= 1,
         ,'Sppt', Sppt ...
         ,'probeh', probeh ...
         ,'rmsdDMv', rmsdDMv ...
+        ,'itnum_min', itnum_min ...
+        ,'fPlotNormIntensity', @PlotNormIntensity ...
+        ,'fPlotBeta', @PlotBeta ...
+        ,'fPlotProbeh', @PlotProbeh ...
+        ,'fPlotRMSdDMv', @PlotRMSdDMv ...
         );
 end
 
@@ -323,7 +328,7 @@ function [betaused, betamin, hfig, hax] = PlotBeta(listS, varargin)
     
 end % PlotBeta
 
-function [hfig, hax, han] = PlotNormIntensity(listS, varargin)
+function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
 
     hfig = CheckOption('hfig', figure, varargin{:});
     hax = CheckOption('hax', [], varargin{:});

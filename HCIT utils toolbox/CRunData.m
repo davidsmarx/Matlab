@@ -727,6 +727,10 @@ classdef CRunData < handle & CConstants
             [nr, nc, nslices] = size(RedData);
             % each images slice is nr x nc
             
+            % initialize some data cubes
+            S.bPampzero    = false(S.Nlamcorr, nr, nc);
+            S.bMask_badpix = false(S.Nlamcorr, nr, nc);
+            
             % Primary: reducedcube
             %          for each wave: incoherent +              (0)
             %                         nppair probe amps +      (1,2,3,4)
@@ -750,10 +754,10 @@ classdef CRunData < handle & CConstants
                     S.ProbeAmp{iwl,ipr} = RedData(:,:,ipr*S.Nlamcorr+iwl);
                 end
 
-                % coherent field
+                % coherent intensity
                 S.CohInt{iwl} = RedData(:,:,(1+S.Nppair)*S.Nlamcorr+iwl).^2 + RedData(:,:,(1+S.Nppair+1)*S.Nlamcorr+iwl).^2;
 
-                % should be mask.* sqrt(photcorr(ii,iwl)).*
+                % coherent complex estimated field and model field
                 S.E_t(iwl,:,:)	= (RedData(:,:,(1+S.Nppair)*S.Nlamcorr+iwl)+1i*RedData(:,:,(1+S.Nppair+1)*S.Nlamcorr+iwl));
                 S.E_m(iwl,:,:) 	= (RedData(:,:,(3+S.Nppair)*S.Nlamcorr+iwl)+1i*RedData(:,:,(3+S.Nppair+1)*S.Nlamcorr+iwl)); % starting efield
 
@@ -781,8 +785,8 @@ classdef CRunData < handle & CConstants
                 %%%% NOTE: NormIntensity_ does not account for imwt, use
                 %%%% GetContrast() for more options
                 % mean coherent and incoherent contrast
-                S.NormIntensity_inco(iwl) = mean(S.IncInt{iwl}(~S.bPampzero(iwl,:,:)));
-                S.NormIntensity_co(iwl)   = mean(S.CohInt{iwl}(~S.bPampzero(iwl,:,:)));
+                S.NormIntensity_inco(iwl) = mean(S.IncInt{iwl}(~S.bMask_badpix(iwl,:,:)));
+                S.NormIntensity_co(iwl)   = mean(S.CohInt{iwl}(~S.bMask_badpix(iwl,:,:)));
 
                 % if require all probes is true, pixels where abs(CohInt) == 0,
                 % are pixels where probe amp < 0 for at least one probe,
@@ -1817,7 +1821,7 @@ classdef CRunData < handle & CConstants
             
         end % DisplayCohInt
         
-        function [hfig, haxlist] = DisplayAllInt(S, varargin)
+        function [hfig, haxlist, han] = DisplayAllInt(S, varargin)
             % display large table of unprobed, coh int, inc int images
             % uses:
             % S.DisplayImCubeUnProb
@@ -1844,7 +1848,11 @@ classdef CRunData < handle & CConstants
             end %
             
             if isempty(hfig),
-                hfig = figure_mxn(3,S.Nlamcorr);
+                %nrow_ax = 3;
+                %ncol_ax = S.Nlamcorr;
+                nrow_ax = S.Nlamcorr;
+                ncol_ax = 3;
+                hfig = figure_mxn(nrow_ax, ncol_ax);
             else
                 % need to remove hfig from varargin
                 iv = find(strcmp(varargin, 'hfig'));
@@ -1856,7 +1864,7 @@ classdef CRunData < handle & CConstants
             % unprobed images
             figure(hfig);
             for ii = 1:S.Nlamcorr,
-                haxlist(1,ii) = subplot(3,S.Nlamcorr,ii);
+                haxlist(1,ii) = subplot(nrow_ax,ncol_ax,ii);
             end
             S.DisplayImCubeUnProb('hax',haxlist(1,:),varargin{:});
             % S.ImCubeUnProb{iwvpl}
@@ -1864,7 +1872,7 @@ classdef CRunData < handle & CConstants
             % Coh Int
             figure(hfig);            
             for ii = 1:S.Nlamcorr,
-                haxlist(2,ii) = subplot(3,S.Nlamcorr,ii+S.Nlamcorr);
+                haxlist(2,ii) = subplot(nrow_ax, ncol_ax,ii+S.Nlamcorr);
             end
             S.DisplayCohInt('hax',haxlist(2,:), varargin{:});
             % S.CohInt{iwv}
@@ -1872,7 +1880,7 @@ classdef CRunData < handle & CConstants
             % Inc Int
             figure(hfig);            
             for ii = 1:S.Nlamcorr,
-                haxlist(3,ii) = subplot(3,S.Nlamcorr,ii+2*S.Nlamcorr);
+                haxlist(3,ii) = subplot(nrow_ax, ncol_ax,ii+2*S.Nlamcorr);
             end
             S.DisplayIncInt('hax',haxlist(3,:), varargin{:});
             % S.IncIntEst{iwv}
@@ -1885,7 +1893,7 @@ classdef CRunData < handle & CConstants
             % add text 'UnProbed', 'Modulated' and 'Unmodulated' to each row
             % Modulated:
             ylpos = get(get(haxlist(1,1),'YLabel'),'Position');
-            ht = text(haxlist(1,1), ylpos(1) - 2, ylpos(2), 'UnProbed' ...
+            han(1) = text(haxlist(1,1), ylpos(1) - 2, ylpos(2), 'UnProbed' ...
                 , 'Rotation',90 ...
                 ,'HorizontalAlignment','center' ...
                 ,'VerticalAlignment','top' ...
@@ -1896,7 +1904,7 @@ classdef CRunData < handle & CConstants
                 ,'FontWeight','bold' ...
                 );
             ylpos = get(get(haxlist(2,1),'YLabel'),'Position');
-            ht = text(haxlist(2,1), ylpos(1) - 2, ylpos(2), 'Modulated' ...
+            han(2) = text(haxlist(2,1), ylpos(1) - 2, ylpos(2), 'Modulated' ...
                 , 'Rotation',90 ...
                 ,'HorizontalAlignment','center' ...
                 ,'VerticalAlignment','top' ...
@@ -1907,7 +1915,7 @@ classdef CRunData < handle & CConstants
                 ,'FontWeight','bold' ...
                 );
             ylpos = get(get(haxlist(3,1),'YLabel'),'Position');
-            ht = text(haxlist(3,1), ylpos(1) - 2, ylpos(2), 'UnModulated' ...
+            han(3) = text(haxlist(3,1), ylpos(1) - 2, ylpos(2), 'UnModulated' ...
                 , 'Rotation',90 ...
                 ,'HorizontalAlignment','center' ...
                 ,'VerticalAlignment','top' ...
@@ -2565,14 +2573,17 @@ classdef CRunData < handle & CConstants
             if isempty(S.DMvCube)
                 S.ReadDMvCube;
             end
+            
+            % initialize return values
+            [hfig, hax] = deal([]);
+            sMetrics = struct(...
+                'type', 'DMv' ...
+                , 'rmsdDMv', [] ...
+                , 'dDMv', [] ...
+                );
+
             % check if empty instance
             if isempty(S.DMvCube),
-                hfig = [];
-                hax = [];
-                sMetrics = struct(...
-                    'type', 'DMv' ...
-                    );
-
                 return
             end
             
@@ -2641,6 +2652,10 @@ classdef CRunData < handle & CConstants
                 
                     dDMv = DMv{idm} - refDMv{idm};
                     rmsdDMv = rms(dDMv(abs(dDMv)>0));
+                    
+                    sMetrics.dDMv = dDMv;
+                    sMetrics.rmsdDMv = rmsdDMv;
+                    
 
                     imageschcit(0,0,dDMv)
                     colorbartitle('Vmu')
@@ -2668,11 +2683,7 @@ classdef CRunData < handle & CConstants
                     set(hax(S.Ndm+1:end),'clim',aclim);
                 end                
             end % refDMv
-            
-            sMetrics = struct(...
-                'type', 'DMv' ...
-                );
-            
+                        
             %             fprintf('rms dDMv1 = %.3f Vmu\n',rmsdDMv1);
             %             fprintf('rms dDMv2 = %.3f Vmu\n',rmsdDMv2);
             %

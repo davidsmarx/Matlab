@@ -1101,12 +1101,14 @@ classdef CGS < handle
             % /home/dmarx/PIAA/hcim_testbed_run100/phaseretrieval_analysis/ZernZernRemapFit.m
             %
             % options:
-            % bDisplay = CheckOption('display', false, varargin{:});
-            % S.RemapRadialRpix = CheckOption('RemapRadialRpix', S.RemapRadialRpix, varargin{:});
-            % bDebug = CheckOption('debug', false, varargin{:});
-            % nzout = CheckOption('nzout', 1:4, varargin{:});
-            % nzin = CheckOption('nzin', 2:4, varargin{:});
-            % poly_order = CheckOption('polyorder', 'Noll', varargin{:});
+            % CheckOption('display', false, varargin{:});
+            % CheckOption('RemapRadialRpix', S.RemapRadialRpix, varargin{:});
+            % CheckOption('debug', false, varargin{:});
+            % CheckOption('nzout', 1:4, varargin{:});
+            % CheckOption('nzin', 2:4, varargin{:});
+            % CheckOption('polyorder', 'Noll', varargin{:});
+            % CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
+            % CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             
             U = CConstants;
             
@@ -1117,6 +1119,7 @@ classdef CGS < handle
             nzout = CheckOption('nzout', 1:4, varargin{:});
             nzin = CheckOption('nzin', 2:4, varargin{:});
             poly_order = CheckOption('polyorder', 'Noll', varargin{:});
+            xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             
             if isempty(S.Eremap),
@@ -1209,25 +1212,28 @@ classdef CGS < handle
                 figure_mxn(2,3)
 
                 subplot(2,3,1), imageschcit(S.x, S.y, abs(S.E))
+                set(gca, 'xlim', xylim*[-1 1], 'ylim', xylim*[-1 1]);
                 title([titlestr '; Amplitude'])
                 
                 %subplot(2,3,2), imageschcit(S.phw_ptt.*S.bMaskRemap)
                 subplot(2,3,2), imageschcit(S.x, S.y, mod2pi(S.phunwrap).*S.bMaskRemap)
+                set(gca, 'xlim', xylim*[-1 1], 'ylim', xylim*[-1 1]);
                 colorbartitle('Phase (rad)')
                 set(gca,'clim',pi*[-1 1])
                 title([titlestr '; Phase rms\phi = ' num2str(S.rmsPha,'%.3f')])               
                 
                 subplot(2,3,3), imageschcit(S.x, S.y, phresidual), 
+                set(gca, 'xlim', xylim*[-1 1], 'ylim', xylim*[-1 1]);
                 colorbartitle('Phase (rad)')
                 rmse = rms(phresidual(S.bMaskRemap));
                 title(['Residual Fit, rms error = ' num2str(rmse,'%.2f') 'rad'])
                 
-                % bar graph zernike order, don't plot piston
                 %figure,
                 subplot(2,3,4), imageschcit(S.x, S.y, phfit), 
+                set(gca, 'xlim', xylim*[-1 1], 'ylim', xylim*[-1 1]);
                 colorbartitle('Phase (rad)'), title('Fit Phase')
                 
-                
+                % bar graph zernike order, don't plot piston                
                 subplot(2,3,5:6)
                 hh = bar(ZZ(2:end)); grid
                 set(gca,'XTick', 1:length([nzout(2:end) nzin]))
