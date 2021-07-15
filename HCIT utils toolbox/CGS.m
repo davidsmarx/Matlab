@@ -96,7 +96,7 @@ classdef CGS < handle
             end
             
             U = CConstants;
-            wavelength_kwd = '';
+            wavelength_kwd = 'lam'; % default value
             
             if ~exist('bn','var') || isempty(bn),
                 %bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
@@ -616,9 +616,13 @@ classdef CGS < handle
             if ischar(dph_units),
                 switch dph_units
                     case 'nm'
-                        dph_units = U.NM./(S.wavelength./(2*pi));
-                        dph_units_str = 'WFE (nm)';
-                        
+                        if ~isempty(S.wavelength),
+                            dph_units = U.NM./(S.wavelength./(2*pi));
+                            dph_units_str = 'WFE (nm)';
+                        else
+                            warning('wavelength empty, dph units = radians');
+                            dph_units = 1;
+                        end
                     case {'wave', 'waves'},
                         dph_units = 2*pi;
                         dph_units_str = 'WFE (waves)';
@@ -634,7 +638,7 @@ classdef CGS < handle
             if isempty(climdph), set(gca,'clim',AutoClim(dpha./dph_units,'symmetric',true,'pctscale',100))
             else set(gca,'clim',climdph)
             end
-            title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(dpha(pMask)),'%.3f') 'rad'])
+            title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(dpha(pMask))/dph_units,'%.3f') dph_units_str])
             
             % append more to dphaResult
             dphaResult.dpharms = rms(dpha(pMask));
@@ -891,7 +895,7 @@ classdef CGS < handle
             
         end % DisplayAmpPlane
         
-        function [hax, Imgs] = DisplayAllPlanes(S, varargin)
+        function [hax, Imgs, ha] = DisplayAllPlanes(S, varargin)
             % hax = DisplayAllPlanes(S, options)
             % options:
             %   'image': 'meas' (default) or 'calc'
