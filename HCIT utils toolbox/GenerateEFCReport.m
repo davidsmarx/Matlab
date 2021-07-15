@@ -50,15 +50,20 @@ if isempty(Sppt) && ispc && ~isempty(varargin),
 end
 
 % get the CRunData objects
+
 N = length(listItnum);
 if isnumeric(listItnum),
-    for ii = 1:N
+    %if isscalar(listItnum)
+    %ii = 1;
+    %while true,
+    for ii = 1:N;
         fprintf('reading itnum %d\n', listItnum(ii));
         %try
             S(ii) = CRunData(runnum, listItnum(ii), sOptin);
         %catch
         %    warning(['iter# ' num2str(listItnum(ii)) ' not found']);
         %end
+        
     end
 elseif isa(listItnum, 'CRunData')
     S = listItnum;
@@ -69,30 +74,32 @@ end
 % plot graphs of metrics v itnum on the first slide
 slide = Sppt.NewSlide(1);
 hfig = figure_mxn(2,2);
-hax(1,1) = subplot(2,2,1); PlotNormIntensity(S, 'hfig', hfig, 'hax', hax(1,1));
+hax(1,1) = subplot(2,2,1); [~, ~, ~, itnum_min] = PlotNormIntensity(S, 'hfig', hfig, 'hax', hax(1,1));
 hax(1,2) = subplot(2,2,2); PlotBeta(S, 'hfig', hfig, 'hax', hax(1,2));
 hax(2,1) = subplot(2,2,3); probeh = PlotProbeh(S, 'hfig', hfig, 'hax', hax(2,1));
 hax(2,2) = subplot(2,2,4); rmsdDMv = PlotRMSdDMv(S, 'hfig', hfig, 'hax', hax(2,2));
 hPic = Sppt.CopyFigSlide(slide, hfig);
 
-[hfig, haxtexp, texp] = PlotTexp(S);
-
 % call the plotting methods
-if length(varargin) == 0, listHfig = []; end
-listHfig = 0;
+listHfig = {};
 for iplot = 1:length(varargin),
     if iscell(varargin{iplot}),
-        listHfig(iplot) = CreatePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end});
+        listHfig{end+1} = CreatePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end});        
     end
 end
 
 if nargout >= 1,
     sOut = struct(...
         'listS', S ...
-        ,'listHfig', listHfig ...
+        ,'listHfig', {listHfig} ... % how to put a cell array in a struct field
         ,'Sppt', Sppt ...
         ,'probeh', probeh ...
         ,'rmsdDMv', rmsdDMv ...
+        ,'itnum_min', itnum_min ...
+        ,'fPlotNormIntensity', @PlotNormIntensity ...
+        ,'fPlotBeta', @PlotBeta ...
+        ,'fPlotProbeh', @PlotProbeh ...
+        ,'fPlotRMSdDMv', @PlotRMSdDMv ...
         );
 end
 
@@ -131,19 +138,22 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                 [hfig, hax, sMtmp] = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
                 sCmetrics(ii) = sMtmp;
                 
-                figscale = CalcFigscale(hfig, figheight);
-                set(hfig, 'Position', figscale*get(hfig,'position'));
-                if ispc,
-                    htmp = Sppt.CopyFigNewSlide(hfig);
-                    %set(htmp,'Height',figheight);
-                else
-                    saveas(hfig, [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
-                end
+                if ~isempty(hfig)
+                    figscale = CalcFigscale(hfig, figheight);
+                    set(hfig, 'Position', figscale*get(hfig,'position'));
+                    if ispc,
+                        htmp = Sppt.CopyFigNewSlide(hfig);
+                        %set(htmp,'Height',figheight);
+                    else
+                        saveas(hfig, [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
+                    end
+                end % if hfig
+                
             end % for ii iter
         
             if strcmp(sMtmp(1).type, 'dEfields'),
                 nw = S(1).NofW; % for convenience
-                figure, 
+                hfig_de = figure;
                 hh = semilogy([S(2:N).iter], [sCmetrics.rmsdE_t].^2, '-', ...
                     [S(2:N).iter], mean([sCmetrics.rmsdE_t].^2, 1), '-', ...
                     [S(2:N).iter], [sCmetrics.rmsdE_m].^2, '--', ...
@@ -161,31 +171,50 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                 xlabel('Iteration #')
                 ylabel('mean |\DeltaE|^2')
                 title(trialname, 'fontsize', 14)
+                
+                newslide = Sppt.NewSlide(2);
+                Sppt.CopyFigSlide(newslide, hfig_de);
+
             end
             
         case 'DisplayCEfields'
 
             for ii = 1:N-1,
-                [hfig, hax, sCtmp] = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
-                sCmetrics(ii) = sCtmp;
                 
-                figscale = CalcFigscale(hfig, figheight);
-                set(hfig, 'Position', figscale*get(hfig,'position'));
-                if ispc,
-                    htmp = Sppt.CopyFigNewSlide(hfig);
-                    %set(htmp,'Height',figheight);
-                else
-                    saveas(hfig, [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
+                [hfig, hax, sCtmp] = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
+                if ~isempty(sCtmp),
+                    sCmetrics(ii) = sCtmp;
                 end
+                
+                if ~isempty(hfig),
+                    figscale = CalcFigscale(hfig, figheight);
+                    set(hfig, 'Position', figscale*get(hfig,'position'));
+                    if ispc,
+                        htmp = Sppt.CopyFigNewSlide(hfig);
+                        %set(htmp,'Height',figheight);
+                    else
+                        saveas(hfig, [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
+                    end % if ispc
+                    
+                end % if hfig
             end % for ii iter
 
-            figure, plotampphase([S(2:N).iter], [sCmetrics.CC],...
+            hfig_ce = figure;
+            plotampphase([S(2:N).iter], [sCmetrics.CC],...
                 'xlabel','Iteration #','title',[trialname ', \DeltaE Testbed Model Correlation (CC)']);
+            newslide = Sppt.NewSlide(2);
+            Sppt.CopyFigSlide(newslide, hfig_ce);
             
         otherwise, % one call per iteration
             sCmetrics = struct;
             for ii = 1:N,
                 hfig = S(ii).(sDisplayFun)(varargin{:},'hfig',hfig);
+                
+                % check for valid figure
+                if isempty(hfig),
+                    continue
+                end
+                    
                 figscale = CalcFigscale(hfig, figheight);
                 set(hfig, 'Position', figscale*get(hfig,'position'));
                 if ispc,
@@ -213,6 +242,9 @@ function [probeh, hfig, hax] = PlotProbeh(S, varargin)
      hfig = CheckOption('hfig', figure, varargin{:});
      hax = CheckOption('hax', [], varargin{:});
 
+     % get texp
+     [hfig, haxtexp, itnum_texp, texp] = PlotTexp(S);
+
      [itnum, probeh] = deal(zeros(size(S)));
      for ii = 1:length(S)
          itnum(ii)  = S(ii).iter;
@@ -225,13 +257,18 @@ function [probeh, hfig, hax] = PlotProbeh(S, varargin)
 
      figure(hfig);
      if ~isempty(hax), axes(hax); else, hax = gca; end
-     semilogy(itnum, probeh, '-o'), grid
+     yyaxis left
+     semilogy(itnum, probeh, '-o'), grid on
      xlabel('Iteration #')
      ylabel('probeh')
      
+     yyaxis right
+     semilogy(itnum_texp, texp, '-x'), grid on
+     ylabel('T_{exp} (s)')
+     
 end % PlotProbeh
 
-function [hfig, hax, texp] = PlotTexp(S)
+function [hfig, hax, itnum, texp] = PlotTexp(S)
 
     [itnum, texp] = deal(zeros(size(S)));
     for ii = 1:length(S)
@@ -291,7 +328,7 @@ function [betaused, betamin, hfig, hax] = PlotBeta(listS, varargin)
     
 end % PlotBeta
 
-function [hfig, hax] = PlotNormIntensity(listS, varargin)
+function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
 
     hfig = CheckOption('hfig', figure, varargin{:});
     hax = CheckOption('hax', [], varargin{:});
@@ -335,6 +372,9 @@ function [hfig, hax] = PlotNormIntensity(listS, varargin)
     ylabel('Normalized Intensity')
     set(hl,'linewidth', 2)
     legend('Total', 'Unmodulated', 'Modulated')
+    [itnum_min, NInt_total_min, NInt_inco_min, NInt_co_min] = mindata(NInt_total, itnum, NInt_total, NInt_inco, NInt_co);
+    han = FigureTitle(['Iter #' num2str(itnum_min) '; NI = ' num2str(NInt_total_min,'%.1e') '; Mod = ' num2str(NInt_co_min,'%.1e') '; Unmod = ' num2str(NInt_inco_min,'%.1e')],'FontSize',12);
+
     
 end % PlotNormIntensity
 
@@ -377,7 +417,7 @@ function [rmsdDMv, hfig, hax] = PlotRMSdDMv(listS, varargin)
     
     figure(hfig);
     if ~isempty(hax), axes(hax); else, hax = gca; end
-    hh = plot([listS(2:end).iter].', rmsdDMv, '-o', [listS(2:end).iter].', mean(rmsdDMv,2), '--');
+    hh = semilogy([listS(2:end).iter].', rmsdDMv, '-o', [listS(2:end).iter].', mean(rmsdDMv,2), '--');
     set(hh,'LineWidth', 1.0)
     grid on
     xlabel('Iteration #')
