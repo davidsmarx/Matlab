@@ -7,6 +7,7 @@ function [ZZ, phaimg, phares, sOptions] = ZernikeAnalysis(field, varargin)
 %
 % options:
 % CheckOption('bMask', [], varargin{:});
+% CheckOption('isphase', false, varargin{:}); % if field = real-valued phase array
 % CheckOption('Rnorm', [], varargin{:});
 % CheckOption('modes', 1:36, varargin{:});
 % CheckOption('polyorder', 'Noll', varargin{:});

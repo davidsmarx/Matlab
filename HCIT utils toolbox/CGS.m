@@ -96,7 +96,7 @@ classdef CGS < handle
             end
             
             U = CConstants;
-            wavelength_kwd = '';
+            wavelength_kwd = CheckOption('wavelength_kwd', '', varargin{:});           
             
             if ~exist('bn','var') || isempty(bn),
                 %bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
