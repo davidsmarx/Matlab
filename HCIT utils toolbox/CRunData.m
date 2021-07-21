@@ -2082,7 +2082,19 @@ classdef CRunData < handle & CConstants
         end % DisplayEfields
 
         function [hfig, ha, sMetrics] = DisplayDEfields(S, Sref, varargin)
-            % [hfig, ha] = DisplayDEfields(S, Sref, varargin)
+            % [hfig, ha, sMetrics] = DisplayDEfields(S, Sref, varargin)
+            %
+            % sMetrics = struct(...
+            %                 'type', 'dEfields' ...
+            %                 ,'rmsdE_t', rmsdE_t ...
+            %                 ,'rmsdE_m', rmsdE_m ...
+            %                 );
+            %
+            % CheckOption('xylim', S.XYlimDefault, varargin{:});
+            % CheckOption('hfig', [], varargin{:});
+            % CheckOption('clim', [], varargin{:});
+            
+            
             % 4 x NofW, dE_t real, imag, dE_m real, imag
             
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
@@ -2467,9 +2479,9 @@ classdef CRunData < handle & CConstants
         end % DisplayPampzero
 
         function [hfig, hax, sMetrics] = DisplayDMv(S, dmvref, varargin)
-            % [hfig, hax] = S.DisplayDMv([], varargin)
-            % [hfig, hax] = S.DisplayDMv(Sref, varargin)
-            % [hfig, hax] = S.DisplayDMv({refDM1v_fits, refDM2v_fits}, varargin)
+            % [hfig, hax, sMetrics] = S.DisplayDMv([], varargin)
+            % [hfig, hax, sMetrics] = S.DisplayDMv(Sref, varargin)
+            % [hfig, hax, sMetrics] = S.DisplayDMv({refDM1v_fits, refDM2v_fits}, varargin)
 
             if nargin < 2, dmvref = []; end
             
@@ -2528,6 +2540,7 @@ classdef CRunData < handle & CConstants
                 figure(hfig);
             end
             
+            rmsdDMv = zeros(1,S.Ndm);
             for idm = 1:S.Ndm,
 
                 % plot S DMv
@@ -2541,11 +2554,11 @@ classdef CRunData < handle & CConstants
                     hax(idm+S.Ndm) = subplot(Nr, S.Ndm, idm+S.Ndm);
                 
                     dDMv = DMv{idm} - refDMv{idm};
-                    rmsdDMv = rms(dDMv(abs(dDMv)>0));
+                    rmsdDMv(idm) = rms(dDMv(abs(dDMv)>0));
 
                     imageschcit(0,0,dDMv)
                     colorbartitle('Vmu')
-                    title(['\Delta ' strRefDM{idm} ', ' num2str(rmsdDMv,'%.4f') 'V rms'])
+                    title(['\Delta ' strRefDM{idm} ', ' num2str(rmsdDMv(idm),'%.4f') 'V rms'])
                     
                     % save
                     cdDMv{idm} = dDMv;
@@ -2572,6 +2585,7 @@ classdef CRunData < handle & CConstants
             
             sMetrics = struct(...
                 'type', 'DMv' ...
+                ,'rmsdDMv', rmsdDMv ...
                 );
             
             %             fprintf('rms dDMv1 = %.3f Vmu\n',rmsdDMv1);
