@@ -66,7 +66,14 @@ classdef Cppt
             %             % Set picture to width of slide, justify left, and 90% from the top, then close figure
             %             set(pic,'Width',720);
             set(hPic, 'Height', slide_H); % makes height of pic = height of slide
-            set(hPic, 'Top', 0); % puts top of pic at top of slide
+            if hPic.Width > slide_W,
+                % then width is the limit, not height
+                set(hPic, 'Width', slide_W)
+                set(hPic, 'Left', 0)
+            else
+                % if height is the limit:
+                set(hPic, 'Top', 0); % puts top of pic at top of slide
+            end
             
             %             set(pic,'Left',(slide_W-get(pic,'Width'))/2)
             %             set(pic,'Top',slide_H-slide_H*.905);

@@ -67,7 +67,7 @@ phares(bMask) = phaimg(bMask) - zernikeval([zeros(3,1); ZZ(4:end)], Xim(bMask), 
 
 % return values:
 % ZZ, phaimg, phares, sOptions
-sOptions = struct('bMask', bMask, 'Rnorm', Rnorm, 'Nz', Nz);
+sOptions = struct('bMask', bMask, 'Rnorm', Rnorm, 'Nz', Nz, 'xim', xim, 'yim', yim);
 
 end % main
 
