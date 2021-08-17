@@ -294,8 +294,7 @@ function [betaused, betamin, hfig, hax] = PlotBeta(listS, varargin)
     
     hfig = CheckOption('hfig', figure, varargin{:});
     hax = CheckOption('hax', [], varargin{:});
-
-    itnum = [listS.iter];
+    itnum = CheckOption('itnum', [listS.iter], varargin{:}); % use [listS.iter] - listS(1).iter to start with 0
     
     [ireg0, betaused, betamin] = deal(zeros(length(itnum),1));
     for ii = 1:length(listS)
@@ -332,8 +331,7 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
 
     hfig = CheckOption('hfig', figure, varargin{:});
     hax = CheckOption('hax', [], varargin{:});
-
-    itnum = [listS.iter];
+    itnum = CheckOption('itnum', [listS.iter], varargin{:}); % use [listS.iter] - listS(1).iter to start with 0
     
     [NInt_co, NInt_inco, NInt_total] = deal(zeros(length(itnum), max([listS.Nlamcorr]) ));
     for ii = 1:length(itnum)
@@ -383,7 +381,12 @@ function [rmsdDMv, hfig, hax] = PlotRMSdDMv(listS, varargin)
 
     hfig = CheckOption('hfig', figure, varargin{:});
     hax = CheckOption('hax', [], varargin{:});
+    itnum = CheckOption('itnum', [listS.iter], varargin{:}); % use [listS.iter] - listS(1).iter to start with 0
 
+    % plotting differential, start with itnum(2)
+    itnum_plot = itnum(2:end);
+    itnum_plot = itnum_plot(:);
+    
     % read all the DMv cubes
     for ii = 1:length(listS),
         if isempty(listS(ii).DMvCube)
@@ -417,7 +420,7 @@ function [rmsdDMv, hfig, hax] = PlotRMSdDMv(listS, varargin)
     
     figure(hfig);
     if ~isempty(hax), axes(hax); else, hax = gca; end
-    hh = semilogy([listS(2:end).iter].', rmsdDMv, '-o', [listS(2:end).iter].', mean(rmsdDMv,2), '--');
+    hh = semilogy(itnum_plot, rmsdDMv, '-o', itnum_plot, mean(rmsdDMv,2), '--');
     set(hh,'LineWidth', 1.0)
     grid on
     xlabel('Iteration #')
