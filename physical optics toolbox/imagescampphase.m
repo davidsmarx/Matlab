@@ -9,7 +9,7 @@ function haxout = imagescampphase(A,x,y,varargin)
 %   ydir = CheckOption('ydir', 'reverse', varargin{:}); or 'normal'
 %   xlabelstr = CheckOption('xlabel', [], varargin{:});
 %   ylabelstr = CheckOption('ylabel', [], varargin{:});
-%   xylim = CheckOption('xylim', [], varargin{:});
+%   xylim = CheckOption('xylim', [], varargin{:}); % [min max]
 %   phasescale = CheckOption('phasescale', 'pi rad', varargin{:}); % or
 %        'rad', 'deg', 'nm' (requires lam value in (m))
 %   lam = CheckOption('lam', [], varargin{:}) % required if 'phasescale' is 'nm'
@@ -36,7 +36,7 @@ if ~bLog, bLog = CheckOption('scale',false,varargin{:}); end % alternate option 
 ydir = CheckOption('ydir', 'reverse', varargin{:});
 xlabelstr = CheckOption('xlabel', [], varargin{:});
 ylabelstr = CheckOption('ylabel', [], varargin{:});
-xylim = CheckOption('xylim', [], varargin{:});
+xylim = CheckOption('xylim', [], varargin{:}); % [min max]
 phasescale = CheckOption('phasescale', 'pi rad', varargin{:}); % or 'rad', 'deg', 'nm'
 lam = CheckOption('lam', [], varargin{:}); % required if phasescale = 'nm'
 

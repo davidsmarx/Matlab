@@ -909,7 +909,7 @@ classdef CRunData < handle & CConstants
             catch ME
                 disp('File Error:');
                 disp(ME.identifier);
-                disp([S.Reduced_fn]);
+                disp([S.Rundir_fn]);
                 return                
             end
             
@@ -1857,6 +1857,9 @@ classdef CRunData < handle & CConstants
                 % need to remove hfig from varargin
                 iv = find(strcmp(varargin, 'hfig'));
                 varargin{iv+1} = [];
+                nrow_ax = S.Nlamcorr;
+                ncol_ax = 3;
+                hfig = figure_mxn(hfig, nrow_ax, ncol_ax);
             end
             
             %haxlist = zeros(3,S.Nlamcorr);
@@ -2117,18 +2120,14 @@ classdef CRunData < handle & CConstants
         function [hfig, ha, sMetrics] = DisplayDEfields(S, Sref, varargin)
             % [hfig, ha, sMetrics] = DisplayDEfields(S, Sref, varargin)
             %
-            % sMetrics = struct(...
-            %                 'type', 'dEfields' ...
-            %                 ,'rmsdE_t', rmsdE_t ...
-            %                 ,'rmsdE_m', rmsdE_m ...
-            %                 );
-            %
-            % CheckOption('xylim', S.XYlimDefault, varargin{:});
-            % CheckOption('hfig', [], varargin{:});
-            % CheckOption('clim', [], varargin{:});
-            
-            
             % 4 x NofW, dE_t real, imag, dE_m real, imag
+            %
+            % sMetrics = 
+            %                     'type', 'dEfields' ...
+            %                     ,'rmsdE_t', nan ...
+            %                     ,'rmsdE_m', nan ...
+            %                     ,'dE_t', [] ...
+            %                     ,'dE_m', [] ...
             % 
             % CheckOption('xylim', S.XYlimDefault, varargin{:});
             % CheckOption('hfig', [], varargin{:});
@@ -2162,6 +2161,8 @@ classdef CRunData < handle & CConstants
                     'type', 'dEfields' ...
                     ,'rmsdE_t', nan ...
                     ,'rmsdE_m', nan ...
+                    ,'dE_t', [] ...
+                    ,'dE_m', [] ...
                 );
 
                 return
@@ -2189,6 +2190,8 @@ classdef CRunData < handle & CConstants
                 'type', 'dEfields' ...
                 ,'rmsdE_t', rmsdE_t ...
                 ,'rmsdE_m', rmsdE_m ...
+                ,'dE_t', dE_t ...
+                ,'dE_m', dE_m ...            
                 );
             
             % if no display, return metrics and skip graphs
@@ -2405,7 +2408,8 @@ classdef CRunData < handle & CConstants
                     %                     [~, bMaskce] = AutoMetric(CEampiwv, [], ...
                     %                         struct('image_type','psf','logPSF',true,...
                     %                         'debug',bDebugAutoMetric,'PSF_thresh_nsig',PSF_thresh_nsig));
-
+                else
+                    bMaskce = bMaskDisplay;
                 end
                 
                 % apply display mask
@@ -2687,7 +2691,7 @@ classdef CRunData < handle & CConstants
             if ~isempty(refDMv),
                 if ~isempty(climDelta),
                     set(hax(S.Ndm+1:end),'clim',climDelta)
-                else
+                elseif range(reshape([cdDMv{:}],[],1)) > 0,
                     aclim = AutoClim([cdDMv{:}],'symmetric',true);
                     set(hax(S.Ndm+1:end),'clim',aclim);
                 end                
