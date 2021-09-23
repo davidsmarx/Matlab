@@ -96,7 +96,7 @@ classdef CGS < handle
             end
             
             U = CConstants;
-            wavelength_kwd = '';
+            wavelength_kwd = 'lam'; % default value
             
             if ~exist('bn','var') || isempty(bn),
                 %bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
@@ -226,6 +226,8 @@ classdef CGS < handle
                             ['/proj/piaacmc/scicam/*/gspiaa_s_' num2str(gsnum,'%04d') '/piaa*.fits']...
                             ));
                         
+                        wavelength_kwd = 'lam';
+
                     otherwise
                         % do nothing, let bn = bn
                         bn = [bn num2str(gsnum,'%d')];
@@ -480,6 +482,10 @@ classdef CGS < handle
             %    ('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             %    ('dphclim', [], varargin{:});
             %    ('climph', [], varargin{:});
+            %    ('dph_units', 1, varargin{:}); % default = radians, 'nm', 'waves', or double
+            %    ('dph_units_str', 'Phase (rad)', varargin{:});
+            
+            U = CConstants;
             
             % parse options
             hfig = CheckOption('hfig', [], varargin{:});
@@ -491,6 +497,8 @@ classdef CGS < handle
             xylim = CheckOption('xylim', [], varargin{:});
             climdph = CheckOption('dphclim', [], varargin{:});
             climph = CheckOption('climph', [], varargin{:});
+            dph_units = CheckOption('dph_units', 1, varargin{:}); % default = radians, 'nm', 'waves', or double
+            dph_units_str = CheckOption('dph_units_str', 'Phase (rad)', varargin{:});
             
             switch phplot
                 case 'angleE'
@@ -605,13 +613,32 @@ classdef CGS < handle
             if usebMask,
                 dpha = pMask .* dpha;
             end
-            him = imageschcit(S.x, S.y, dpha);
-            colorbartitle('Phase (rad)')
+            if ischar(dph_units),
+                switch dph_units
+                    case 'nm'
+                        if ~isempty(S.wavelength),
+                            dph_units = U.NM./(S.wavelength./(2*pi));
+                            dph_units_str = 'WFE (nm)';
+                        else
+                            warning('wavelength empty, dph units = radians');
+                            dph_units = 1;
+                        end
+                    case {'wave', 'waves'},
+                        dph_units = 2*pi;
+                        dph_units_str = 'WFE (waves)';
+                        
+                    otherwise
+                        error(['unknown phase units: ' dph_units]);
+                end
+            end % ischar(dph_units)
+            
+            him = imageschcit(S.x, S.y, dpha./dph_units);
+            colorbartitle(dph_units_str)
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
-            if isempty(climdph), set(gca,'clim',AutoClim(dpha,'symmetric',true,'pctscale',100))
+            if isempty(climdph), set(gca,'clim',AutoClim(dpha./dph_units,'symmetric',true,'pctscale',100))
             else set(gca,'clim',climdph)
             end
-            title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(dpha(pMask)),'%.3f') 'rad'])
+            title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(dpha(pMask))/dph_units,'%.3f') dph_units_str])
             
             % append more to dphaResult
             dphaResult.dpharms = rms(dpha(pMask));
@@ -868,7 +895,7 @@ classdef CGS < handle
             
         end % DisplayAmpPlane
         
-        function [hax, Imgs] = DisplayAllPlanes(S, varargin)
+        function [hax, Imgs, ha] = DisplayAllPlanes(S, varargin)
             % hax = DisplayAllPlanes(S, options)
             % options:
             %   'image': 'meas' (default) or 'calc'
@@ -1078,12 +1105,14 @@ classdef CGS < handle
             % /home/dmarx/PIAA/hcim_testbed_run100/phaseretrieval_analysis/ZernZernRemapFit.m
             %
             % options:
-            % bDisplay = CheckOption('display', false, varargin{:});
-            % S.RemapRadialRpix = CheckOption('RemapRadialRpix', S.RemapRadialRpix, varargin{:});
-            % bDebug = CheckOption('debug', false, varargin{:});
-            % nzout = CheckOption('nzout', 1:4, varargin{:});
-            % nzin = CheckOption('nzin', 2:4, varargin{:});
-            % poly_order = CheckOption('polyorder', 'Noll', varargin{:});
+            % CheckOption('display', false, varargin{:});
+            % CheckOption('RemapRadialRpix', S.RemapRadialRpix, varargin{:});
+            % CheckOption('debug', false, varargin{:});
+            % CheckOption('nzout', 1:4, varargin{:});
+            % CheckOption('nzin', 2:4, varargin{:});
+            % CheckOption('polyorder', 'Noll', varargin{:});
+            % CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
+            % CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             
             U = CConstants;
             
@@ -1094,6 +1123,7 @@ classdef CGS < handle
             nzout = CheckOption('nzout', 1:4, varargin{:});
             nzin = CheckOption('nzin', 2:4, varargin{:});
             poly_order = CheckOption('polyorder', 'Noll', varargin{:});
+            xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             
             if isempty(S.Eremap),
@@ -1186,25 +1216,28 @@ classdef CGS < handle
                 figure_mxn(2,3)
 
                 subplot(2,3,1), imageschcit(S.x, S.y, abs(S.E))
+                set(gca, 'xlim', xylim*[-1 1], 'ylim', xylim*[-1 1]);
                 title([titlestr '; Amplitude'])
                 
                 %subplot(2,3,2), imageschcit(S.phw_ptt.*S.bMaskRemap)
                 subplot(2,3,2), imageschcit(S.x, S.y, mod2pi(S.phunwrap).*S.bMaskRemap)
+                set(gca, 'xlim', xylim*[-1 1], 'ylim', xylim*[-1 1]);
                 colorbartitle('Phase (rad)')
                 set(gca,'clim',pi*[-1 1])
                 title([titlestr '; Phase rms\phi = ' num2str(S.rmsPha,'%.3f')])               
                 
                 subplot(2,3,3), imageschcit(S.x, S.y, phresidual), 
+                set(gca, 'xlim', xylim*[-1 1], 'ylim', xylim*[-1 1]);
                 colorbartitle('Phase (rad)')
                 rmse = rms(phresidual(S.bMaskRemap));
                 title(['Residual Fit, rms error = ' num2str(rmse,'%.2f') 'rad'])
                 
-                % bar graph zernike order, don't plot piston
                 %figure,
                 subplot(2,3,4), imageschcit(S.x, S.y, phfit), 
+                set(gca, 'xlim', xylim*[-1 1], 'ylim', xylim*[-1 1]);
                 colorbartitle('Phase (rad)'), title('Fit Phase')
                 
-                
+                % bar graph zernike order, don't plot piston                
                 subplot(2,3,5:6)
                 hh = bar(ZZ(2:end)); grid
                 set(gca,'XTick', 1:length([nzout(2:end) nzin]))
