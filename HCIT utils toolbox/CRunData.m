@@ -2119,7 +2119,9 @@ classdef CRunData < handle & CConstants
 
         function [hfig, ha, sMetrics] = DisplayDEfields(S, Sref, varargin)
             % [hfig, ha, sMetrics] = DisplayDEfields(S, Sref, varargin)
+            %
             % 4 x NofW, dE_t real, imag, dE_m real, imag
+            %
             % sMetrics = 
             %                     'type', 'dEfields' ...
             %                     ,'rmsdE_t', nan ...
@@ -2652,6 +2654,7 @@ classdef CRunData < handle & CConstants
                 figure(hfig);
             end
             
+            rmsdDMv = zeros(1,S.Ndm);
             for idm = 1:S.Ndm,
 
                 % plot S DMv
@@ -2665,15 +2668,11 @@ classdef CRunData < handle & CConstants
                     hax(idm+S.Ndm) = subplot(Nr, S.Ndm, idm+S.Ndm);
                 
                     dDMv = DMv{idm} - refDMv{idm};
-                    rmsdDMv = rms(dDMv(abs(dDMv)>0));
-                    
-                    sMetrics.dDMv = dDMv;
-                    sMetrics.rmsdDMv = rmsdDMv;
-                    
+                    rmsdDMv(idm) = rms(dDMv(abs(dDMv)>0));
 
                     imageschcit(0,0,dDMv)
                     colorbartitle('Vmu')
-                    title(['\Delta ' strRefDM{idm} ', ' num2str(rmsdDMv,'%.4f') 'V rms'])
+                    title(['\Delta ' strRefDM{idm} ', ' num2str(rmsdDMv(idm),'%.4f') 'V rms'])
                     
                     % save
                     cdDMv{idm} = dDMv;
@@ -2697,7 +2696,13 @@ classdef CRunData < handle & CConstants
                     set(hax(S.Ndm+1:end),'clim',aclim);
                 end                
             end % refDMv
-                        
+            
+            sMetrics = struct(...
+                'type', 'DMv' ...
+                ,'rmsdDMv', rmsdDMv ...
+                ,'cdDMv', cdDMv ...
+                );
+            
             %             fprintf('rms dDMv1 = %.3f Vmu\n',rmsdDMv1);
             %             fprintf('rms dDMv2 = %.3f Vmu\n',rmsdDMv2);
             %

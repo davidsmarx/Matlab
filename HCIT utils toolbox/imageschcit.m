@@ -71,6 +71,9 @@ if maxIm > eps*maxRe && maxRe > eps*maxIm,
     [hax, hh] = ImageReIm(x, y, Im);
     
 else
+    if maxIm <= eps*maxRe, Im = real(Im); end
+    if maxRe <= eps*maxIm, Im = imag(Im); end
+    
     if ~isempty(hax),
         hh = imagesc(hax, x, y, Im);
     else
