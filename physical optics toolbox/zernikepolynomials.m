@@ -1,7 +1,11 @@
 function P = zernikepolynomials(coords)
 % P = zernikepolynomials(coords)
 %
-% coords (optional, default = 'polar') = 'rect'angular or 'polar' or 'noll'
+% coords (optional, default = 'polar')
+%   'rect'angular
+%   'noll', 'zemax'
+%   'codevfringe'
+%
 % for Noll (Zemax) ordering
 %
 % P = cell array of anonymous functions, each a normalized polynomial

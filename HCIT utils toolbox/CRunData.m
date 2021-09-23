@@ -405,8 +405,8 @@ classdef CRunData < handle & CConstants
             % build paths and filenames for the data
             % basename, such as 'run603it00000.fits'
             s_bn = ['run' num2str(S.runnum,'%03d') 'it' num2str(iter,'%05d') '.fits'];
-            S.Reduced_fn = PathTranslator([S.Results_pn S.Reduced_pn s_bn]);
-            S.Rundir_fn = PathTranslator([S.Results_pn S.Rundir_pn s_bn]);
+            S.Reduced_fn = PathTranslator(cell2mat(join({S.Results_pn, S.Reduced_pn, s_bn}, '/')));
+            S.Rundir_fn = PathTranslator(cell2mat(join({S.Results_pn, S.Rundir_pn, s_bn}, '/')));
 
             % 'local' paths are either the same (linux cluster)
             %         or local PC drive. If PC, we will copy data
@@ -415,14 +415,14 @@ classdef CRunData < handle & CConstants
                 if ~exist([S.PCtemp_pn S.Reduced_pn],'dir')
                     mkdir([S.PCtemp_pn S.Reduced_pn])
                 end
-                sReduced_local_fn = [S.PCtemp_pn S.Reduced_pn s_bn];
-                sRundir_local_fn  = [S.PCtemp_pn S.Rundir_pn s_bn];
+                sReduced_local_fn = fullfile(S.PCtemp_pn, S.Reduced_pn, s_bn);
+                sRundir_local_fn  = fullfile(S.PCtemp_pn, S.Rundir_pn, s_bn);
             else
-                if ~exist([S.S383temp_pn S.Reduced_pn],'dir')
-                    mkdir([S.S383temp_pn S.Reduced_pn])
+                if ~exist(fullfile(S.S383temp_pn, S.Reduced_pn),'dir')
+                    mkdir(fullfile(S.S383temp_pn, S.Reduced_pn))
                 end
-                sReduced_local_fn = [S.S383temp_pn S.Reduced_pn s_bn];
-                sRundir_local_fn  = [S.S383temp_pn S.Rundir_pn s_bn];
+                sReduced_local_fn = fullfile(S.S383temp_pn, S.Reduced_pn, s_bn);
+                sRundir_local_fn  = fullfile(S.S383temp_pn, S.Rundir_pn, s_bn);
             end
             
             % unzip the fits files if necessary
