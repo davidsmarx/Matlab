@@ -187,7 +187,7 @@ classdef CRunData < handle & CConstants
             % Results_pn
             switch S.runnum,
                 case 0 % DST
-                    S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run000/';
+                    S.Results_pn = '/home/dmarx/ln_dst_data/hcim/EFC/HLC/run000/';
                     S.XYlimDefault = 12;
                     
                 case 001,
@@ -500,6 +500,11 @@ classdef CRunData < handle & CConstants
             % get actual wavelengths from the camera fits files
             for iwv = 1:S.NofW,
                fn = FitsGetKeywordVal(S.ImKeys, ['C' num2str(iwv-1) 'P0J0']) ;
+               if isempty(fn),
+                   warning(['no header key ' ['C' num2str(iwv-1) 'P0J0'] ]);
+                   break;
+               end
+               
                [pntmp, fntmp, ext] = fileparts(fn);
                fn = [pntmp '/' fntmp '.fits'];
                if isempty(fn) || ~exist(PathTranslator(fn),'file'),
