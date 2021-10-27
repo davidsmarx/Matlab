@@ -1156,6 +1156,7 @@ classdef CRunData < handle & CConstants
             %             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             %             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
+            %                         CheckOption('drawylimlines', [], varargin{:})
             %             climopt = CheckOption('clim', [], varargin{:});
             %             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             %             haxuse = CheckOption('hax', [], varargin{:});
@@ -1174,6 +1175,7 @@ classdef CRunData < handle & CConstants
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
+            drawYlimLines = CheckOption('drawylimlines', [], varargin{:});
             climopt = CheckOption('clim', [], varargin{:});
             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             haxuse = CheckOption('hax', [], varargin{:});
@@ -1216,7 +1218,8 @@ classdef CRunData < handle & CConstants
             % overlay circles if requested
             DrawCircles(ha, drawRadii);
             DrawThetaLines(ha, drawTheta, drawRadii);
-
+            DrawYlimLines(ha, drawYlimLines, drawRadii);
+            % DrawYlimLines                        CheckOption('drawylimlines', [], varargin{:})
             % set each image plot to the same clim
             % auto-clim, unless specific clim requested
             if isempty(climopt),
@@ -1446,6 +1449,7 @@ classdef CRunData < handle & CConstants
             bLog = CheckOption('bLog', true, varargin{:});
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            drawYlimLines = CheckOption('drawylimlines', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
             IncIntType = CheckOption('type', 'est', varargin{:});
@@ -1507,38 +1511,8 @@ classdef CRunData < handle & CConstants
             set(hax,'xlim',xlim,'ylim',ylim,'clim',clim);
             
             DrawCircles(hax, drawRadii);
+            DrawYlimLines(hax, drawYlimLines, drawRadii);
             
-            %             % radial plot
-            %             for iwv = 1:S.Nlamcorr,
-            %                 [fovrplot, IncIntrad] = RadialMean(x, y, plIncInt{iwv}, 128);
-            %                 % remove negative inc int values so we can use log plot
-            %                 IncIntrad(IncIntrad < 1e-11) = 1e-11;
-            %                 qplot{1,iwv} = fovrplot;
-            %                 qplot{2,iwv} = IncIntrad;
-            %                 legstr{iwv} = ' ';
-            %                 if ~isempty(S.NKTcenter), legstr{iwv} = [num2str(S.NKTcenter(iwv)/S.NM) 'nm']; end
-            %             end
-            %             figure, semilogy(qplot{:});
-            %             hax(end+1) = gca;
-            %             grid on
-            %             set(gca,'xlim',[0 1].*xlim)
-            %             %set(gca,'ylim',clim)
-            %
-            %             xlabel('Radius (\lambda/D)')
-            %             ylabel('Unmodulated (Norm. Int.)')
-            %             title(['Inc Int, it#' num2str(S.iter)])
-            %
-            %             if ~isempty(drawRadii),
-            %                 hold on
-            %                 for irad = 1:length(drawRadii),
-            %                     plot(drawRadii(irad)*[1 1], get(gca,'ylim'), '--r')
-            %                 end
-            %                 hold off
-            %             end
-            %
-            %             % legend must go after everything is plotted
-            %             legend(legstr{:},'Location','North')
-
         end % DisplayIncInt
                 
         function [hfig, hax] = DisplayProbeAmp(S, varargin)
@@ -1746,6 +1720,7 @@ classdef CRunData < handle & CConstants
             bLog = CheckOption('blog', true, varargin{:});
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            drawYlimLines = CheckOption('drawylimlines', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
             
@@ -1791,38 +1766,7 @@ classdef CRunData < handle & CConstants
             set(hax,'xlim',xlim,'ylim',ylim,'clim',clim);
             
             DrawCircles(hax, drawRadii);
-            %
-            %             % radial plot
-            %             for iwv = 1:S.Nlamcorr,
-            %                 [fovrplot, S.CohIntrad] = RadialMean(x, y, S.S.CohInt{iwv}, 128);
-            %                 % remove negative inc int values so we can use log plot
-            %                 IncIntrad(CohIntrad < 1e-11) = 1e-11;
-            %                 qplot{1,iwv} = fovrplot;
-            %                 qplot{2,iwv} = CohIntrad;
-            %                 legstr{iwv} = ' ';
-            %                 if ~isempty(S.NKTcenter), legstr{iwv} = [num2str(S.NKTcenter(iwv)/S.NM) 'nm']; end
-            %             end
-            %             figure, semilogy(qplot{:});
-            %             hax(end+1) = gca;
-            %             grid on
-            %             set(gca,'xlim',[0 1].*xlim)
-            %             %set(gca,'ylim',clim)
-            %
-            %             xlabel('Radius (\lambda/D)')
-            %             ylabel('Modulated (Norm. Int.)')
-            %             title(['Mod Int, it#' num2str(S.iter)])
-            %
-            %             if ~isempty(drawRadii),
-            %                 hold on
-            %                 for irad = 1:length(drawRadii),
-            %                     plot(drawRadii(irad)*[1 1], get(gca,'ylim'), '--r')
-            %                 end
-            %                 hold off
-            %             end
-            %
-            %             % legend must go after everything is plotted
-            %             legend(legstr{:},'Location','North')
-            
+            DrawYlimLines(hax, drawYlimLines, drawRadii);
             
         end % DisplayCohInt
         
@@ -1836,7 +1780,7 @@ classdef CRunData < handle & CConstants
             % some options
             %    dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             %    drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
-            %    clim = CheckOption('clim', [], varargin{:});
+            %    clim = CheckOption('clim', [-9 -6.5], varargin{:});
 
             bPlotRadialIntensity = CheckOption('DisplayRadialIntensity', true, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
@@ -2900,6 +2844,45 @@ for iax = 1:length(hax),
         plot(-[r0 r1]*cos(th),-[r0 r1]*sin(th), '-r');
         
     end % for each theta
+    hold off;
+
+end % for each axes
+
+end % DrawThetaLines
+
+function DrawYlimLines(hax, drawYlimLines, drawRadii)
+% DrawYlimLines(hax, drawYlimLines, drawRadii)
+
+if isempty(drawYlimLines),
+    return
+end
+
+hax = hax(:);
+
+for iax = 1:length(hax),
+    axes(hax(iax));
+
+    if isempty(drawRadii),
+        r0 = 0;
+        r1 = max(get(hax(iax),'xlim'));
+    else
+        r0 = min(drawRadii);
+        r1 = max(drawRadii);
+    end
+    
+    hold on
+    for ith = 1:length(drawYlimLines),
+        yline = drawYlimLines(ith);
+        x0 = sqrt(r1.^2 - yline.^2);
+        if abs(yline) > r0
+            hl = plot([x0 -x0], yline*[1 1], '-r');
+        else
+            x1 = sqrt(r0.^2 - yline.^2);
+            hl = plot([-x0 -x1], yline*[1 1], '-r', [x1 x0], yline*[1 1], '-r');
+        end
+        set(hl,'linewidth',1)
+        
+    end % for each y line
     hold off;
 
 end % for each axes
