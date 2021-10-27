@@ -334,6 +334,7 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
     itnum = CheckOption('itnum', [listS.iter], varargin{:}); % use [listS.iter] - listS(1).iter to start with 0
     
     [NInt_co, NInt_inco, NInt_total] = deal(zeros(length(itnum), max([listS.Nlamcorr]) ));
+    NInt_mean = zeros(length(itnum),1);
     for ii = 1:length(itnum)
         
         %         if isempty(listS(ii).NormIntensity_total)
@@ -355,10 +356,12 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
             NInt_co(ii, :) = sC.co_lam_NI;
             NInt_inco(ii, :) = sC.inco_lam_NI;
             NInt_total(ii, :) = sC.score_lam;
+            NInt_mean(ii) = sC.mean;
         else
             NInt_co(ii, :) = NaN; % so it's not plotted
             NInt_inco(ii, :) = NaN;
             NInt_total(ii, :) = NaN;            
+            NInt_mean(ii) = NaN;
         end
         
     end % ii
@@ -377,8 +380,8 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
     end
     %legend('Total', 'Unmodulated', 'Modulated')
     legend(legstr_total{:},legstr_unmod{:},legstr_mod{:})
-    [itnum_min, NInt_total_min, NInt_inco_min, NInt_co_min] = mindata(NInt_total, itnum, NInt_total, NInt_inco, NInt_co);
-    han = FigureTitle(['Iter #' num2str(itnum_min) '; NI = ' num2str(NInt_total_min,'%.1e') '; Mod = ' num2str(NInt_co_min,'%.1e') '; Unmod = ' num2str(NInt_inco_min,'%.1e')],'FontSize',12);
+    [itnum_min, NInt_total_min, NInt_inco_min, NInt_co_min, NInt_mean_min] = mindata(NInt_mean, itnum, mean(NInt_total, 2), mean(NInt_inco, 2), mean(NInt_co, 2), NInt_mean);
+    han = FigureTitle(['Iter #' num2str(itnum_min) '; NI = ' num2str(NInt_mean_min,'%.1e') '; Mod = ' num2str(NInt_co_min,'%.1e ') '; Unmod = ' num2str(NInt_inco_min,'%.1e ')],'FontSize',12);
 
     
 end % PlotNormIntensity
