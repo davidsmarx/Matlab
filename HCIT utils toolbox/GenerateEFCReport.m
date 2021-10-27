@@ -365,11 +365,18 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
 
     figure(hfig);
     if ~isempty(hax), axes(hax); else, hax = gca; end
-    hl = semilogy(itnum, NInt_total, '-b', itnum, NInt_inco, '--r', itnum, NInt_co, ':g'); grid on
+    hl = semilogy(itnum, NInt_total, '-', itnum, NInt_inco, '--', itnum, NInt_co, ':'); grid on
     xlabel('Iteration #')
     ylabel('Normalized Intensity')
     set(hl,'linewidth', 2)
-    legend('Total', 'Unmodulated', 'Modulated')
+    
+    for ilam = 1:length(listS(1).lambda)
+        legstr_total{ilam} = ['Total ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
+        legstr_unmod{ilam} = ['Unmodulated ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
+        legstr_mod{ilam}   = ['Modulated ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
+    end
+    %legend('Total', 'Unmodulated', 'Modulated')
+    legend(legstr_total{:},legstr_unmod{:},legstr_mod{:})
     [itnum_min, NInt_total_min, NInt_inco_min, NInt_co_min] = mindata(NInt_total, itnum, NInt_total, NInt_inco, NInt_co);
     han = FigureTitle(['Iter #' num2str(itnum_min) '; NI = ' num2str(NInt_total_min,'%.1e') '; Mod = ' num2str(NInt_co_min,'%.1e') '; Unmod = ' num2str(NInt_inco_min,'%.1e')],'FontSize',12);
 

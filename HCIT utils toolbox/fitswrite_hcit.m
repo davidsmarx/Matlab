@@ -40,7 +40,7 @@ try, % if error, close fptr
         
         fits.createImg(fptr,'double_img',size(img))
         fits.writeImg(fptr, img);
-        Nkeys = CheckKwds(kwds);
+        [kwds, Nkeys] = CheckKwds(kwds);
         for ikey = 1:Nkeys,
             fits.writeKey(fptr, kwds{ikey,:});
         end
@@ -50,6 +50,7 @@ try, % if error, close fptr
 catch ME
     warning('there was an error:');
     disp(ME);
+    disp(ME.stack);
 end % try
 
 fits.closeFile(fptr);
