@@ -36,6 +36,7 @@ more off
 ppt_fn = CheckOption('pptfn', '', varargin{:});
 sOptin = CheckOption('sOptin', [], varargin{:}); % passed to CRunData
 Sppt = CheckOption('Sppt', [], varargin{:});
+max_empties = CheckOption('max_empties', 3, varargin{:});
 
 % % check if PowerPoint Presentation already exists and still there
 % try
@@ -50,7 +51,8 @@ if isempty(Sppt) && ispc && ~isempty(varargin),
 end
 
 % get the CRunData objects
-
+% if 3 successive iterations have no data, stop
+cnt_empty = 0;
 N = length(listItnum);
 if isnumeric(listItnum),
     %if isscalar(listItnum)
@@ -63,7 +65,17 @@ if isnumeric(listItnum),
         %catch
         %    warning(['iter# ' num2str(listItnum(ii)) ' not found']);
         %end
+        if ~exist(S(ii).Rundir_fn, 'file')
+            cnt_empty = cnt_empty + 1;
+        else
+            % reset, only count successive empties
+            cnt_empty = 0;
+        end
         
+        if cnt_empty >= max_empties
+            S = S(1:end-max_empties);
+            break
+        end
     end
 elseif isa(listItnum, 'CRunData')
     S = listItnum;
