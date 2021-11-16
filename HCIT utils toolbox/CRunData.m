@@ -331,6 +331,7 @@ classdef CRunData < handle & CConstants
                     S.Sthpt.ThptCal_fn = throughput_fn;
 
                     S.ppl0 = 4.01; % config_SPCdisc_20180321.py
+                    S.DrawradiiDefault = [6.0 19.0];
                     
                 case 604, % SPC_disc
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
@@ -1156,7 +1157,7 @@ classdef CRunData < handle & CConstants
             %             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             %             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
-            %                         CheckOption('drawylimlines', [], varargin{:})
+            %             drawylimlines = CheckOption('drawylimlines', [], varargin{:})
             %             climopt = CheckOption('clim', [], varargin{:});
             %             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             %             haxuse = CheckOption('hax', [], varargin{:});
@@ -1780,6 +1781,7 @@ classdef CRunData < handle & CConstants
             % some options
             %    dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             %    drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            %    drawylimlines = CheckOption('drawylimlines', [], varargin{:})
             %    clim = CheckOption('clim', [-9 -6.5], varargin{:});
 
             bPlotRadialIntensity = CheckOption('DisplayRadialIntensity', true, varargin{:});
