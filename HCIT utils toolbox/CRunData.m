@@ -92,6 +92,8 @@ classdef CRunData < handle & CConstants
         S383temp_pn= '';
         Rundir_fn  = ''; % filenames include full path assembled in the init 
         Reduced_fn = '';
+        svd_fn = '';
+        sSVD
         
         runnum
         iter      = 0;
@@ -263,8 +265,8 @@ classdef CRunData < handle & CConstants
                     S.YminSc    = -Inf;
 
                     % overwritten if camera image is found
-                    S.NKTupper = [512]*S.NM; %[533.5, 555.5, 577.5]*S.NM;
-                    S.NKTlower = [512]*S.NM; %[522.5, 544.5, 566.5]*S.NM;
+                    S.NKTupper = [628.6]*S.NM; %[533.5, 555.5, 577.5]*S.NM;
+                    S.NKTlower = [641.3]*S.NM; %[522.5, 544.5, 566.5]*S.NM;
                     S.NKTcenter = mean([S.NKTupper; S.NKTlower]);
 
                     S.ppl0 = 6.21;
@@ -818,6 +820,28 @@ classdef CRunData < handle & CConstants
             
             
         end % ReadReducedCube
+        
+        function S = ReadSVD(S)
+            % if svd spectrum was saved
+            fntmp = PathTranslator([S.Results_pn, S.Reduced_pn, ['svd_it' num2str(S.iter, '%05d') '.mat']]);
+            
+            try
+                if exist(fntmp, 'file')
+                    S.svd_fn = fntmp;
+                    S.sSVD = load(S.svd_fn);
+                end
+                
+                S.sSVD.s2norm = double((1./S.sSVD.mjsvs).*(S.sSVD.s.^2));
+                S.sSVD.SpecIntensity = double(abs(S.sSVD.U'*S.sSVD.rhs).^2);
+
+            catch ME
+                disp('File Error:');
+                disp(ME.identifier);
+                disp([S.Reduced_fn]);
+                
+            end
+                        
+        end % ReadSVD
         
         function S = ReadMaskCube(S, varargin)
             

@@ -251,11 +251,15 @@ end % CalcFigscale
 function [probeh, hfig, hax] = PlotProbeh(S, varargin)
      % [probeh, hfig, hax] = PlotProbeh(S, varargin)
      
-     hfig = CheckOption('hfig', figure, varargin{:});
      hax = CheckOption('hax', [], varargin{:});
 
      % get texp
-     [hfig, haxtexp, itnum_texp, texp] = PlotTexp(S);
+     if ~isempty(hax),
+         [~, ~, itnum_texp, texp] = PlotTexp(S, 'nodisplay', true);
+         hfig = hax.Parent;
+     else
+         [hfig, hax, itnum_texp, texp] = PlotTexp(S);
+     end
 
      [itnum, probeh] = deal(zeros(size(S)));
      for ii = 1:length(S)
@@ -280,8 +284,10 @@ function [probeh, hfig, hax] = PlotProbeh(S, varargin)
      
 end % PlotProbeh
 
-function [hfig, hax, itnum, texp] = PlotTexp(S)
+function [hfig, hax, itnum, texp] = PlotTexp(S, varargin)
 
+    nodisplay = CheckOption('nodisplay', false, varargin{:}); % in case you only want the texp data
+    
     [itnum, texp] = deal(zeros(size(S)));
     for ii = 1:length(S)
         itnum(ii) = S(ii).iter;
@@ -293,18 +299,23 @@ function [hfig, hax, itnum, texp] = PlotTexp(S)
         end
     end
     
-    hfig = figure;
-    plot(itnum, texp, 'o'), grid
-    xlabel('Iteration #')
-    ylabel('T_{exp} (s)')
-    hax = gca;
+    if nodisplay
+        hfig = []; hax = [];
+        
+    else
+        hfig = figure;
+        plot(itnum, texp, 'o'), grid
+        xlabel('Iteration #')
+        ylabel('T_{exp} (s)')
+        hax = gca;
+    end
     
 end % PlotTexp
 
 function [betaused, betamin, hfig, hax] = PlotBeta(listS, varargin)
     % [betaused, betamin, hfig, hax] = PlotBeta(listS, varargin)
     
-    hfig = CheckOption('hfig', figure, varargin{:});
+    hfig = CheckOption('hfig', [], varargin{:});
     hax = CheckOption('hax', [], varargin{:});
     itnum = CheckOption('itnum', [listS.iter], varargin{:}); % use [listS.iter] - listS(1).iter to start with 0
     
@@ -328,7 +339,11 @@ function [betaused, betamin, hfig, hax] = PlotBeta(listS, varargin)
         end
     end % 
     
-    figure(hfig);
+    if isempty(hfig),
+        hfig = figure;
+    else, 
+        figure(hfig);
+    end
     if ~isempty(hax), axes(hax); else, hax = gca; end
     hll = plot(itnum, betaused, '-or', itnum, betamin, '-xb');
     set(hll, 'LineWidth', 2);
@@ -341,7 +356,7 @@ end % PlotBeta
 
 function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
 
-    hfig = CheckOption('hfig', figure, varargin{:});
+    hfig = CheckOption('hfig', [], varargin{:});
     hax = CheckOption('hax', [], varargin{:});
     itnum = CheckOption('itnum', [listS.iter], varargin{:}); % use [listS.iter] - listS(1).iter to start with 0
     
@@ -378,7 +393,11 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
         
     end % ii
 
-    figure(hfig);
+    if isempty(hfig),
+        hfig = figure;
+    else
+        figure(hfig);
+    end
     if ~isempty(hax), axes(hax); else, hax = gca; end
     hl = semilogy(itnum, NInt_total, '-', itnum, NInt_inco, '--', itnum, NInt_co, ':'); grid on
     xlabel('Iteration #')
@@ -401,7 +420,7 @@ end % PlotNormIntensity
 function [rmsdDMv, hfig, hax] = PlotRMSdDMv(listS, varargin)
     % [hfig, hax, rmsdDMv] = PlotRMSdDMv(listS, varargin)
 
-    hfig = CheckOption('hfig', figure, varargin{:});
+    hfig = CheckOption('hfig', [], varargin{:});
     hax = CheckOption('hax', [], varargin{:});
     itnum = CheckOption('itnum', [listS.iter], varargin{:}); % use [listS.iter] - listS(1).iter to start with 0
 
@@ -440,7 +459,11 @@ function [rmsdDMv, hfig, hax] = PlotRMSdDMv(listS, varargin)
         end
     end
     
-    figure(hfig);
+    if isempty(hfig),
+        hfig = figure;
+    else
+        figure(hfig);
+    end
     if ~isempty(hax), axes(hax); else, hax = gca; end
     hh = semilogy(itnum_plot, rmsdDMv, '-o', itnum_plot, mean(rmsdDMv,2), '--');
     set(hh,'LineWidth', 1.0)
