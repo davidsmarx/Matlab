@@ -30,7 +30,7 @@ xlim = CheckOption('xlim', [], varargin{:});
 ylim = CheckOption('ylim', [], varargin{:});
 scale = CheckOption('scale', 'linear', varargin{:});
 hdrkwd = CheckOption('hdrkwd', {'camz'}, varargin{:});
-hdrkwdvalfmt = CheckOption('hdrkwdvalfmt', '%.1f ', varargin{:});
+hdrkwdvalfmt = CheckOption('hdrkwdvalfmt', '%.3f ', varargin{:});
 refImg = CheckOption('refimg', [], varargin{:}); % ImCube = ImCube - refImg
 comTitlestr = CheckOption('comtitlestr', '', varargin{:}); % common title to start each titlestr
 clim = CheckOption('clim', [], varargin{:});

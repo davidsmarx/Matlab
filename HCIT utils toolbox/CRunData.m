@@ -333,6 +333,7 @@ classdef CRunData < handle & CConstants
                     S.Sthpt.ThptCal_fn = throughput_fn;
 
                     S.ppl0 = 4.01; % config_SPCdisc_20180321.py
+                    S.DrawradiiDefault = [6.5 19.0];
                     
                 case 604, % SPC_disc
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
@@ -1180,7 +1181,7 @@ classdef CRunData < handle & CConstants
             %             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             %             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
-            %                         CheckOption('drawylimlines', [], varargin{:})
+            %             drawylimlines = CheckOption('drawylimlines', [], varargin{:})
             %             climopt = CheckOption('clim', [], varargin{:});
             %             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             %             haxuse = CheckOption('hax', [], varargin{:});
@@ -1804,6 +1805,7 @@ classdef CRunData < handle & CConstants
             % some options
             %    dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             %    drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            %    drawylimlines = CheckOption('drawylimlines', [], varargin{:})
             %    clim = CheckOption('clim', [-9 -6.5], varargin{:});
 
             bPlotRadialIntensity = CheckOption('DisplayRadialIntensity', true, varargin{:});
@@ -1821,21 +1823,22 @@ classdef CRunData < handle & CConstants
             end %
             
             if isempty(hfig),
-                %nrow_ax = 3;
-                %ncol_ax = S.Nlamcorr;
-                nrow_ax = S.Nlamcorr;
-                ncol_ax = 3;
-                hfig = figure_mxn(nrow_ax, ncol_ax);
+                hfig = figure;
             else
                 % need to remove hfig from varargin
                 iv = find(strcmp(varargin, 'hfig'));
                 varargin{iv+1} = [];
-                nrow_ax = S.Nlamcorr;
-                ncol_ax = 3;
-                hfig = figure_mxn(hfig, nrow_ax, ncol_ax);
             end
             
             %haxlist = zeros(3,S.Nlamcorr);
+            if S.Nlamcorr == 1,
+                nrow_ax = 1;
+                ncol_ax = 3;
+            else
+                ncol_ax = S.Nlamcorr;
+                nrow_ax = 3;
+            end
+            hfig = figure_mxn(hfig, nrow_ax, ncol_ax);
             
             % unprobed images
             figure(hfig);
