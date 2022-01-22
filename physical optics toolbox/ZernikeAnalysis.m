@@ -50,7 +50,7 @@ else
 end
 
 if do_phaseunwrap
-    phaimg = unwrap_HCIT(phaimg, bMask);    
+    phaimg = unwrap_HCIT(phaimg, bMask, 'selem', []); % don't alter the bMask
 end
 
 % remove piston (no mod2pi() because it is unwrapped phase)
