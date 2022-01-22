@@ -1,11 +1,12 @@
 function [phaunwrap, bMask] = unwrap_HCIT(pha, bMask, varargin)
-% phaunwrap = unwrap_HCIT(pha, bMask)
+% phaunwrap = unwrap_HCIT(pha, bMask, varargin)
 %
 % phase unwrapping specific to handle a CGI-like pupil with struts
 % based on WFSC-CGI/Calibration/pr/util/unwrap.py
 %
+% CheckOption('selem', strel('disk',1), varargin{:}); % = [] to skip imerode(bMask)
 
-selem = CheckOption('selem', strel('disk',1), varargin{:}); % = [] to skip imerode(bMask)
+selem = CheckOption('selem', strel('disk',1), varargin{:}); % imerode bMask before unwrap, [] to skip
 
 if ~isempty(selem),
     bMask = imerode(bMask, selem);

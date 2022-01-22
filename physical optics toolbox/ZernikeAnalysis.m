@@ -11,6 +11,7 @@ function [ZZ, phaimg, phares, sOptions] = ZernikeAnalysis(field, varargin)
 % CheckOption('Rnorm', [], varargin{:});
 % CheckOption('modes', 1:36, varargin{:});
 % CheckOption('polyorder', 'Noll', varargin{:});
+% CheckOption('do_phaseunwrap', true
 %
 % return:
 % ZZ = Zernike coeffs, (rad normalized rms), ZZ(1:3) == 0
@@ -26,6 +27,7 @@ Rnorm = CheckOption('Rnorm', [], varargin{:});
 Nz = CheckOption('Nz', 1:36, varargin{:}); % either 'Nz' or 'modes'
 Nz = CheckOption('modes', Nz, varargin{:});
 polyorder = CheckOption('polyorder', 'Noll', varargin{:});
+do_phaseunwrap = CheckOption('do_phaseunwrap', true, varargin{:});
 
 % if input is phase, must include bMask
 if bField_is_phase && isempty(bMask)
@@ -45,6 +47,10 @@ if bField_is_phase
     phaimg = field;
 else
     phaimg = angle(field);
+end
+
+if do_phaseunwrap
+    phaimg = unwrap_HCIT(phaimg, bMask, 'selem', []); % don't alter the bMask
 end
 
 % remove piston (no mod2pi() because it is unwrapped phase)
@@ -67,7 +73,7 @@ phares(bMask) = phaimg(bMask) - zernikeval([zeros(3,1); ZZ(4:end)], Xim(bMask), 
 
 % return values:
 % ZZ, phaimg, phares, sOptions
-sOptions = struct('bMask', bMask, 'Rnorm', Rnorm, 'Nz', Nz);
+sOptions = struct('bMask', bMask, 'Rnorm', Rnorm, 'Nz', Nz, 'xim', xim, 'yim', yim);
 
 end % main
 

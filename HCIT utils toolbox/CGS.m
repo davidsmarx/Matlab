@@ -12,6 +12,9 @@ classdef CGS < handle
     %                         bn = '/proj/mcb/data/dB_PR_Kern/gsomc_no00';
     %                     case 'ttb_hlc'
     %                         bn = '/proj/mcb/data/dB_PR_Kern/gsomc_no00';
+    %                     case 'mcb_alllens'
+    %                     case 'mcb_twolens'
+    %                     case 'piaacmc'
     %
     % read reduced results from gs phase retrieval
     %
@@ -96,6 +99,7 @@ classdef CGS < handle
             end
             
             U = CConstants;
+
             wavelength_kwd = 'lam'; % default value
             
             if ~exist('bn','var') || isempty(bn),
@@ -838,8 +842,10 @@ classdef CGS < handle
             % options:
             %   Option('value', 'amp' (default), 'intensity'
             %   Option('clim', [], varargin{:});
-            %   Option('scale', 'log', varargin{:});
+            %   Option('scale', 'log', varargin{:}); % (log), linear
             %   Option('xylim', [], varargin{:});
+            %   Option('type', 'tile', varargin{:}); % or 'blink' for ImageCube to blink
+            %   Option('hfig', [], varargin{:}); %
             
             if isempty(S.cAmpPlanes), S.ReadAmpImages; end
             
@@ -847,6 +853,8 @@ classdef CGS < handle
             clim = CheckOption('clim', [], varargin{:});
             scale = CheckOption('scale', 'log', varargin{:});
             xylim = CheckOption('xylim', [], varargin{:});
+            display_type = CheckOption('type', 'tile', varargin{:});
+            hfig = CheckOption('hfig', [], varargin{:});
             
             % each hdu is N x N x 3
             % (:,:,1) = measured amplitude
@@ -869,29 +877,55 @@ classdef CGS < handle
             elseif strcmp(plAmpOrInt, 'intensity')
                 funPlot = @(A, icc) fScale(squeeze(A(:,:,icc)).^2);
             end
-            
-            Nplanes = length(ipl);
-            hfig = figure_mxn(2, Nplanes);
-            hax = zeros(2, Nplanes);
-            for iipl = 1:Nplanes,
-                hax(1,iipl) = subplot(2,Nplanes,iipl);
-                imageschcit(funPlot(S.cAmpPlanes{ipl(iipl)},1)), title(['Camera, ipl = ' num2str(ipl(iipl))])
-                colorbar
-                hax(2,iipl) = subplot(2,Nplanes,Nplanes + iipl);
-                imageschcit(funPlot(S.cAmpPlanes{ipl(iipl)},2)), title(['Estimated, ipl = ' num2str(ipl(iipl))])
-                colorbar
-            end
-            
-            cclim = get(hax,'clim');
-            if isempty(clim),
-                set(hax,'clim', [max([cclim{1}(1) cclim{2}(1)]) max([cclim{:}])]);
-            else
-                set(hax,'clim',clim)
-            end
-            
-            if ~isempty(xylim)
-                set(hax, 'xlim', xylim, 'ylim', xylim)
-            end
+
+            switch display_type
+                case 'blink'
+                    Nplanes = length(ipl);
+                    
+                    %imcube = zeros([2*Nplanes, size]);
+                    if isempty(hfig), hfig = figure; else, figure(hfig); end
+                    
+                    for iipl = 1:Nplanes,
+                        imcube(2*iipl-1,:,:) = funPlot(S.cAmpPlanes{ipl(iipl)},1);
+                        imcube(2*iipl,:,:)   = funPlot(S.cAmpPlanes{ipl(iipl)},2);
+                    end
+                    
+                    [hfig, hax] = ImageCube(imcube, 1:2*Nplanes); % 'fTitleStr', @(isl) {['Camera, ipl = ' num2str(ipl(ceil(isl/2)))]
+                    %set(hax,'clim',get(gca,'clim'))
+                    if ~isempty(xylim)
+                        set(hax, 'xlim', xylim, 'ylim', xylim)
+                    end
+                    
+                case 'tile',
+                    Nplanes = length(ipl);
+                    
+                    % create figure if necessary
+                    if isempty(hfig), hfig = figure_mxn(2, Nplanes); else, figure(hfig); end
+                    
+                    hax = zeros(2, Nplanes);
+                    for iipl = 1:Nplanes,
+                        hax(1,iipl) = subplot(2,Nplanes,iipl);
+                        imageschcit(funPlot(S.cAmpPlanes{ipl(iipl)},1)), title(['Camera, ipl = ' num2str(ipl(iipl))])
+                        colorbar
+                        hax(2,iipl) = subplot(2,Nplanes,Nplanes + iipl);
+                        imageschcit(funPlot(S.cAmpPlanes{ipl(iipl)},2)), title(['Estimated, ipl = ' num2str(ipl(iipl))])
+                        colorbar
+                    end
+                    
+                    cclim = get(hax,'clim');
+                    if isempty(clim),
+                        set(hax,'clim', [max([cclim{1}(1) cclim{2}(1)]) max([cclim{:}])]);
+                    else
+                        set(hax,'clim',clim)
+                    end
+                    
+                    if ~isempty(xylim)
+                        set(hax, 'xlim', xylim, 'ylim', xylim)
+                    end
+                otherwise
+                    error(['unknown display type: ', display_type]);
+                    
+            end % switch display type
             
         end % DisplayAmpPlane
         

@@ -19,7 +19,7 @@ function [hfig_out, hax_out, sUserData_out] = ImageCube(imgCube, listI, varargin
 % clim = CheckOption('clim', [], varargin{:});
 % cmap = CheckOption('colormap', 'gray', varargin{:});
 % fTitleStr = CheckOption('fTitleStr', @(isl) ['slice #' num2str(isl) '; Label ' num2str(listI(isl))], varargin{:});
-% hfig = CheckOption('hfig', [], varargin{:});
+% hfig = CheckOption('hfig', [], varargin{:}); % put image in hfig, or gcf
 % hax = CheckOption('hax', [], varargin{:});
 %
 % fTitleStr can also be a cell array of strings

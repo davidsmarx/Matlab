@@ -36,6 +36,7 @@ more off
 ppt_fn = CheckOption('pptfn', '', varargin{:});
 sOptin = CheckOption('sOptin', [], varargin{:}); % passed to CRunData
 Sppt = CheckOption('Sppt', [], varargin{:});
+max_empties = CheckOption('max_empties', 3, varargin{:});
 
 % % check if PowerPoint Presentation already exists and still there
 % try
@@ -50,7 +51,8 @@ if isempty(Sppt) && ispc && ~isempty(varargin),
 end
 
 % get the CRunData objects
-
+% if 3 successive iterations have no data, stop
+cnt_empty = 0;
 N = length(listItnum);
 if isnumeric(listItnum),
     %if isscalar(listItnum)
@@ -63,7 +65,17 @@ if isnumeric(listItnum),
         %catch
         %    warning(['iter# ' num2str(listItnum(ii)) ' not found']);
         %end
+        if ~exist(S(ii).Rundir_fn, 'file')
+            cnt_empty = cnt_empty + 1;
+        else
+            % reset, only count successive empties
+            cnt_empty = 0;
+        end
         
+        if cnt_empty >= max_empties
+            S = S(1:end-max_empties);
+            break
+        end
     end
 elseif isa(listItnum, 'CRunData')
     S = listItnum;
@@ -239,11 +251,15 @@ end % CalcFigscale
 function [probeh, hfig, hax] = PlotProbeh(S, varargin)
      % [probeh, hfig, hax] = PlotProbeh(S, varargin)
      
-     hfig = CheckOption('hfig', figure, varargin{:});
      hax = CheckOption('hax', [], varargin{:});
 
      % get texp
-     [hfig, haxtexp, itnum_texp, texp] = PlotTexp(S);
+     if ~isempty(hax),
+         [~, ~, itnum_texp, texp] = PlotTexp(S, 'nodisplay', true);
+         hfig = hax.Parent;
+     else
+         [hfig, hax, itnum_texp, texp] = PlotTexp(S);
+     end
 
      [itnum, probeh] = deal(zeros(size(S)));
      for ii = 1:length(S)
@@ -268,8 +284,10 @@ function [probeh, hfig, hax] = PlotProbeh(S, varargin)
      
 end % PlotProbeh
 
-function [hfig, hax, itnum, texp] = PlotTexp(S)
+function [hfig, hax, itnum, texp] = PlotTexp(S, varargin)
 
+    nodisplay = CheckOption('nodisplay', false, varargin{:}); % in case you only want the texp data
+    
     [itnum, texp] = deal(zeros(size(S)));
     for ii = 1:length(S)
         itnum(ii) = S(ii).iter;
@@ -281,21 +299,25 @@ function [hfig, hax, itnum, texp] = PlotTexp(S)
         end
     end
     
-    hfig = figure;
-    plot(itnum, texp, 'o'), grid
-    xlabel('Iteration #')
-    ylabel('T_{exp} (s)')
-    hax = gca;
+    if nodisplay
+        hfig = []; hax = [];
+        
+    else
+        hfig = figure;
+        plot(itnum, texp, 'o'), grid
+        xlabel('Iteration #')
+        ylabel('T_{exp} (s)')
+        hax = gca;
+    end
     
 end % PlotTexp
 
 function [betaused, betamin, hfig, hax] = PlotBeta(listS, varargin)
     % [betaused, betamin, hfig, hax] = PlotBeta(listS, varargin)
     
-    hfig = CheckOption('hfig', figure, varargin{:});
+    hfig = CheckOption('hfig', [], varargin{:});
     hax = CheckOption('hax', [], varargin{:});
-
-    itnum = [listS.iter];
+    itnum = CheckOption('itnum', [listS.iter], varargin{:}); % use [listS.iter] - listS(1).iter to start with 0
     
     [ireg0, betaused, betamin] = deal(zeros(length(itnum),1));
     for ii = 1:length(listS)
@@ -317,7 +339,11 @@ function [betaused, betamin, hfig, hax] = PlotBeta(listS, varargin)
         end
     end % 
     
-    figure(hfig);
+    if isempty(hfig),
+        hfig = figure;
+    else, 
+        figure(hfig);
+    end
     if ~isempty(hax), axes(hax); else, hax = gca; end
     hll = plot(itnum, betaused, '-or', itnum, betamin, '-xb');
     set(hll, 'LineWidth', 2);
@@ -330,12 +356,12 @@ end % PlotBeta
 
 function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
 
-    hfig = CheckOption('hfig', figure, varargin{:});
+    hfig = CheckOption('hfig', [], varargin{:});
     hax = CheckOption('hax', [], varargin{:});
-
-    itnum = [listS.iter];
+    itnum = CheckOption('itnum', [listS.iter], varargin{:}); % use [listS.iter] - listS(1).iter to start with 0
     
     [NInt_co, NInt_inco, NInt_total] = deal(zeros(length(itnum), max([listS.Nlamcorr]) ));
+    NInt_mean = zeros(length(itnum),1);
     for ii = 1:length(itnum)
         
         %         if isempty(listS(ii).NormIntensity_total)
@@ -357,23 +383,36 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
             NInt_co(ii, :) = sC.co_lam_NI;
             NInt_inco(ii, :) = sC.inco_lam_NI;
             NInt_total(ii, :) = sC.score_lam;
+            NInt_mean(ii) = sC.mean;
         else
             NInt_co(ii, :) = NaN; % so it's not plotted
             NInt_inco(ii, :) = NaN;
             NInt_total(ii, :) = NaN;            
+            NInt_mean(ii) = NaN;
         end
         
     end % ii
 
-    figure(hfig);
+    if isempty(hfig),
+        hfig = figure;
+    else
+        figure(hfig);
+    end
     if ~isempty(hax), axes(hax); else, hax = gca; end
-    hl = semilogy(itnum, NInt_total, '-b', itnum, NInt_inco, '--r', itnum, NInt_co, ':g'); grid on
+    hl = semilogy(itnum, NInt_total, '-', itnum, NInt_inco, '--', itnum, NInt_co, ':'); grid on
     xlabel('Iteration #')
     ylabel('Normalized Intensity')
     set(hl,'linewidth', 2)
-    legend('Total', 'Unmodulated', 'Modulated')
-    [itnum_min, NInt_total_min, NInt_inco_min, NInt_co_min] = mindata(NInt_total, itnum, NInt_total, NInt_inco, NInt_co);
-    han = FigureTitle(['Iter #' num2str(itnum_min) '; NI = ' num2str(NInt_total_min,'%.1e') '; Mod = ' num2str(NInt_co_min,'%.1e') '; Unmod = ' num2str(NInt_inco_min,'%.1e')],'FontSize',12);
+    
+    for ilam = 1:length(listS(1).lambda)
+        legstr_total{ilam} = ['Total ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
+        legstr_unmod{ilam} = ['Unmodulated ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
+        legstr_mod{ilam}   = ['Modulated ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
+    end
+    %legend('Total', 'Unmodulated', 'Modulated')
+    legend(legstr_total{:},legstr_unmod{:},legstr_mod{:})
+    [itnum_min, NInt_total_min, NInt_inco_min, NInt_co_min, NInt_mean_min] = mindata(NInt_mean, itnum, mean(NInt_total, 2), mean(NInt_inco, 2), mean(NInt_co, 2), NInt_mean);
+    han = FigureTitle(['Iter #' num2str(itnum_min) '; NI = ' num2str(NInt_mean_min,'%.1e') '; Mod = ' num2str(NInt_co_min,'%.1e ') '; Unmod = ' num2str(NInt_inco_min,'%.1e ')],'FontSize',12);
 
     
 end % PlotNormIntensity
@@ -381,9 +420,14 @@ end % PlotNormIntensity
 function [rmsdDMv, hfig, hax] = PlotRMSdDMv(listS, varargin)
     % [hfig, hax, rmsdDMv] = PlotRMSdDMv(listS, varargin)
 
-    hfig = CheckOption('hfig', figure, varargin{:});
+    hfig = CheckOption('hfig', [], varargin{:});
     hax = CheckOption('hax', [], varargin{:});
+    itnum = CheckOption('itnum', [listS.iter], varargin{:}); % use [listS.iter] - listS(1).iter to start with 0
 
+    % plotting differential, start with itnum(2)
+    itnum_plot = itnum(2:end);
+    itnum_plot = itnum_plot(:);
+    
     % read all the DMv cubes
     for ii = 1:length(listS),
         if isempty(listS(ii).DMvCube)
@@ -415,9 +459,13 @@ function [rmsdDMv, hfig, hax] = PlotRMSdDMv(listS, varargin)
         end
     end
     
-    figure(hfig);
+    if isempty(hfig),
+        hfig = figure;
+    else
+        figure(hfig);
+    end
     if ~isempty(hax), axes(hax); else, hax = gca; end
-    hh = semilogy([listS(2:end).iter].', rmsdDMv, '-o', [listS(2:end).iter].', mean(rmsdDMv,2), '--');
+    hh = semilogy(itnum_plot, rmsdDMv, '-o', itnum_plot, mean(rmsdDMv,2), '--');
     set(hh,'LineWidth', 1.0)
     grid on
     xlabel('Iteration #')

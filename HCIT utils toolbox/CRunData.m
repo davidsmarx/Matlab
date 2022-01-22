@@ -92,6 +92,8 @@ classdef CRunData < handle & CConstants
         S383temp_pn= '';
         Rundir_fn  = ''; % filenames include full path assembled in the init 
         Reduced_fn = '';
+        svd_fn = '';
+        sSVD
         
         runnum
         iter      = 0;
@@ -187,7 +189,7 @@ classdef CRunData < handle & CConstants
             % Results_pn
             switch S.runnum,
                 case 0 % DST
-                    S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run000/';
+                    S.Results_pn = '/home/dmarx/ln_dst_data/hcim/EFC/HLC/run000/';
                     S.XYlimDefault = 12;
                     
                 case 001,
@@ -263,8 +265,8 @@ classdef CRunData < handle & CConstants
                     S.YminSc    = -Inf;
 
                     % overwritten if camera image is found
-                    S.NKTupper = [512]*S.NM; %[533.5, 555.5, 577.5]*S.NM;
-                    S.NKTlower = [512]*S.NM; %[522.5, 544.5, 566.5]*S.NM;
+                    S.NKTupper = [628.6]*S.NM; %[533.5, 555.5, 577.5]*S.NM;
+                    S.NKTlower = [641.3]*S.NM; %[522.5, 544.5, 566.5]*S.NM;
                     S.NKTcenter = mean([S.NKTupper; S.NKTlower]);
 
                     S.ppl0 = 6.21;
@@ -331,6 +333,7 @@ classdef CRunData < handle & CConstants
                     S.Sthpt.ThptCal_fn = throughput_fn;
 
                     S.ppl0 = 4.01; % config_SPCdisc_20180321.py
+                    S.DrawradiiDefault = [6.5 19.0];
                     
                 case 604, % SPC_disc
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
@@ -405,8 +408,8 @@ classdef CRunData < handle & CConstants
             % build paths and filenames for the data
             % basename, such as 'run603it00000.fits'
             s_bn = ['run' num2str(S.runnum,'%03d') 'it' num2str(iter,'%05d') '.fits'];
-            S.Reduced_fn = PathTranslator([S.Results_pn S.Reduced_pn s_bn]);
-            S.Rundir_fn = PathTranslator([S.Results_pn S.Rundir_pn s_bn]);
+            S.Reduced_fn = PathTranslator(cell2mat(join({S.Results_pn, S.Reduced_pn, s_bn}, '/')));
+            S.Rundir_fn = PathTranslator(cell2mat(join({S.Results_pn, S.Rundir_pn, s_bn}, '/')));
 
             % 'local' paths are either the same (linux cluster)
             %         or local PC drive. If PC, we will copy data
@@ -415,14 +418,14 @@ classdef CRunData < handle & CConstants
                 if ~exist([S.PCtemp_pn S.Reduced_pn],'dir')
                     mkdir([S.PCtemp_pn S.Reduced_pn])
                 end
-                sReduced_local_fn = [S.PCtemp_pn S.Reduced_pn s_bn];
-                sRundir_local_fn  = [S.PCtemp_pn S.Rundir_pn s_bn];
+                sReduced_local_fn = fullfile(S.PCtemp_pn, S.Reduced_pn, s_bn);
+                sRundir_local_fn  = fullfile(S.PCtemp_pn, S.Rundir_pn, s_bn);
             else
-                if ~exist([S.S383temp_pn S.Reduced_pn],'dir')
-                    mkdir([S.S383temp_pn S.Reduced_pn])
+                if ~exist(fullfile(S.S383temp_pn, S.Reduced_pn),'dir')
+                    mkdir(fullfile(S.S383temp_pn, S.Reduced_pn))
                 end
-                sReduced_local_fn = [S.S383temp_pn S.Reduced_pn s_bn];
-                sRundir_local_fn  = [S.S383temp_pn S.Rundir_pn s_bn];
+                sReduced_local_fn = fullfile(S.S383temp_pn, S.Reduced_pn, s_bn);
+                sRundir_local_fn  = fullfile(S.S383temp_pn, S.Rundir_pn, s_bn);
             end
             
             % unzip the fits files if necessary
@@ -500,6 +503,11 @@ classdef CRunData < handle & CConstants
             % get actual wavelengths from the camera fits files
             for iwv = 1:S.NofW,
                fn = FitsGetKeywordVal(S.ImKeys, ['C' num2str(iwv-1) 'P0J0']) ;
+               if isempty(fn),
+                   warning(['no header key ' ['C' num2str(iwv-1) 'P0J0'] ]);
+                   break;
+               end
+               
                [pntmp, fntmp, ext] = fileparts(fn);
                fn = [pntmp '/' fntmp '.fits'];
                if isempty(fn) || ~exist(PathTranslator(fn),'file'),
@@ -814,6 +822,28 @@ classdef CRunData < handle & CConstants
             
         end % ReadReducedCube
         
+        function S = ReadSVD(S)
+            % if svd spectrum was saved
+            fntmp = PathTranslator([S.Results_pn, S.Reduced_pn, ['svd_it' num2str(S.iter, '%05d') '.mat']]);
+            
+            try
+                if exist(fntmp, 'file')
+                    S.svd_fn = fntmp;
+                    S.sSVD = load(S.svd_fn);
+                end
+                
+                S.sSVD.s2norm = double((1./S.sSVD.mjsvs).*(S.sSVD.s.^2));
+                S.sSVD.SpecIntensity = double(abs(S.sSVD.U'*S.sSVD.rhs).^2);
+
+            catch ME
+                disp('File Error:');
+                disp(ME.identifier);
+                disp([S.Reduced_fn]);
+                
+            end
+                        
+        end % ReadSVD
+        
         function S = ReadMaskCube(S, varargin)
             
             % 1st slice is mask of control region (md)
@@ -909,7 +939,7 @@ classdef CRunData < handle & CConstants
             catch ME
                 disp('File Error:');
                 disp(ME.identifier);
-                disp([S.Reduced_fn]);
+                disp([S.Rundir_fn]);
                 return                
             end
             
@@ -1151,6 +1181,7 @@ classdef CRunData < handle & CConstants
             %             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             %             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
+            %             drawylimlines = CheckOption('drawylimlines', [], varargin{:})
             %             climopt = CheckOption('clim', [], varargin{:});
             %             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             %             haxuse = CheckOption('hax', [], varargin{:});
@@ -1169,6 +1200,7 @@ classdef CRunData < handle & CConstants
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
+            drawYlimLines = CheckOption('drawylimlines', [], varargin{:});
             climopt = CheckOption('clim', [], varargin{:});
             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             haxuse = CheckOption('hax', [], varargin{:});
@@ -1211,7 +1243,8 @@ classdef CRunData < handle & CConstants
             % overlay circles if requested
             DrawCircles(ha, drawRadii);
             DrawThetaLines(ha, drawTheta, drawRadii);
-
+            DrawYlimLines(ha, drawYlimLines, drawRadii);
+            % DrawYlimLines                        CheckOption('drawylimlines', [], varargin{:})
             % set each image plot to the same clim
             % auto-clim, unless specific clim requested
             if isempty(climopt),
@@ -1441,6 +1474,7 @@ classdef CRunData < handle & CConstants
             bLog = CheckOption('bLog', true, varargin{:});
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            drawYlimLines = CheckOption('drawylimlines', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
             IncIntType = CheckOption('type', 'est', varargin{:});
@@ -1502,38 +1536,8 @@ classdef CRunData < handle & CConstants
             set(hax,'xlim',xlim,'ylim',ylim,'clim',clim);
             
             DrawCircles(hax, drawRadii);
+            DrawYlimLines(hax, drawYlimLines, drawRadii);
             
-            %             % radial plot
-            %             for iwv = 1:S.Nlamcorr,
-            %                 [fovrplot, IncIntrad] = RadialMean(x, y, plIncInt{iwv}, 128);
-            %                 % remove negative inc int values so we can use log plot
-            %                 IncIntrad(IncIntrad < 1e-11) = 1e-11;
-            %                 qplot{1,iwv} = fovrplot;
-            %                 qplot{2,iwv} = IncIntrad;
-            %                 legstr{iwv} = ' ';
-            %                 if ~isempty(S.NKTcenter), legstr{iwv} = [num2str(S.NKTcenter(iwv)/S.NM) 'nm']; end
-            %             end
-            %             figure, semilogy(qplot{:});
-            %             hax(end+1) = gca;
-            %             grid on
-            %             set(gca,'xlim',[0 1].*xlim)
-            %             %set(gca,'ylim',clim)
-            %
-            %             xlabel('Radius (\lambda/D)')
-            %             ylabel('Unmodulated (Norm. Int.)')
-            %             title(['Inc Int, it#' num2str(S.iter)])
-            %
-            %             if ~isempty(drawRadii),
-            %                 hold on
-            %                 for irad = 1:length(drawRadii),
-            %                     plot(drawRadii(irad)*[1 1], get(gca,'ylim'), '--r')
-            %                 end
-            %                 hold off
-            %             end
-            %
-            %             % legend must go after everything is plotted
-            %             legend(legstr{:},'Location','North')
-
         end % DisplayIncInt
                 
         function [hfig, hax] = DisplayProbeAmp(S, varargin)
@@ -1643,7 +1647,7 @@ classdef CRunData < handle & CConstants
         end % DisplayOneProbeAmp
         
         function [hfig, ha] = DisplayProbeCube(S, varargin)
-            % hfig = DisplayProbeCube(S, iwvplot)
+            % hfig = DisplayProbeCube(S, varargin)
             % ProbeCube is 2nd HDU of reduced data cube
             %
             %             hfig = CheckOption('hfig', [], varargin{:});
@@ -1741,6 +1745,7 @@ classdef CRunData < handle & CConstants
             bLog = CheckOption('blog', true, varargin{:});
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            drawYlimLines = CheckOption('drawylimlines', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
             
@@ -1786,38 +1791,7 @@ classdef CRunData < handle & CConstants
             set(hax,'xlim',xlim,'ylim',ylim,'clim',clim);
             
             DrawCircles(hax, drawRadii);
-            %
-            %             % radial plot
-            %             for iwv = 1:S.Nlamcorr,
-            %                 [fovrplot, S.CohIntrad] = RadialMean(x, y, S.S.CohInt{iwv}, 128);
-            %                 % remove negative inc int values so we can use log plot
-            %                 IncIntrad(CohIntrad < 1e-11) = 1e-11;
-            %                 qplot{1,iwv} = fovrplot;
-            %                 qplot{2,iwv} = CohIntrad;
-            %                 legstr{iwv} = ' ';
-            %                 if ~isempty(S.NKTcenter), legstr{iwv} = [num2str(S.NKTcenter(iwv)/S.NM) 'nm']; end
-            %             end
-            %             figure, semilogy(qplot{:});
-            %             hax(end+1) = gca;
-            %             grid on
-            %             set(gca,'xlim',[0 1].*xlim)
-            %             %set(gca,'ylim',clim)
-            %
-            %             xlabel('Radius (\lambda/D)')
-            %             ylabel('Modulated (Norm. Int.)')
-            %             title(['Mod Int, it#' num2str(S.iter)])
-            %
-            %             if ~isempty(drawRadii),
-            %                 hold on
-            %                 for irad = 1:length(drawRadii),
-            %                     plot(drawRadii(irad)*[1 1], get(gca,'ylim'), '--r')
-            %                 end
-            %                 hold off
-            %             end
-            %
-            %             % legend must go after everything is plotted
-            %             legend(legstr{:},'Location','North')
-            
+            DrawYlimLines(hax, drawYlimLines, drawRadii);
             
         end % DisplayCohInt
         
@@ -1831,7 +1805,8 @@ classdef CRunData < handle & CConstants
             % some options
             %    dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             %    drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
-            %    clim = CheckOption('clim', [], varargin{:});
+            %    drawylimlines = CheckOption('drawylimlines', [], varargin{:})
+            %    clim = CheckOption('clim', [-9 -6.5], varargin{:});
 
             bPlotRadialIntensity = CheckOption('DisplayRadialIntensity', true, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
@@ -1848,11 +1823,7 @@ classdef CRunData < handle & CConstants
             end %
             
             if isempty(hfig),
-                %nrow_ax = 3;
-                %ncol_ax = S.Nlamcorr;
-                nrow_ax = S.Nlamcorr;
-                ncol_ax = 3;
-                hfig = figure_mxn(nrow_ax, ncol_ax);
+                hfig = figure;
             else
                 % need to remove hfig from varargin
                 iv = find(strcmp(varargin, 'hfig'));
@@ -1860,6 +1831,14 @@ classdef CRunData < handle & CConstants
             end
             
             %haxlist = zeros(3,S.Nlamcorr);
+            if S.Nlamcorr == 1,
+                nrow_ax = 1;
+                ncol_ax = 3;
+            else
+                ncol_ax = S.Nlamcorr;
+                nrow_ax = 3;
+            end
+            hfig = figure_mxn(hfig, nrow_ax, ncol_ax);
             
             % unprobed images
             figure(hfig);
@@ -2115,8 +2094,16 @@ classdef CRunData < handle & CConstants
         end % DisplayEfields
 
         function [hfig, ha, sMetrics] = DisplayDEfields(S, Sref, varargin)
-            % [hfig, ha] = DisplayDEfields(S, Sref, varargin)
+            % [hfig, ha, sMetrics] = DisplayDEfields(S, Sref, varargin)
+            %
             % 4 x NofW, dE_t real, imag, dE_m real, imag
+            %
+            % sMetrics = 
+            %                     'type', 'dEfields' ...
+            %                     ,'rmsdE_t', nan ...
+            %                     ,'rmsdE_m', nan ...
+            %                     ,'dE_t', [] ...
+            %                     ,'dE_m', [] ...
             % 
             % CheckOption('xylim', S.XYlimDefault, varargin{:});
             % CheckOption('hfig', [], varargin{:});
@@ -2150,6 +2137,8 @@ classdef CRunData < handle & CConstants
                     'type', 'dEfields' ...
                     ,'rmsdE_t', nan ...
                     ,'rmsdE_m', nan ...
+                    ,'dE_t', [] ...
+                    ,'dE_m', [] ...
                 );
 
                 return
@@ -2177,6 +2166,8 @@ classdef CRunData < handle & CConstants
                 'type', 'dEfields' ...
                 ,'rmsdE_t', rmsdE_t ...
                 ,'rmsdE_m', rmsdE_m ...
+                ,'dE_t', dE_t ...
+                ,'dE_m', dE_m ...            
                 );
             
             % if no display, return metrics and skip graphs
@@ -2393,7 +2384,8 @@ classdef CRunData < handle & CConstants
                     %                     [~, bMaskce] = AutoMetric(CEampiwv, [], ...
                     %                         struct('image_type','psf','logPSF',true,...
                     %                         'debug',bDebugAutoMetric,'PSF_thresh_nsig',PSF_thresh_nsig));
-
+                else
+                    bMaskce = bMaskDisplay;
                 end
                 
                 % apply display mask
@@ -2561,9 +2553,9 @@ classdef CRunData < handle & CConstants
         end % DisplayPampzero
 
         function [hfig, hax, sMetrics] = DisplayDMv(S, dmvref, varargin)
-            % [hfig, hax] = S.DisplayDMv([], varargin)
-            % [hfig, hax] = S.DisplayDMv(Sref, varargin)
-            % [hfig, hax] = S.DisplayDMv({refDM1v_fits, refDM2v_fits}, varargin)
+            % [hfig, hax, sMetrics] = S.DisplayDMv([], varargin)
+            % [hfig, hax, sMetrics] = S.DisplayDMv(Sref, varargin)
+            % [hfig, hax, sMetrics] = S.DisplayDMv({refDM1v_fits, refDM2v_fits}, varargin)
             %
             % CheckOption('climdelta', [], varargin{:});
             % CheckOption('hfig', [], varargin{:});
@@ -2638,6 +2630,7 @@ classdef CRunData < handle & CConstants
                 figure(hfig);
             end
             
+            rmsdDMv = zeros(1,S.Ndm);
             for idm = 1:S.Ndm,
 
                 % plot S DMv
@@ -2651,15 +2644,11 @@ classdef CRunData < handle & CConstants
                     hax(idm+S.Ndm) = subplot(Nr, S.Ndm, idm+S.Ndm);
                 
                     dDMv = DMv{idm} - refDMv{idm};
-                    rmsdDMv = rms(dDMv(abs(dDMv)>0));
-                    
-                    sMetrics.dDMv = dDMv;
-                    sMetrics.rmsdDMv = rmsdDMv;
-                    
+                    rmsdDMv(idm) = rms(dDMv(abs(dDMv)>0));
 
                     imageschcit(0,0,dDMv)
                     colorbartitle('Vmu')
-                    title(['\Delta ' strRefDM{idm} ', ' num2str(rmsdDMv,'%.4f') 'V rms'])
+                    title(['\Delta ' strRefDM{idm} ', ' num2str(rmsdDMv(idm),'%.4f') 'V rms'])
                     
                     % save
                     cdDMv{idm} = dDMv;
@@ -2678,12 +2667,18 @@ classdef CRunData < handle & CConstants
             if ~isempty(refDMv),
                 if ~isempty(climDelta),
                     set(hax(S.Ndm+1:end),'clim',climDelta)
-                else
+                elseif range(reshape([cdDMv{:}],[],1)) > 0,
                     aclim = AutoClim([cdDMv{:}],'symmetric',true);
                     set(hax(S.Ndm+1:end),'clim',aclim);
                 end                
             end % refDMv
-                        
+            
+            sMetrics = struct(...
+                'type', 'DMv' ...
+                ,'rmsdDMv', rmsdDMv ...
+                ,'cdDMv', cdDMv ...
+                );
+            
             %             fprintf('rms dDMv1 = %.3f Vmu\n',rmsdDMv1);
             %             fprintf('rms dDMv2 = %.3f Vmu\n',rmsdDMv2);
             %
@@ -2876,6 +2871,45 @@ for iax = 1:length(hax),
         plot(-[r0 r1]*cos(th),-[r0 r1]*sin(th), '-r');
         
     end % for each theta
+    hold off;
+
+end % for each axes
+
+end % DrawThetaLines
+
+function DrawYlimLines(hax, drawYlimLines, drawRadii)
+% DrawYlimLines(hax, drawYlimLines, drawRadii)
+
+if isempty(drawYlimLines),
+    return
+end
+
+hax = hax(:);
+
+for iax = 1:length(hax),
+    axes(hax(iax));
+
+    if isempty(drawRadii),
+        r0 = 0;
+        r1 = max(get(hax(iax),'xlim'));
+    else
+        r0 = min(drawRadii);
+        r1 = max(drawRadii);
+    end
+    
+    hold on
+    for ith = 1:length(drawYlimLines),
+        yline = drawYlimLines(ith);
+        x0 = sqrt(r1.^2 - yline.^2);
+        if abs(yline) > r0
+            hl = plot([x0 -x0], yline*[1 1], '-r');
+        else
+            x1 = sqrt(r0.^2 - yline.^2);
+            hl = plot([-x0 -x1], yline*[1 1], '-r', [x1 x0], yline*[1 1], '-r');
+        end
+        set(hl,'linewidth',1)
+        
+    end % for each y line
     hold off;
 
 end % for each axes
