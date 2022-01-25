@@ -25,3 +25,6 @@ else,
 end
     
 more on
+
+cd /home/hcit/OMC/OMC_MSWC/falco_testbed_run200
+startup
