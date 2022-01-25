@@ -13,15 +13,10 @@ clear;
 constants;
 unitsdefinitions;
 
-% python path
-[pyver, pyexe, isloaded] = pyversion;
-if ~isempty(pyver),
-    pypath = py.sys.path;
-    pypath.append('/home/dmarx/src/Falco-jpl/FALCO-python/falco')
-    pypath.append('/home/dmarx/src/Falco-jpl/FALCO-python/falco/models')
-    pypath.append('/home/dmarx/src/python_toolbox')
-else,
-    warning('Python not found');
+% % python path
+if isunix,
+    % for all hcit and aftac machines:
+    PYENV = pyenv('Version', '/usr/local/anaconda3/bin/python3.7')
 end
     
 more on
