@@ -2,6 +2,10 @@ function cls(varargin)
 % cls
 % close all figure windows and clear all variables
 % cls hidden closes hidden windows also
+%
+% CheckOption('except', {}, varargin{:}); % cell array of 'var' not to clear
+
+list_except = CheckOption('except', {}, varargin{:});
 
 sss = whos('global');
 if any(strcmp({sss.class},'activex')), 
@@ -22,7 +26,11 @@ else,
     evalin('base','close all');
 end
 
-evalin('base','clear');
+if ~isempty(list_except),
+    clearvars('-except', list_except{:});
+else
+    evalin('base','clear');
+end
 
 evalin('base','constants');
 

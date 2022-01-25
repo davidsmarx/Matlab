@@ -1647,7 +1647,7 @@ classdef CRunData < handle & CConstants
         end % DisplayOneProbeAmp
         
         function [hfig, ha] = DisplayProbeCube(S, varargin)
-            % hfig = DisplayProbeCube(S, iwvplot)
+            % hfig = DisplayProbeCube(S, varargin)
             % ProbeCube is 2nd HDU of reduced data cube
             %
             %             hfig = CheckOption('hfig', [], varargin{:});
