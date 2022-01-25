@@ -94,7 +94,7 @@ fits.closeFile(fptr);
         % rows with empty comments, replace comment with a string
         irows = find(cellfun(@isempty,kwds(:,3)));
         for ik = 1:length(irows)
-            kwds(irows(id),3) = ' ';
+            kwds(irows(ik),3) = {' '};
         end
         
         [Nkeys, n3] = size(kwds);
