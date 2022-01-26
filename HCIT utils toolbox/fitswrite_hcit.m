@@ -4,6 +4,7 @@ function fitswrite_hcit(out_fn, img, kwds, varargin)
 % my fits write wrapper to include headers and multiple hdus
 %
 % kwds is n x 3 cell array, just like finfo.PrimaryData.Keywords
+%   comment string cannot be empty
 % options:
 %   'overwrite', false (default), or true
 
@@ -50,7 +51,9 @@ try, % if error, close fptr
 catch ME
     warning('there was an error:');
     disp(ME);
-    disp(ME.stack);
+    for istack = 1:length(ME.stack),
+        disp(ME.stack(istack));
+    end
 end % try
 
 fits.closeFile(fptr);
@@ -94,7 +97,7 @@ fits.closeFile(fptr);
         % rows with empty comments, replace comment with a string
         irows = find(cellfun(@isempty,kwds(:,3)));
         for ik = 1:length(irows)
-            kwds(irows(id),3) = ' ';
+            kwds(irows(ik),3) = {' '};
         end
         
         [Nkeys, n3] = size(kwds);

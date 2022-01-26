@@ -232,6 +232,21 @@ classdef CGS < handle
                         
                         wavelength_kwd = 'lam';
 
+                    case 'omc_mswc'
+                        trialname = CheckOption('trialname', '', varargin{:});
+                        
+                        bn = ['/home/hcit/OMC/phaseretrieval/reduced/prout_' trialname num2str(gsnum,'%03d')];
+                        
+                        % get dir listing of raw camera images                        
+                        S.listPupImDir = dir(PathTranslator(...
+                            ['/proj/mcb/data/excam/*/pr_gs_' num2str(gsnum,'%04d') '/emccd.*.fits']...
+                            ));
+                        S.listSrcImDir = dir(PathTranslator(...
+                            ['/proj/mcb/data/excam/*/pr_par_' num2str(gsnum,'%04d') '/emccd.*.fits']...
+                            ));
+                        
+                        wavelength_kwd = 'lambda';
+
                     otherwise
                         % do nothing, let bn = bn
                         bn = [bn num2str(gsnum,'%d')];
@@ -312,18 +327,20 @@ classdef CGS < handle
             % load the radial mapping
             % should be part of the bn switch
             % see email from Dan Sirbu "RE double check r2 r1 definition"
-            try
-                rm2_rm1 = load(PathTranslator('/proj/piaacmc/phaseretrieval/2019-10-16-nutekPiaaRemappingCoords/remapping.txt'));
-                S.RemapRadialR2 = rm2_rm1(:,1);
-                S.RemapRadialR1 = rm2_rm1(:,2);
-                S.RemapRadialRmin = 1.51*U.MM;
-                S.RemapRadialRmax = 14.2*U.MM;
-                % 145 pixels pupil radius taken manually from bMask(:,x==0)
-                % 15.0mm ray trace mag * measured 0.5* 46.3mm beam diameter at
-                % pupil
-                S.RemapRadialRpix = 192.5;
-            catch
-                warning('could not load remapping.txt');
+            if isequal(bn, 'piaacmc')
+                try
+                    rm2_rm1 = load(PathTranslator('/proj/piaacmc/phaseretrieval/2019-10-16-nutekPiaaRemappingCoords/remapping.txt'));
+                    S.RemapRadialR2 = rm2_rm1(:,1);
+                    S.RemapRadialR1 = rm2_rm1(:,2);
+                    S.RemapRadialRmin = 1.51*U.MM;
+                    S.RemapRadialRmax = 14.2*U.MM;
+                    % 145 pixels pupil radius taken manually from bMask(:,x==0)
+                    % 15.0mm ray trace mag * measured 0.5* 46.3mm beam diameter at
+                    % pupil
+                    S.RemapRadialRpix = 192.5;
+                catch
+                    warning('could not load remapping.txt');
+                end
             end
             
         end % CGS instantiator
