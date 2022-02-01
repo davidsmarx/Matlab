@@ -6,7 +6,7 @@ function retval = z_setfield(zchan, varargin)
 % field_struct has fields n, xf, yf, wgt, vdx, vdy, vcx, vcy, van
 %                      or n=0, type, number, normalization
 %
-% xf, yf in [m]
+% xf, yf in [m] or [rad]
 %
 % If the value for n is zero, then the field type, total number of fields,
 % and field normalization type is set to the new values. The field type is

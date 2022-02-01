@@ -8,7 +8,7 @@ function [beamout, curvout, dxout, dyout] =...
 % replicates JPL FORTRAN code
 
 % validate inputs
-if abs(z) < lam, beamout = beam; curvout = curv; dxout = dxo; dyout = dyo; return, end
+if abs(z) < lam, beamout = beam; curvout = curv; dxout = dx; dyout = dy; return, end
 if ~exist('dxo','var'), dxo = []; end
 if ~exist('dyo','var'), dyo = []; end
 if ~exist('applycurv','var'), applycurv = true; end

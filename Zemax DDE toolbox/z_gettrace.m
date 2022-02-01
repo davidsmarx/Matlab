@@ -10,7 +10,7 @@ function [vigcode, raypos, raycos, surfnorm, rayI] = ...
 % 
 % outputs:
 % vigcode
-% raypos = (x,y,z)
+% raypos = (x,y,z) (m) (assumes ZEMAX lens units = mm)
 % raycos = ray angles (cosx, cosy, cosz)
 % surfnorm = surface normal direction (cosx,cosy,coxz) 
 % rayI = intensity scalar
