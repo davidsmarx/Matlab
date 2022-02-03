@@ -6,7 +6,7 @@ function [ZZ, phaimg, phares, sOptions] = ZernikeAnalysis(field, varargin)
 % field = complex array. We apply zernike fit to phase
 %
 % options:
-% CheckOption('bMask', [], varargin{:});
+% CheckOption('bMask', [], varargin{:}); % default: [~, bMask] = AutoMetric(abs(field));
 % CheckOption('isphase', false, varargin{:}); % if field = real-valued phase array
 % CheckOption('Rnorm', [], varargin{:});
 % CheckOption('modes', 1:36, varargin{:});
