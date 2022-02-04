@@ -39,21 +39,34 @@ else,
 end
 
 % if Im is a filename, read the image from file
-if ischar(Im),
-    [pn, fn, fext] = fileparts(Im);
-    switch fext,
-        case '.fits',
-            % check if primary hdu is empty, and if so, use first image hdu
-            finfo = fitsinfo(Im);
-            if isempty(finfo.PrimaryData.Size) || isequal(finfo.PrimaryData.Size, [1 1]),
-                Im = fitsread(Im,'image');
-            else
-                Im = fitsread(Im);
-            end
-        otherwise,
-            error(['image file type ' fext ' not yet implemented']);
-    end
-end
+switch class(Im),
+    case 'char'
+        [pn, fn, fext] = fileparts(Im);
+        switch fext,
+            case '.fits',
+                % check if primary hdu is empty, and if so, use first image hdu
+                finfo = fitsinfo(Im);
+                if isempty(finfo.PrimaryData.Size) || isequal(finfo.PrimaryData.Size, [1 1]),
+                    Im = fitsread(Im,'image');
+                else
+                    Im = fitsread(Im);
+                end
+            otherwise,
+                error(['image file type ' fext ' not yet implemented']);
+        end % switch file extension
+    
+    case 'double'
+        % do nothing
+        
+    case 'py.numpy.ndarray'
+        Im = double(Im);
+        
+    otherwise
+        % if this fails, then type error
+        Im = double(Im);
+        
+end % switch class(Im)
+
 
 % create grid if necessary
 if isempty(x) || isempty(y),
