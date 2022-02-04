@@ -245,7 +245,7 @@ classdef CGS < handle
                             ['/proj/mcb/data/excam/*/pr_par_' num2str(gsnum,'%04d') '/emccd.*.fits']...
                             ));
                         
-                        wavelength_kwd = 'lambda';
+                        wavelength_kwd = 'lam';
 
                     otherwise
                         % do nothing, let bn = bn
@@ -693,25 +693,27 @@ classdef CGS < handle
             
         end % RemovePTTfft
         
-        function [ZZ, rz, pharesidual] = ZernikeFit(S, nz, varargin)
+        function [ZZout, rz, pharesidual] = ZernikeFit(S, nz, varargin)
             % [ZZ, rz, pharesidual] = ZernikeFit(S, nz, varargin)
             %
             % zernike fit using bMask pixes
             %
-            % phase = CheckOption('phase', 'phw_ptt', varargin{:});
+            % phase = CheckOption('phase', 'ph', varargin{:});
             % bDisplay = CheckOption('display', true, varargin{:});
             % titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             % xylim = CheckOption('xylim', [], varargin{:});
             % phresclim = CheckOption('phresclim', [], varargin{:});
             % ylimZ = CheckOption('ylimZplot', [], varargin{:});
+            % CheckOption('zernikeunits', 'rad', varargin{:}); % 'nm'
 
-            phasefieldname = CheckOption('phase', 'phw_ptt', varargin{:});
+            phasefieldname = CheckOption('phase', 'ph', varargin{:});
             bDisplay = CheckOption('display', true, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             xylim = CheckOption('xylim', [], varargin{:});
             phresclim = CheckOption('phresclim', [], varargin{:});
             ylimZ = CheckOption('ylimZplot', [], varargin{:});
+            zzunits = CheckOption('zernikeunits', 'rad', varargin{:}); % 'nm'
             
             % fit should always include piston, tip, tilt, even if not
             % included in requested nz
@@ -728,6 +730,21 @@ classdef CGS < handle
             pharesidual = nan(size(S.X));
             pharesidual(S.bMask) = mod2pi(S.(phasefieldname)(S.bMask) - phwfit(S.bMask));
 
+            % return zernike coeffs in requested units
+            switch zzunits
+                case 'rad'
+                    % no change to ZZ
+                    ZZout = ZZ;
+                    strUnits = '(rms rad)';
+                
+                case 'nm'
+                    ZZout = S.wavelength*ZZ/(2*pi)/1e-9;
+                    strUnits = '(rms nm)';                    
+                    
+                otherwise
+                    warning(['invalid units: ' zzunits ', default to radians']);
+                    strUnits = '(rms rad)';    
+            end
             
             %%%%%% plot results
             if bDisplay,
@@ -771,10 +788,9 @@ classdef CGS < handle
                 
                 % bar graph zernike order, don't plot piston
                 subplot(2,3,5:6)
-                [Zplot, NZplot] = filterdata(nzfit > 3, ZZ, nzfit);
+                [Zplot, NZplot] = filterdata(nzfit > 3, ZZout, nzfit);
                 hh = bar(NZplot, Zplot); grid
-
-                ylabel('Zernike Coeff (rms rad)')
+                ylabel(['Zernike Coeff ' strUnits])
                 xlabel('Zernike # (Noll Order)')
 
                 if ~isempty(ylimZ),
