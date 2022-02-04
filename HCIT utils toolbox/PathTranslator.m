@@ -50,6 +50,9 @@ elseif isequal([A{2} '/' A{3} '/' A{4}],'proj/mcb/data')
     %winpath = strjoin({'\\muscle5.jpl.nasa.gov\mcb', A{4:end}}, '\');
     winpath = strjoin({'Y:\ln_mcb_data', A{5:end}}, '\');
 
+elseif isequal([A{2} '/' A{3} '/' A{4}],'home/hcit/OMC')
+    winpath = strjoin({'Y:\ln_hcit_omc', A{5:end}}, '\');
+    
 elseif isequal([A{2} '/' A{3}],'net/spud-data')
     % mcb camera data
     winpath = 'Y:\HCIT\ln_spud_data_Data';
