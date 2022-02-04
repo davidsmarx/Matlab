@@ -17,6 +17,8 @@ function [Field, headerinfo] = z_GetPSFHuygens(varargin)
 %    Date
 %    Datatype (huygens psf, etc.)
 %    Wavelength = [start_wave end_wave]
+%    fieldpoint = [fx, fy]
+%    fieldpointUnits
 %    Pointspacing = [dx dy]
 %    Dataarea
 %    StrehlRatio
@@ -173,8 +175,10 @@ while ~feof(fid),
                     
                     if strfind(headerinfo.fieldpointUnits, 'mm')
                         headerinfo.fieldpoint = headerinfo.fieldpoint*MM;
+                        headerinfo.fieldpointUnits = 'm';
                     elseif strfind(headerinfo.fieldpointUnits, 'deg')
                         headerinfo.fieldpoint = headerinfo.fieldpoint*P;
+                        headerinfo.fieldpointUnits = 'rad';
                     end
                 end
                 
