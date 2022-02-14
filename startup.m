@@ -16,7 +16,7 @@ unitsdefinitions;
 % % python path
 if isunix,
     % for all hcit and aftac machines:
-    PYENV = pyenv('Version', '/usr/local/anaconda3/bin/python3.7')
+    PYENV = pyenv('Version', '/usr/local/bin/python3.7')
 end
     
 more on
