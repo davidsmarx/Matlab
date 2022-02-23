@@ -53,6 +53,9 @@ elseif isequal([A{2} '/' A{3} '/' A{4}],'proj/mcb/data')
 elseif isequal([A{2} '/' A{3} '/' A{4}],'home/hcit/OMC')
     winpath = strjoin({'Y:\ln_hcit_omc', A{5:end}}, '\');
     
+elseif isequal([A{2} '/' A{3}], 'proj/lowfs')
+    winpath = strjoin({'Y:\ln_lowfs', A{4:end}}, '\');
+    
 elseif isequal([A{2} '/' A{3}],'net/spud-data')
     % mcb camera data
     winpath = 'Y:\HCIT\ln_spud_data_Data';

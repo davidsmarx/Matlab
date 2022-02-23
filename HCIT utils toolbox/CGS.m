@@ -724,12 +724,16 @@ classdef CGS < handle
             
             %
             rz = max(S.R(S.bMask));
-            ZZ = zernikefit(S.X(S.bMask), S.Y(S.bMask), S.(phasefieldname)(S.bMask), nzfit, rz, 'noll');
-            phwfit = nan(size(S.X));
-            phwfit(S.bMask) = zernikeval(ZZ, S.X(S.bMask), S.Y(S.bMask), rz, 'noll', 'nz', nzfit);
-            pharesidual = nan(size(S.X));
-            pharesidual(S.bMask) = mod2pi(S.(phasefieldname)(S.bMask) - phwfit(S.bMask));
-
+            %             ZZ = zernikefit(S.X(S.bMask), S.Y(S.bMask), S.(phasefieldname)(S.bMask), nzfit, rz, 'noll');
+            %             phwfit = nan(size(S.X));
+            %             phwfit(S.bMask) = zernikeval(ZZ, S.X(S.bMask), S.Y(S.bMask), rz, 'noll', 'nz', nzfit);
+            %             pharesidual = nan(size(S.X));
+            %             pharesidual(S.bMask) = mod2pi(S.(phasefieldname)(S.bMask) - phwfit(S.bMask));
+            [ZZ, phaimg_1_3, pharesidual, sOptions] = ZernikeAnalysis(S.(phasefieldname),...
+                'isphase', true, 'bMask', S.bMask, 'Rnorm', rz, 'modes', nzfit, 'polyorder', 'Noll',...
+                'do_phaseunwrap', false);
+            phwfit = S.bMask.*sOptions.phafit;
+            
             % return zernike coeffs in requested units
             switch zzunits
                 case 'rad'
@@ -766,8 +770,8 @@ classdef CGS < handle
                 title([titlestr '; Amplitude'])
                 set(gca,'xlim',xylim,'ylim',xylim);
 
-                % phase
-                subplot(2,3,2), imageschcit(S.x, S.y, S.(phasefieldname).*S.bMask) % mod2pi(S.phunwrap).*S.bMask)
+                % phase, remove 1 to 3
+                subplot(2,3,2), imageschcit(S.x, S.y, phaimg_1_3.*S.bMask) % mod2pi(S.phunwrap).*S.bMask)
                 colorbartitle('Phase (rad)')
                 %set(gca,'clim',pi*[-1 1])
                 title([titlestr '; Phase rms\phi = ' num2str(S.rmsPha,'%.3f')])               
