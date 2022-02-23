@@ -17,5 +17,9 @@ if nargin == 0, disp('usage: [amax, row,col] = max2d(A)'); return, end
 if isreal(A), [amax, imax] = max(A(:)); else, [amax, imax] = max(abs(A(:))); end
 [row, col] = ind2sub(size(A),imax(1));
 
+if nargout == 0
+    disp([amax, row, col]);
+end
+
 return
 

@@ -6,7 +6,7 @@ for i = 1:length(mytools),
    %addpath(tooldir,pdep);
 end
 
-addpath(pwd); % \Tamar\Matlab
+addpath(pwd);
 
 clear;
 
