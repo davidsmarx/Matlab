@@ -179,7 +179,11 @@ classdef CRunData < handle & CConstants
             %
             % sOptin = struct, overides default class member values
             % varargin = list of methods to execute
-           
+
+            if nargin == 0,
+                % return an empty instance
+                return
+            end
             
             S.runnum = runnum;
             S.iter = iter;
@@ -1719,12 +1723,13 @@ classdef CRunData < handle & CConstants
             for ip = 1:S.Nppair,
                 ProbeModelPlot{ip} = abs(S.ProbeModel{iwvplot,ip}).^2;
                 ProbeMeasPlot{ip}  = abs(S.ProbeMeasAmp{iwvplot,ip}).^2;
+                legstr{ip} = ['# ' num2str(ip)];
             end
             harad(1) = subplot(2,S.Nppair+1,S.Nppair+1);
-            S.DisplayRadialPlot(ProbeModelPlot, 'hax', harad(1),'title', ['Iter #' num2str(S.iter) ', Model']);
+            S.DisplayRadialPlot(ProbeModelPlot, 'hax', harad(1),'title', ['Iter #' num2str(S.iter) ', Model'], 'legstr', legstr);
             %legend('location','south')
             harad(2) = subplot(2,S.Nppair+1,2*(S.Nppair+1));
-            S.DisplayRadialPlot(ProbeMeasPlot,'hax',harad(2),'title', ['Iter #' num2str(S.iter) ', Measure']);
+            S.DisplayRadialPlot(ProbeMeasPlot,'hax',harad(2),'title', ['Iter #' num2str(S.iter) ', Measure'], 'legstr', legstr);
             %legend('location','south')
             
             ylim = get(harad,'ylim');
