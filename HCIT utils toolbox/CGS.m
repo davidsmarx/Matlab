@@ -520,7 +520,8 @@ classdef CGS < handle
             climph = CheckOption('climph', [], varargin{:});
             dph_units = CheckOption('dph_units', 1, varargin{:}); % default = radians, 'nm', 'waves', or double
             dph_units_str = CheckOption('dph_units_str', 'Phase (rad)', varargin{:});
-            
+
+            % which phase map to plot
             switch phplot
                 case 'angleE'
                     funPhPl = @(S) angle(S.E);
@@ -568,7 +569,7 @@ classdef CGS < handle
                     [nr, nc] = size(S.amp);
                     Sreftmp = struct(...
                         'phplot', CropImage(funPhPl(Sref), [], [0 0], nc, nr) ...
-                        ,'amp', CropImage(Sref.amp, [nr nc]) ...
+                        ,'amp', CropImage(Sref.amp, [], [0 0], nc, nr) ...
                         );
                 else
                     % not square? something is wrong
