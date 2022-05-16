@@ -1,6 +1,6 @@
 
 function hout = draw_circle(ctr, D, lw, col, varargin)
-% draw_circle(ctr, D, lw, col, options
+% hout = draw_circle(ctr, D, lw, col, options)
 % options are property, value pairs as for rectangle()
 
 R       = D/2;
