@@ -732,7 +732,7 @@ classdef CGS < handle
             [ZZ, phaimg_1_3, pharesidual, sOptions] = ZernikeAnalysis(S.(phasefieldname),...
                 'isphase', true, 'bMask', S.bMask, 'Rnorm', rz, 'modes', nzfit, 'polyorder', 'Noll',...
                 'do_phaseunwrap', false);
-            phwfit = S.bMask.*sOptions.phafit;
+            phwfit = S.bMask.*sOptions.phafit_ptt;
             
             % return zernike coeffs in requested units
             switch zzunits
@@ -823,7 +823,8 @@ classdef CGS < handle
             CCor = @(a,b) a(:)'*b(:)./sqrt( (a(:)'*a(:)) * (b(:)'*b(:)) );
             CCorq = @(q) CCor(q(:,:,1),q(:,:,2));
             CCint = @(q) CCor(abs(q(:,:,1)).^2, abs(q(:,:,2)).^2);
-            CCwint= @(q) CCor(q(:,:,4).*abs(q(:,:,1)).^2, q(:,:,4).*abs(q(:,:,2)).^2);
+            %CCwint= @(q) CCor(q(:,:,4).*abs(q(:,:,1)).^2, q(:,:,4).*abs(q(:,:,2)).^2);
+            CCwint = @(q) S.WeightedIntensityCorrelation(q(:,:,4), abs(q(:,:,1)).^2, abs(q(:,:,2)).^2);
             
             NIm = length(S.cAmpPlanes);
             if nw == 4,
@@ -847,6 +848,13 @@ classdef CGS < handle
             end
             
         end % AmpCorrMetric
+        
+        function cc = WeightedIntensityCorrelation(S, ww, intensity_1, intensity_2)
+            CCor = @(a,b) a(:)'*b(:)./sqrt( (a(:)'*a(:)) * (b(:)'*b(:)) );
+
+            ww(isnan(ww)) = 0;
+            cc = CCor(ww.*intensity_1, ww.*intensity_2);
+        end
         
         function [wsqrt, imvars] = CalcWeights(S)
             %
