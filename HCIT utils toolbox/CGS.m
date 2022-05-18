@@ -491,7 +491,7 @@ classdef CGS < handle
         end % DisplayGS
 
         function [hfig, hax, dphaResult] = DisplayGSrefGS(S, Sref, varargin)
-            % [hfig, hax] = DisplayGSrefGS(S, Sref, options)
+            % [hfig, hax, dphaResult] = DisplayGSrefGS(S, Sref, options)
             %
             % options:
             %    ('hfig', figure_mxn(2,2), varargin{:});
