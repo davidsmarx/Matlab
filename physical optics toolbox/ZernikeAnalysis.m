@@ -63,6 +63,10 @@ end
 
 ZZ = zernikefit(Xim(bMask), Yim(bMask), phaimg(bMask), Nz, Rnorm, polyorder);
 
+% the fit:
+phafit = zernikeval(ZZ, Xim, Yim, Rnorm, polyorder);
+phafit_ptt = zernikeval([zeros(3,1); ZZ(4:end)], Xim, Yim, Rnorm, polyorder);
+
 % remove ptt from phaimg
 phaimg(bMask) = phaimg(bMask) - zernikeval(ZZ(1:3), Xim(bMask), Yim(bMask), Rnorm, polyorder);
 phaimg(~bMask) = 0;
@@ -73,7 +77,7 @@ phares(bMask) = phaimg(bMask) - zernikeval([zeros(3,1); ZZ(4:end)], Xim(bMask), 
 
 % return values:
 % ZZ, phaimg, phares, sOptions
-sOptions = struct('bMask', bMask, 'Rnorm', Rnorm, 'Nz', Nz, 'xim', xim, 'yim', yim);
+sOptions = struct('bMask', bMask, 'Rnorm', Rnorm, 'Nz', Nz, 'xim', xim, 'yim', yim, 'phafit', phafit, 'phafit_ptt', phafit_ptt);
 
 end % main
 

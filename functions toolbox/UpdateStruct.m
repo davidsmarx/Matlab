@@ -1,5 +1,5 @@
 function sMerged = UpdateStruct(s1, s2)
-% sMerged = MergeStructs(s1, s2)
+% sMerged = UpdateStructs(s1, s2)
 % 
 % update s1 with fields from s2
 % if s1 and s2 have overlapping fieldnames, values from s2

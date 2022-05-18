@@ -520,7 +520,8 @@ classdef CGS < handle
             climph = CheckOption('climph', [], varargin{:});
             dph_units = CheckOption('dph_units', 1, varargin{:}); % default = radians, 'nm', 'waves', or double
             dph_units_str = CheckOption('dph_units_str', 'Phase (rad)', varargin{:});
-            
+
+            % which phase map to plot
             switch phplot
                 case 'angleE'
                     funPhPl = @(S) angle(S.E);
@@ -568,7 +569,7 @@ classdef CGS < handle
                     [nr, nc] = size(S.amp);
                     Sreftmp = struct(...
                         'phplot', CropImage(funPhPl(Sref), [], [0 0], nc, nr) ...
-                        ,'amp', CropImage(Sref.amp, [nr nc]) ...
+                        ,'amp', CropImage(Sref.amp, [], [0 0], nc, nr) ...
                         );
                 else
                     % not square? something is wrong
@@ -724,12 +725,16 @@ classdef CGS < handle
             
             %
             rz = max(S.R(S.bMask));
-            ZZ = zernikefit(S.X(S.bMask), S.Y(S.bMask), S.(phasefieldname)(S.bMask), nzfit, rz, 'noll');
-            phwfit = nan(size(S.X));
-            phwfit(S.bMask) = zernikeval(ZZ, S.X(S.bMask), S.Y(S.bMask), rz, 'noll', 'nz', nzfit);
-            pharesidual = nan(size(S.X));
-            pharesidual(S.bMask) = mod2pi(S.(phasefieldname)(S.bMask) - phwfit(S.bMask));
-
+            %             ZZ = zernikefit(S.X(S.bMask), S.Y(S.bMask), S.(phasefieldname)(S.bMask), nzfit, rz, 'noll');
+            %             phwfit = nan(size(S.X));
+            %             phwfit(S.bMask) = zernikeval(ZZ, S.X(S.bMask), S.Y(S.bMask), rz, 'noll', 'nz', nzfit);
+            %             pharesidual = nan(size(S.X));
+            %             pharesidual(S.bMask) = mod2pi(S.(phasefieldname)(S.bMask) - phwfit(S.bMask));
+            [ZZ, phaimg_1_3, pharesidual, sOptions] = ZernikeAnalysis(S.(phasefieldname),...
+                'isphase', true, 'bMask', S.bMask, 'Rnorm', rz, 'modes', nzfit, 'polyorder', 'Noll',...
+                'do_phaseunwrap', false);
+            phwfit = S.bMask.*sOptions.phafit_ptt;
+            
             % return zernike coeffs in requested units
             switch zzunits
                 case 'rad'
@@ -766,8 +771,8 @@ classdef CGS < handle
                 title([titlestr '; Amplitude'])
                 set(gca,'xlim',xylim,'ylim',xylim);
 
-                % phase
-                subplot(2,3,2), imageschcit(S.x, S.y, S.(phasefieldname).*S.bMask) % mod2pi(S.phunwrap).*S.bMask)
+                % phase, remove 1 to 3
+                subplot(2,3,2), imageschcit(S.x, S.y, phaimg_1_3.*S.bMask) % mod2pi(S.phunwrap).*S.bMask)
                 colorbartitle('Phase (rad)')
                 %set(gca,'clim',pi*[-1 1])
                 title([titlestr '; Phase rms\phi = ' num2str(S.rmsPha,'%.3f')])               
@@ -819,7 +824,8 @@ classdef CGS < handle
             CCor = @(a,b) a(:)'*b(:)./sqrt( (a(:)'*a(:)) * (b(:)'*b(:)) );
             CCorq = @(q) CCor(q(:,:,1),q(:,:,2));
             CCint = @(q) CCor(abs(q(:,:,1)).^2, abs(q(:,:,2)).^2);
-            CCwint= @(q) CCor(q(:,:,4).*abs(q(:,:,1)).^2, q(:,:,4).*abs(q(:,:,2)).^2);
+            %CCwint= @(q) CCor(q(:,:,4).*abs(q(:,:,1)).^2, q(:,:,4).*abs(q(:,:,2)).^2);
+            CCwint = @(q) S.WeightedIntensityCorrelation(q(:,:,4), abs(q(:,:,1)).^2, abs(q(:,:,2)).^2);
             
             NIm = length(S.cAmpPlanes);
             if nw == 4,
@@ -843,6 +849,13 @@ classdef CGS < handle
             end
             
         end % AmpCorrMetric
+        
+        function cc = WeightedIntensityCorrelation(S, ww, intensity_1, intensity_2)
+            CCor = @(a,b) a(:)'*b(:)./sqrt( (a(:)'*a(:)) * (b(:)'*b(:)) );
+
+            ww(isnan(ww)) = 0;
+            cc = CCor(ww.*intensity_1, ww.*intensity_2);
+        end
         
         function [wsqrt, imvars] = CalcWeights(S)
             %

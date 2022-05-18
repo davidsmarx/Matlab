@@ -6,7 +6,7 @@ for i = 1:length(mytools),
    %addpath(tooldir,pdep);
 end
 
-addpath(pwd); % \Tamar\Matlab
+addpath(pwd);
 
 clear;
 
@@ -15,8 +15,13 @@ unitsdefinitions;
 
 % % python path
 if isunix,
-    % for all hcit and aftac machines:
-    PYENV = pyenv('Version', '/usr/local/bin/python3.7')
+    try
+        % for all hcit and aftac machines:
+        PYENV = pyenv('Version', '/usr/local/bin/python3.7')
+    catch ME
+        warning('failed to start python');
+        disp(ME.getReport);
+    end
 end
     
 more on
