@@ -491,7 +491,7 @@ classdef CGS < handle
         end % DisplayGS
 
         function [hfig, hax, dphaResult] = DisplayGSrefGS(S, Sref, varargin)
-            % [hfig, hax] = DisplayGSrefGS(S, Sref, options)
+            % [hfig, hax, dphaResult] = DisplayGSrefGS(S, Sref, options)
             %
             % options:
             %    ('hfig', figure_mxn(2,2), varargin{:});
@@ -505,7 +505,14 @@ classdef CGS < handle
             %    ('climph', [], varargin{:});
             %    ('dph_units', 1, varargin{:}); % default = radians, 'nm', 'waves', or double
             %    ('dph_units_str', 'Phase (rad)', varargin{:});
-            
+            %   
+            % dphaResult = struct(...
+            %    'ZZ', ZZ ...
+            %    ,'phaimg', phaimg ...
+            %    ,'dpha', dpha ...
+            %    ,'sOptions', sOptions ...
+            %    );
+
             U = CConstants;
             
             % parse options
