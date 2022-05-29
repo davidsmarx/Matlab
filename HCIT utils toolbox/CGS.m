@@ -491,7 +491,7 @@ classdef CGS < handle
         end % DisplayGS
 
         function [hfig, hax, dphaResult] = DisplayGSrefGS(S, Sref, varargin)
-            % [hfig, hax] = DisplayGSrefGS(S, Sref, options)
+            % [hfig, hax, dphaResult] = DisplayGSrefGS(S, Sref, options)
             %
             % options:
             %    ('hfig', figure_mxn(2,2), varargin{:});
@@ -505,7 +505,14 @@ classdef CGS < handle
             %    ('climph', [], varargin{:});
             %    ('dph_units', 1, varargin{:}); % default = radians, 'nm', 'waves', or double
             %    ('dph_units_str', 'Phase (rad)', varargin{:});
-            
+            %   
+            % dphaResult = struct(...
+            %    'ZZ', ZZ ...
+            %    ,'phaimg', phaimg ...
+            %    ,'dpha', dpha ...
+            %    ,'sOptions', sOptions ...
+            %    );
+
             U = CConstants;
             
             % parse options
@@ -1060,16 +1067,22 @@ classdef CGS < handle
             
         end % DisplayAllPlanes
         
-        function [r, Ir, hax] = DisplayRadialIntensity(S, varargin)
+        function [r, Ir, hfig, hax, hl] = DisplayRadialIntensity(S, ipl, varargin)
+            % [r, Ir, hax] = DisplayRadialIntensity(S, ipl, varargin)
             % display mean intensity vs radius
             
-            [r, Ir] = RadialMean(abs(S.amp).^2);
+            if isempty(S.cAmpPlanes), S.ReadAmpImages; end
             
-            figure, hl = semilogy(r, Ir);
+            [xx, yy] = CreateGrid(S.cAmpPlanes{8}(:,:,1));
+            [r_cam, Ir_cam] = RadialMean(xx, yy, abs(S.cAmpPlanes{ipl}(:,:,1)).^2);
+            [r_est, Ir_est] = RadialMean(xx, yy, abs(S.cAmpPlanes{ipl}(:,:,2)).^2);
+            
+            figure, hl = semilogy(r_cam, Ir_cam./max(Ir_cam(:)), r_est, Ir_est./max(Ir_est(:)));
             grid on
-            hl.LineWidth = 2;
+            set(hl, 'LineWidth', 2);
             xlabel('Radius (pix)')
             ylabel('Mean Intensity')
+            legend('Camera', 'Estimated')
             hax = gca;
             
             
