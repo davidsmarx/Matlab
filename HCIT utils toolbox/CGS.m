@@ -543,9 +543,9 @@ classdef CGS < handle
             % which phase map to plot
             switch phplot
                 case 'angleE'
-                    Phase = angle(S.E);
+                    funPhPl = @(S) angle(S.E);
                 otherwise
-                    Phase = S.(phplot);
+                    funPhPl = @(S) S.(phplot);
             end
             
             if ishandle(hfig),
@@ -567,7 +567,7 @@ classdef CGS < handle
             title(['gsnum ' num2str(S.gsnum)])
             
             hax(2) = subplot(2,2,2);
-            imageschcit(S.x, S.y, Phase)
+            imageschcit(S.x, S.y, funPhPl(S))
             colorbartitle('Phase (rad)')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
             title(['gsnum ' num2str(S.gsnum)])
