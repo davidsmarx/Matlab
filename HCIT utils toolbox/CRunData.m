@@ -179,7 +179,11 @@ classdef CRunData < handle & CConstants
             %
             % sOptin = struct, overides default class member values
             % varargin = list of methods to execute
-           
+
+            if nargin == 0,
+                % return an empty instance
+                return
+            end
             
             S.runnum = runnum;
             S.iter = iter;
@@ -498,7 +502,7 @@ classdef CRunData < handle & CConstants
             if isempty(S.NofW), S.NofW = FitsGetKeywordVal(S.ImKeys,'NCHANNEL'); end
             if isempty(S.NofW), error('keyword NCOLOR and NCHANNEL missing'); end
             S.Nlamcorr = S.NofW; % not strictly corect, should come from reduced or config length(S.ilamcorr);
-            S.imgindex = 1:S.NumImProbe:S.NofW*S.NumImProbe;
+            S.imgindex = 1:S.NumImProbe:S.NofW*S.NumImProbe; % slice of ImCube that is unprobed for each wvl
             
             % get actual wavelengths from the camera fits files
             for iwv = 1:S.NofW,
@@ -625,8 +629,8 @@ classdef CRunData < handle & CConstants
                     S.Sthpt.ThptSc(bMaskScUse) = interp1(S.Sthpt.fovr, S.Sthpt.thpt, R(bMaskScUse));                    
                 end
 
-            else
-                warning('no throughput data, contrast is normalized intensity');
+            else % S.Sthpt is empty
+                %warning('no throughput data, contrast is normalized intensity');
                 S.Sthpt.ThptSc = ones(size(bMaskScUse));
             end
             
@@ -713,7 +717,7 @@ classdef CRunData < handle & CConstants
             % reads the primary hdu of the reduced data fits
             
             if isempty(S.Reduced_fn),
-                fprintf('no reduced data');
+                %fprintf('no reduced data\n');
                 return
             end
             
@@ -986,26 +990,53 @@ classdef CRunData < handle & CConstants
             
         end % ReadDMv
 
-        function [hfig, him, Im] = DisplayImCubeImage(S, imnum)
+        function [hfig, hax, sImageCubeData] = DisplayImCubeImage(S, varargin)
+            % [hfig, him, Im] = DisplayImCubeImage(S)
             % [hfig, him, Im] = DisplayImCubeImage(S, imnum)
             % 
             % raw camera images, adjusted for photometry and dark
             % these are the images from rundir/*.fits.gz
+            %
+            % display all, imnum, in an ImageCube
+            % 
+            % Options:
+            %   CheckOption('scale', 'log', varargin{:}); % 'linear', 'log'
+            %   CheckOption('imnum', [], varargin{:});
+            %   CheckOption('fTitleStr', @(isl) ['Iter #' num2str(S.iter) ', Image #' num2str(imnumlist(isl))]);
+            %
+            % and varargin passed to ImageCube
             
-            if nargin < 2,
-                disp('usage: S.DisplayImCubeImage(imnum)');
-                error('Not enough input arguments');
-            end
+            logscale = CheckOption('scale', 'log', varargin{:}); % 'linear', 'log'
+            imnumlist = CheckOption('imnum', [], varargin{:});
             
             if isempty(S.ImCube),
                 S.ReadImageCube;
             end
             
-            Im = abs(squeeze(S.ImCube(:,:,imnum)));
+            % make image cube
+            imcube = shiftdim(S.ImCube,2);
+            [Nsl, nr, nc] = size(imcube);
+            if isempty(imnumlist),
+                imnumlist = 1:Nsl;
+            end
+            imcube = imcube(imnumlist,:,:);
+            fTitleStr = CheckOption('fTitleStr', @(isl) ['Iter #' num2str(S.iter) ', Image #' num2str(imnumlist(isl))], varargin{:});
+        
+            % scale
+            switch logscale
+                case 'linear'
+                    % do nothing
+                case 'log'
+                    imcube = log10((imcube>0).*imcube);
+                    clim = max(imcube(:)) + [-3 0];
+                otherwise
+                    error(['unknown scale ' logscale]);
+            end
             
-            hfig = figure;
-            him = imageschcit(Im); axis image, colorbar
-            title(['Iteration #' num2str(S.iter) ', Image #' num2str(imnum)])
+            figure;
+            [hfig, hax, sImageCubeData] = ImageCube(imcube, imnumlist, 'fTitleStr', fTitleStr, varargin{:});
+            set(hax,'clim',clim)
+            colorbar
             
         end % DisplayImCubeImage
         
@@ -1076,7 +1107,7 @@ classdef CRunData < handle & CConstants
             DrawCircles(hax, drawRadii);
             DrawThetaLines(hax, drawTheta, drawRadii);
 
-        end % DisplayImCubeImage
+        end % DisplaySingleImage
 
         function [sHandles, rplot, IntRad] = DisplayRadialPlot(S, ImCube, varargin)
             % [sHandles, rplot, IntRad] = DisplayRadialPlot(S, ImCube, varargin)
@@ -1197,9 +1228,9 @@ classdef CRunData < handle & CConstants
             if isempty(S.ImCubeUnProb),
                 S.ReadImageCube;
             end
-            if isempty(S.bMask),
-                S.ReadMaskCube;
-            end
+            %             if isempty(S.bMask),
+            %                 S.ReadMaskCube;
+            %             end
             
             % default options and set requested options
             %  val = CheckOption(sOpt, valDefault, varargin)
@@ -1719,12 +1750,13 @@ classdef CRunData < handle & CConstants
             for ip = 1:S.Nppair,
                 ProbeModelPlot{ip} = abs(S.ProbeModel{iwvplot,ip}).^2;
                 ProbeMeasPlot{ip}  = abs(S.ProbeMeasAmp{iwvplot,ip}).^2;
+                legstr{ip} = ['# ' num2str(ip)];
             end
             harad(1) = subplot(2,S.Nppair+1,S.Nppair+1);
-            S.DisplayRadialPlot(ProbeModelPlot, 'hax', harad(1),'title', ['Iter #' num2str(S.iter) ', Model']);
+            S.DisplayRadialPlot(ProbeModelPlot, 'hax', harad(1),'title', ['Iter #' num2str(S.iter) ', Model'], 'legstr', legstr);
             %legend('location','south')
             harad(2) = subplot(2,S.Nppair+1,2*(S.Nppair+1));
-            S.DisplayRadialPlot(ProbeMeasPlot,'hax',harad(2),'title', ['Iter #' num2str(S.iter) ', Measure']);
+            S.DisplayRadialPlot(ProbeMeasPlot,'hax',harad(2),'title', ['Iter #' num2str(S.iter) ', Measure'], 'legstr', legstr);
             %legend('location','south')
             
             ylim = get(harad,'ylim');
@@ -1942,7 +1974,7 @@ classdef CRunData < handle & CConstants
             
             if ~isempty(drawylimlines)
                 [x, y, X, Y, R] = CreateGrid(S.ImCubeUnProbFullBand, 1./(S.ppl0*S.PIAAMAG));
-                bMaskuse = S.bMask & Y < drawylimlines(1); % & (~squeeze(S.bMask_badpix(1,:,:)));
+                bMaskuse = S.bMask & Y > drawylimlines(1); % & (~squeeze(S.bMask_badpix(1,:,:)));
             else
                 bMaskuse = S.bMask;
             end
@@ -2696,7 +2728,7 @@ classdef CRunData < handle & CConstants
             sMetrics = struct(...
                 'type', 'DMv' ...
                 ,'rmsdDMv', rmsdDMv ...
-                ,'cdDMv', cdDMv ...
+                ,'cdDMv', {cdDMv} ... % {} so that the cell array is assigned to one struct
                 );
             
             %             fprintf('rms dDMv1 = %.3f Vmu\n',rmsdDMv1);

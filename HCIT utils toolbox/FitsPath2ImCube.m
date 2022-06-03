@@ -6,6 +6,12 @@ function varargout = FitsPath2ImCube(pn, varargin)
 % for example, making an image cube out of all the fits files in a
 % phase retrieval subdir
 %
+% input:
+%   pn
+%      string = a valid path, then all pn/*.fits files are used
+%      struct = result of dir('...'), then all files in the struct array
+%      
+%
 % options:
 % plottype = CheckOption('plottype', 'cube', varargin{:}); % 'spread', 'cube', 'none'
 % plotx = CheckOption('x', 0, varargin{:}); % default = 0-offset
@@ -41,7 +47,16 @@ clim = CheckOption('clim', [], varargin{:});
 hfig = [];
 hax = [];
  
-listfn = dir(PathTranslator([pn '/*.fits']));
+switch class(pn)
+    case 'char'
+        listfn = dir(PathTranslator([pn '/*.fits']));
+    case 'struct'
+        listfn = pn; % assumes pn is return value from dir()
+        pn = listfn(1).folder;
+    otherwise
+        error(['pn is class ' class(pn)]);
+end
+        
 Nf = length(listfn);
 
 % read one image to get image size and extension

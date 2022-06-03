@@ -503,7 +503,7 @@ classdef CGS < handle
         end % DisplayGS
 
         function [hfig, hax, dphaResult] = DisplayGSrefGS(S, Sref, varargin)
-            % [hfig, hax] = DisplayGSrefGS(S, Sref, options)
+            % [hfig, hax, dphaResult] = DisplayGSrefGS(S, Sref, options)
             %
             % options:
             %    ('hfig', figure_mxn(2,2), varargin{:});
@@ -517,7 +517,14 @@ classdef CGS < handle
             %    ('climph', [], varargin{:});
             %    ('dph_units', 1, varargin{:}); % default = radians, 'nm', 'waves', or double
             %    ('dph_units_str', 'Phase (rad)', varargin{:});
-            
+            %   
+            % dphaResult = struct(...
+            %    'ZZ', ZZ ...
+            %    ,'phaimg', phaimg ...
+            %    ,'dpha', dpha ...
+            %    ,'sOptions', sOptions ...
+            %    );
+
             U = CConstants;
             
             % parse options
@@ -532,7 +539,8 @@ classdef CGS < handle
             climph = CheckOption('climph', [], varargin{:});
             dph_units = CheckOption('dph_units', 1, varargin{:}); % default = radians, 'nm', 'waves', or double
             dph_units_str = CheckOption('dph_units_str', 'Phase (rad)', varargin{:});
-            
+
+            % which phase map to plot
             switch phplot
                 case 'angleE'
                     Phase = angle(S.E);
@@ -580,7 +588,7 @@ classdef CGS < handle
                     [nr, nc] = size(S.amp);
                     Sreftmp = struct(...
                         'phplot', CropImage(funPhPl(Sref), [], [0 0], nc, nr) ...
-                        ,'amp', CropImage(Sref.amp, [nr nc]) ...
+                        ,'amp', CropImage(Sref.amp, [], [0 0], nc, nr) ...
                         );
                 else
                     % not square? something is wrong
@@ -751,7 +759,7 @@ classdef CGS < handle
             [ZZ, phaimg_1_3, pharesidual, sOptions] = ZernikeAnalysis(S.(phasefieldname),...
                 'isphase', true, 'bMask', S.bMask, 'Rnorm', rz, 'modes', nzfit, 'polyorder', 'Noll',...
                 'do_phaseunwrap', false);
-            phwfit = S.bMask.*sOptions.phafit;
+            phwfit = S.bMask.*sOptions.phafit_ptt;
             
             % return zernike coeffs in requested units
             switch zzunits
@@ -842,7 +850,8 @@ classdef CGS < handle
             CCor = @(a,b) a(:)'*b(:)./sqrt( (a(:)'*a(:)) * (b(:)'*b(:)) );
             CCorq = @(q) CCor(q(:,:,1),q(:,:,2));
             CCint = @(q) CCor(abs(q(:,:,1)).^2, abs(q(:,:,2)).^2);
-            CCwint= @(q) CCor(q(:,:,4).*abs(q(:,:,1)).^2, q(:,:,4).*abs(q(:,:,2)).^2);
+            %CCwint= @(q) CCor(q(:,:,4).*abs(q(:,:,1)).^2, q(:,:,4).*abs(q(:,:,2)).^2);
+            CCwint = @(q) S.WeightedIntensityCorrelation(q(:,:,4), abs(q(:,:,1)).^2, abs(q(:,:,2)).^2);
             
             NIm = length(S.cAmpPlanes);
             if nw == 4,
@@ -866,6 +875,13 @@ classdef CGS < handle
             end
             
         end % AmpCorrMetric
+        
+        function cc = WeightedIntensityCorrelation(S, ww, intensity_1, intensity_2)
+            CCor = @(a,b) a(:)'*b(:)./sqrt( (a(:)'*a(:)) * (b(:)'*b(:)) );
+
+            ww(isnan(ww)) = 0;
+            cc = CCor(ww.*intensity_1, ww.*intensity_2);
+        end
         
         function [wsqrt, imvars] = CalcWeights(S)
             %
@@ -1070,16 +1086,22 @@ classdef CGS < handle
             
         end % DisplayAllPlanes
         
-        function [r, Ir, hax] = DisplayRadialIntensity(S, varargin)
+        function [r, Ir, hfig, hax, hl] = DisplayRadialIntensity(S, ipl, varargin)
+            % [r, Ir, hax] = DisplayRadialIntensity(S, ipl, varargin)
             % display mean intensity vs radius
             
-            [r, Ir] = RadialMean(abs(S.amp).^2);
+            if isempty(S.cAmpPlanes), S.ReadAmpImages; end
             
-            figure, hl = semilogy(r, Ir);
+            [xx, yy] = CreateGrid(S.cAmpPlanes{8}(:,:,1));
+            [r_cam, Ir_cam] = RadialMean(xx, yy, abs(S.cAmpPlanes{ipl}(:,:,1)).^2);
+            [r_est, Ir_est] = RadialMean(xx, yy, abs(S.cAmpPlanes{ipl}(:,:,2)).^2);
+            
+            figure, hl = semilogy(r_cam, Ir_cam./max(Ir_cam(:)), r_est, Ir_est./max(Ir_est(:)));
             grid on
-            hl.LineWidth = 2;
+            set(hl, 'LineWidth', 2);
             xlabel('Radius (pix)')
             ylabel('Mean Intensity')
+            legend('Camera', 'Estimated')
             hax = gca;
             
             
