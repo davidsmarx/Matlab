@@ -84,13 +84,13 @@ else
 end
 
 % plot graphs of metrics v itnum on the first slide
-slide = Sppt.NewSlide(1);
+if ~isempty(Sppt), slide = Sppt.NewSlide(1); end
 hfig = figure_mxn(2,2);
 hax(1,1) = subplot(2,2,1); [~, ~, ~, itnum_min] = PlotNormIntensity(S, 'hfig', hfig, 'hax', hax(1,1));
 hax(1,2) = subplot(2,2,2); PlotBeta(S, 'hfig', hfig, 'hax', hax(1,2));
 hax(2,1) = subplot(2,2,3); probeh = PlotProbeh(S, 'hfig', hfig, 'hax', hax(2,1));
 hax(2,2) = subplot(2,2,4); rmsdDMv = PlotRMSdDMv(S, 'hfig', hfig, 'hax', hax(2,2));
-hPic = Sppt.CopyFigSlide(slide, hfig);
+if ~isempty(Sppt), hPic = Sppt.CopyFigSlide(slide, hfig); end
 
 % add saved falco figures
 list_fignum_to_copy = [1 2 51 91 401];
@@ -102,9 +102,11 @@ if exist(PathTranslator(figures_pn), 'dir')
         if ~exist(fn, 'file')
             continue
         end
-        slide = Sppt.NewSlide(1+ii);
-        hh = invoke(slide.Shapes, 'AddPicture', fn, true, true, 100, 100);
-        % hh.Left, hh.Top, hh.Width
+        if ~isempty(Sppt)
+            slide = Sppt.NewSlide(1+ii);
+            hh = invoke(slide.Shapes, 'AddPicture', fn, true, true, 100, 100);
+            % hh.Left, hh.Top, hh.Width
+        end
     end
 end
 
@@ -200,9 +202,10 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                 ylabel('mean |\DeltaE|^2')
                 title(trialname, 'fontsize', 14)
                 
-                newslide = Sppt.NewSlide(2);
-                Sppt.CopyFigSlide(newslide, hfig_de);
-
+                if ispc
+                    newslide = Sppt.NewSlide(2);
+                    Sppt.CopyFigSlide(newslide, hfig_de);
+                end
             end
             
         case 'DisplayCEfields'
@@ -230,9 +233,11 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
             hfig_ce = figure;
             plotampphase([S(2:N).iter], [sCmetrics.CC],...
                 'xlabel','Iteration #','title',[trialname ', \DeltaE Testbed Model Correlation (CC)']);
-            newslide = Sppt.NewSlide(2);
-            Sppt.CopyFigSlide(newslide, hfig_ce);
             
+            if ~isempty(Sppt)
+                newslide = Sppt.NewSlide(2);
+                Sppt.CopyFigSlide(newslide, hfig_ce);
+            end
         otherwise, % one call per iteration
             sCmetrics = struct;
             for ii = 1:N,
