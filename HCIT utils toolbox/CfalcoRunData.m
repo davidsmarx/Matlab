@@ -91,7 +91,7 @@ classdef CfalcoRunData < CRunData
                 S.XmaxSc = inf;
 
             else
-                %copyfile(config_fn, './config_tmp.m');
+                copyfile(config_fn, './config_tmp.m');
                 eval('config_tmp');
                 %         falcoData.Nsbp(trialIndex) = mp.Nsbp;
                 %         falcoData.fracBW(trialIndex) = mp.fracBW;
