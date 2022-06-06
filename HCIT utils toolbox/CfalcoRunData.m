@@ -108,15 +108,41 @@ classdef CfalcoRunData < CRunData
                 S.NofW = mp.Nsbp;
                 S.Nlamcorr = mp.Nsbp;
                 S.XYlimDefault = 22;
-                S.RminSc = mp.Fend.score.Rin;
-                S.RmaxSc = mp.Fend.score.Rout;
-                S.ThminSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
-                S.ThmaxSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
-                S.YminSc = -inf;
-                S.YmaxSc = inf;
-                S.XminSc = -inf;
-                S.XmaxSc = inf;
+                                
+                %                 S.RminSc = mp.Fend.score.Rin;
+                %                 S.RmaxSc = mp.Fend.score.Rout;
+                %                 S.ThminSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
+                %                 S.ThmaxSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
+                %                 S.YminSc = -inf;
+                %                 S.YmaxSc = inf;
+                %                 S.XminSc = -inf;
+                %                 S.XmaxSc = inf;
                 
+                % use falco to generate ctrl and score region masks
+                score.pixresFP = mp.Fend.res;
+                score.rhoInner = mp.Fend.score.Rin;
+                score.rhoOuter = mp.Fend.score.Rout;
+                score.angDeg = mp.Fend.score.ang;
+                score.whichSide = mp.Fend.sides;
+                score.shape = mp.Fend.shape;
+                score.xiOffset = mp.Fend.xiOffset;
+                score.etaOffset = mp.Fend.etaOffset;
+                score.FOV = mp.Fend.FOV;
+                [S.bMaskSc, xis, etas] = falco_gen_SW_mask(score);
+                %figure, imageschcit(bMaskSc)
+                
+                corr.pixresFP = mp.Fend.res;
+                corr.rhoInner = mp.Fend.corr.Rin;
+                corr.rhoOuter = mp.Fend.corr.Rout;
+                corr.angDeg = mp.Fend.corr.ang;
+                corr.whichSide = mp.Fend.sides;
+                corr.shape = mp.Fend.shape;
+                corr.xiOffset = mp.Fend.xiOffset;
+                corr.etaOffset = mp.Fend.etaOffset;
+                corr.FOV = mp.Fend.FOV;
+                [S.bMask] = falco_gen_SW_mask(corr);
+                %figure, imageschcit(bMaskSc)
+
                 S.Ndm = length(mp.dm_ind);
                 
             end % if load confi
@@ -169,14 +195,14 @@ classdef CfalcoRunData < CRunData
         
         function ReadProbeCube(S, varargin)
             % loadProbeData(S)
-            RminSc = CheckOption('RminSc', S.RminSc, varargin{:});
-            RmaxSc = CheckOption('RmaxSc', S.RmaxSc, varargin{:});
-            TminSc = CheckOption('TminSc', S.ThminSc, varargin{:});    
-            TmaxSc = CheckOption('TmaxSc', S.ThmaxSc, varargin{:});                
-            YminSc = CheckOption('YminSc', S.YminSc, varargin{:});
-            YmaxSc = CheckOption('YmaxSc', S.YmaxSc, varargin{:});
-            XminSc = CheckOption('XminSc', S.XminSc, varargin{:});
-            XmaxSc = CheckOption('XmaxSc', S.XmaxSc, varargin{:});
+            %             RminSc = CheckOption('RminSc', S.RminSc, varargin{:});
+            %             RmaxSc = CheckOption('RmaxSc', S.RmaxSc, varargin{:});
+            %             TminSc = CheckOption('TminSc', S.ThminSc, varargin{:});    
+            %             TmaxSc = CheckOption('TmaxSc', S.ThmaxSc, varargin{:});                
+            %             YminSc = CheckOption('YminSc', S.YminSc, varargin{:});
+            %             YmaxSc = CheckOption('YmaxSc', S.YmaxSc, varargin{:});
+            %             XminSc = CheckOption('XminSc', S.XminSc, varargin{:});
+            %             XmaxSc = CheckOption('XmaxSc', S.XmaxSc, varargin{:});
 
             % ev
             fn = [S.Reduced_pn '/probing_data_' num2str(S.iter) '.mat'];
@@ -199,16 +225,19 @@ classdef CfalcoRunData < CRunData
                 %         amp_model: [7240×3 double]
 
             else
-                warning('cannot find probe data');
+                warning(['cannot find probe data, iter#' num2str(S.iter)]);
                 return
             end
             % put into CRunData object
             
             % control region and score region masks
-            S.bMask = ev.maskBool; % =?= mp.Fend.corr.maskBool;
+            % were defined in loadRunData
+            
+            %S.bMask = ev.maskBool; % =?= mp.Fend.corr.maskBool;
+            %isequal(S.bMask, ev.maskBool)
 
-            [x, y, X, Y, R, T] = CreateGrid(S.bMask, 1./S.ppl0);
-            S.bMaskSc = S.bMask & (R >= RminSc & R <= RmaxSc & Y >= YminSc & Y <= YmaxSc & X >= XminSc & X <= XmaxSc);
+            %             [x, y, X, Y, R, T] = CreateGrid(S.bMask, 1./S.ppl0);
+            %             S.bMaskSc = S.bMask & (R >= RminSc & R <= RmaxSc & Y >= YminSc & Y <= YmaxSc & X >= XminSc & X <= XmaxSc);
 
             % S.ProbeModel{iwl, ip} = squeeze(...
             %                         ProbeData(:,:,0*S.Nlamcorr*S.Nppair+(ip-1)*S.Nlamcorr+iwl) ...
