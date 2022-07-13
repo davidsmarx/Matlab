@@ -11,12 +11,18 @@ classdef CfalcoRunData < CRunData
         % falco data from snippet:
         falcoData
         
+        % mp
+        mp
     end % properties
     
     
     methods
         
         function S = CfalcoRunData(seriesNum, trialNum, iter, varargin)
+            %
+            
+            % options
+            mp = CheckOption('mp', [], varargin{:});
             
             %
             S.runnum = seriesNum;
@@ -27,6 +33,11 @@ classdef CfalcoRunData < CRunData
             S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
             S.Rundir_pn = ['/home/hcit/OMC/OMC_MSWC/falco_testbed_run' num2str(seriesNum) '/data/' S.runLabel]; % for snippet file
             S.Reduced_pn = [S.Rundir_pn '/' S.runLabel];
+            
+            % if given mp, perhaps read in another iteration of this trial
+            if ~isempty(mp)
+                S.mp = mp;
+            end
             
             % config and snippet, S.falcoData
             S.loadRunData;
@@ -60,97 +71,95 @@ classdef CfalcoRunData < CRunData
 
         end % init
         
-        function loadRunData(S)
+        function loadRunData(S, varargin)
             %[falcoData,fitsData] = loadTBdata(falcoOutDir,seriesNum,trialNum_list)
             %   Function to load and unpack FALCO data from a sequence of trials
             %
             % 2022-03-31
             %   revising to use CRunData
             
+            mp = CheckOption('mp', S.mp, varargin{:});
+            
             % fullfile('Y:\ln_hcit_omc\OMC_MSWC\falco_testbed_run200\data', bn, bn, ['normI_Esens_it' num2str(S.iter) '.fits']));
             
-            % Load the configuration file => mp
-            %config_fn = [S.Rundir_pn '/' S.runLabel '_config.m'];
-            config_fn = [S.Rundir_pn '/falco_omc_config_' S.runLabel '.m'];
-            config_fn = PathTranslator(config_fn);
-            if ~exist(config_fn, 'file'),
-                warning(['cannot find config file, using default values, ' config_fn]);
-                S.ppl0 = 5.54*520/575;
-                S.Nppair = 3;
-                S.NofW = 1;
-                S.XYlimDefault = 22;
-                S.Nlamcorr = 1;
-                S.XYlimDefault = 22;
-                S.RminSc = 3; % = mp.Fend.score.Rin
-                S.RmaxSc = 9; % = mp.Fend.score.Rout
-                S.ThminSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
-                S.ThmaxSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
-                S.YminSc = -inf;
-                S.YmaxSc = inf;
-                S.XminSc = -inf;
-                S.XmaxSc = inf;
+            if isempty(mp),
+                % Load the configuration file => mp
+                %config_fn = [S.Rundir_pn '/' S.runLabel '_config.m'];
+                config_fn = [S.Rundir_pn '/falco_omc_config_' S.runLabel '.m'];
+                config_fn = PathTranslator(config_fn);
+                if ~exist(config_fn, 'file'),
+                    error(['cannot find config file, using default values, ' config_fn]);
+                    %                     S.ppl0 = 5.54*520/575;
+                    %                     S.Nppair = 3;
+                    %                     S.NofW = 1;
+                    %                     S.XYlimDefault = 22;
+                    %                     S.Nlamcorr = 1;
+                    %                     S.XYlimDefault = 22;
+                    %                     S.RminSc = 3; % = mp.Fend.score.Rin
+                    %                     S.RmaxSc = 9; % = mp.Fend.score.Rout
+                    %                     S.ThminSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
+                    %                     S.ThmaxSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
+                    %                     S.YminSc = -inf;
+                    %                     S.YmaxSc = inf;
+                    %                     S.XminSc = -inf;
+                    %                     S.XmaxSc = inf;
+                end
 
-            else
+                % create mp
                 copyfile(config_fn, './config_tmp.m');
                 eval('config_tmp');
-                %         falcoData.Nsbp(trialIndex) = mp.Nsbp;
-                %         falcoData.fracBW(trialIndex) = mp.fracBW;
-                %         falcoData.lambda0(trialIndex) = mp.lambda0;
-                %         falcoData.sbp_centers = mp.sbp_centers;
-                %         falcoData.Nitr(trialIndex) = mp.Nitr;
-                %         falcoData.si_ref(trialIndex) = mp.si_ref;
-                %         falcoData.Fend = mp.Fend;
-                %         falcoData.thput_metric = mp.thput_metric;
-                %         falcoData.thput_radius = mp.thput_radius;
                 
-                S.ppl0 = mp.Fend.res;
-                S.Nppair = mp.est.probe.Npairs;
-                S.NofW = mp.Nsbp;
-                S.Nlamcorr = mp.Nsbp;
-                S.XYlimDefault = 22;
-                                
-                %                 S.RminSc = mp.Fend.score.Rin;
-                %                 S.RmaxSc = mp.Fend.score.Rout;
-                %                 S.ThminSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
-                %                 S.ThmaxSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
-                %                 S.YminSc = -inf;
-                %                 S.YmaxSc = inf;
-                %                 S.XminSc = -inf;
-                %                 S.XmaxSc = inf;
-                
-                % use falco to generate ctrl and score region masks
-                score.pixresFP = mp.Fend.res;
-                score.rhoInner = mp.Fend.score.Rin;
-                score.rhoOuter = mp.Fend.score.Rout;
-                score.angDeg = mp.Fend.score.ang;
-                score.whichSide = mp.Fend.sides;
-                score.shape = mp.Fend.shape;
-                score.xiOffset = mp.Fend.xiOffset;
-                score.etaOffset = mp.Fend.etaOffset;
-                score.FOV = mp.Fend.FOV;
-                [S.bMaskSc, xis, etas] = falco_gen_SW_mask(score);
-                %figure, imageschcit(bMaskSc)
-                
-                corr.pixresFP = mp.Fend.res;
-                corr.rhoInner = mp.Fend.corr.Rin;
-                corr.rhoOuter = mp.Fend.corr.Rout;
-                corr.angDeg = mp.Fend.corr.ang;
-                corr.whichSide = mp.Fend.sides;
-                corr.shape = mp.Fend.shape;
-                corr.xiOffset = mp.Fend.xiOffset;
-                corr.etaOffset = mp.Fend.etaOffset;
-                corr.FOV = mp.Fend.FOV;
-                [S.bMask] = falco_gen_SW_mask(corr);
-                %figure, imageschcit(bMaskSc)
-
-                S.Ndm = length(mp.dm_ind);
-                
-            end % if load confi
+            end
             
+            S.ppl0 = mp.Fend.res;
+            %S.Nppair = mp.est.probe.Npairs;
+            S.NofW = mp.Nsbp;
+            S.Nlamcorr = mp.Nsbp;
+            S.XYlimDefault = 22;
+            
+            %                 S.RminSc = mp.Fend.score.Rin;
+            %                 S.RmaxSc = mp.Fend.score.Rout;
+            %                 S.ThminSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
+            %                 S.ThmaxSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
+            %                 S.YminSc = -inf;
+            %                 S.YmaxSc = inf;
+            %                 S.XminSc = -inf;
+            %                 S.XmaxSc = inf;
+
+            %             % use falco to generate ctrl and score region masks
+            %             score.pixresFP = mp.Fend.res;
+            %             score.rhoInner = mp.Fend.score.Rin;
+            %             score.rhoOuter = mp.Fend.score.Rout;
+            %             score.angDeg = mp.Fend.score.ang;
+            %             score.whichSide = mp.Fend.sides;
+            %             score.shape = mp.Fend.shape;
+            %             score.xiOffset = mp.Fend.xiOffset;
+            %             score.etaOffset = mp.Fend.etaOffset;
+            %             score.FOV = mp.Fend.FOV;
+            %             [S.bMaskSc, xis, etas] = falco_gen_SW_mask(score);
+            %             %figure, imageschcit(bMaskSc)
+            
+            %             corr.pixresFP = mp.Fend.res;
+            %             corr.rhoInner = mp.Fend.corr.Rin;
+            %             corr.rhoOuter = mp.Fend.corr.Rout;
+            %             corr.angDeg = mp.Fend.corr.ang;
+            %             corr.whichSide = mp.Fend.sides;
+            %             corr.shape = mp.Fend.shape;
+            %             corr.xiOffset = mp.Fend.xiOffset;
+            %             corr.etaOffset = mp.Fend.etaOffset;
+            %             corr.FOV = mp.Fend.FOV;
+            %             [S.bMask] = falco_gen_SW_mask(corr);
+            %figure, imageschcit(bMaskSc)
+            
+            S.Ndm = length(mp.dm_ind);
+
+            % store mp in the class instance
+            S.mp = mp;
+                
             % Load the "snippet" file -- struct out
             snippet_fn = [S.Rundir_pn '/' S.runLabel,'_snippet.mat'];
             S.Rundir_fn = PathTranslator(snippet_fn);
-            load(PathTranslator(snippet_fn)); % out
+            load(PathTranslator(snippet_fn), 'out'); % out
             S.falcoData = out;
             % struct:
             %                  Nitr: 150
@@ -188,8 +197,9 @@ classdef CfalcoRunData < CRunData
             %              smspectra: {1×116 cell}
             %                     sm: {1×116 cell}
             %                 alpha2: {1×116 cell}
-                        
-            % need:
+        
+            S.bMask = S.falcoData.Fend.corr.maskBool;
+            S.bMaskSc = S.falcoData.Fend.score.maskBool;
             
         end % end loadTBdata
         
@@ -246,7 +256,13 @@ classdef CfalcoRunData < CRunData
             %                         );
             %
             %                     S.ProbeMeasAmp{iwl, ip} = real(sqrt(squeeze( ProbeData(:,:,2*S.Nlamcorr*S.Nppair + (ip-1)*S.Nlamcorr+ iwl) )));
+
+            % check that ev mask is same as corr mask
+            if ~isequal(ev.maskBool, S.bMask),
+                warning('ev.maskBool is not same as corr maskBool');
+            end
             
+            [Npx_tmp, S.Nppair] = size(ev.amp_model);
             for ip = 1:S.Nppair,
                 S.ProbeModel{1,ip} = zeros(size(ev.maskBool));
                 S.ProbeModel{1,ip}(ev.maskBool) = ev.amp_model(:,ip); % amplitude
