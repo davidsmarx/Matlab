@@ -1223,6 +1223,8 @@ classdef CRunData < handle & CConstants
             %             climopt = CheckOption('clim', [], varargin{:});
             %             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             %             haxuse = CheckOption('hax', [], varargin{:});
+            %             xlim = CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
+            %             ylim = CheckOption('ylim', [], varargin{:});
             %
             
             if isempty(S.ImCubeUnProb),
@@ -1243,9 +1245,13 @@ classdef CRunData < handle & CConstants
             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             haxuse = CheckOption('hax', [], varargin{:});
             bPlotRadialIntensity = CheckOption('DisplayRadialIntensity', false, varargin{:});
+            xlim = CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
+            ylim = CheckOption('ylim', [], varargin{:});
             
             [x, y, X, Y, R] = CreateGrid(S.ImCubeUnProb{1}, 1./(S.ppl0*S.PIAAMAG));
-            xlim = dispXYlim*[-1 1]; ylim = xlim;
+            
+            if isempty(xlim), xlim = dispXYlim*[-1 1]; end
+            if isempty(ylim), ylim = dispXYlim*[-1 1]; end
             
             Nlam = length(ilam);
             
@@ -1498,11 +1504,15 @@ classdef CRunData < handle & CConstants
         function [hfig, hax] = DisplayIncInt(S, varargin)
             % [hfig, hax] = DisplayIncInt(S, varargin)
             % options:
-            %    'drawradii'
-            %    'bLog' (default = true)
-            %    'clim'
-            %    'hax'
-            %    'type' (default = 'normal'), 'Est', 'Mix'
+            %             CheckOption('bLog', true, varargin{:});
+            %             CheckOption('xylim', S.XYlimDefault, varargin{:});
+            %             CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            %             CheckOption('drawylimlines', [], varargin{:});
+            %             CheckOption('clim', [], varargin{:});
+            %             CheckOption('hax', [], varargin{:}); % put image on this axes
+            %             CheckOption('type', 'est', varargin{:});
+            %             CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
+            %             CheckOption('ylim', [], varargin{:});
             
             if isempty(S.IncInt),
                 S.ReadReducedCube;
@@ -1517,6 +1527,8 @@ classdef CRunData < handle & CConstants
             clim = CheckOption('clim', [], varargin{:});
             haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
             IncIntType = CheckOption('type', 'est', varargin{:});
+            xlim = CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
+            ylim = CheckOption('ylim', [], varargin{:});
             
             %%%% end options
 
@@ -1543,7 +1555,9 @@ classdef CRunData < handle & CConstants
             
             if isempty(haxuse), hfig = figure_mxn(1,S.Nlamcorr); else hfig = gcf; end
             
-            xlim = dispXYlim*[-1 1]; ylim = xlim;
+            % explicity xlim, ylim option overrides
+            if isempty(xlim), xlim = dispXYlim*[-1 1]; end
+            if isempty(ylim), ylim = dispXYlim*[-1 1]; end
 
             if isempty(clim),
                 clim = pClim(pFun([plIncInt{:}]));
@@ -1587,8 +1601,14 @@ classdef CRunData < handle & CConstants
             % check options
             clim = CheckOption('clim', [], varargin{:});
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            xlim = CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
+            ylim = CheckOption('ylim', [], varargin{:});
             
-            xlimlamD = dispXYlim;
+            % explicity xlim, ylim option overrides
+            if isempty(xlim), xlim = dispXYlim*[-1 1]; end
+            if isempty(ylim), ylim = dispXYlim*[-1 1]; end
+
+            % grid in lam/D
             [x, y] = CreateGrid(S.ProbeAmp{1,1}, 1./S.ppl0);
             
             % ProbeAmp is from reduced data cube, Primary HDU
@@ -1607,10 +1627,10 @@ classdef CRunData < handle & CConstants
                     imageschcit(x, y, S.ProbeAmp{iw,ip}), axis image,
                     xlabel('Cam X (\lambda/D)'), ylabel('Cam Y (\lambda/D)')
                     colorbartitle('Amplitude (Normalized)'),
-                    set(gca,'xlim',xlimlamD*[-1 1],'ylim',xlimlamD*[-1 1])
+                    set(gca,'xlim', xlim, 'ylim', ylim)
                     title(['Iteration # ' num2str(S.iter) ' Wave #' num2str(iw) ' Probe # ' num2str(ip)])
                     meanProbeh = mean( abs(S.ProbeAmp{iw,ip}(S.bMask)).^2 );
-                    ht = text(-xlimlamD, xlimlamD, [' Mean Probe Int = ' num2str(meanProbeh, '%.1e')]);
+                    ht = text(xlim(1), ylim(2), [' Mean Probe Int = ' num2str(meanProbeh, '%.1e')]);
                     set(ht,'VerticalAlignment','top')
                     set(ht,'Color',[1 1 1])
                     
@@ -1644,7 +1664,7 @@ classdef CRunData < handle & CConstants
                     imageschcit(x, y, probeamptmp), axis image, 
                     xlabel('Cam X (\lambda/D)'), ylabel('Cam Y (\lambda/D)')
                     colorbartitle('Amplitude (Normalized)'),
-                    set(gca,'xlim',xlimlamD*[-1 1],'ylim',xlimlamD*[-1 1])
+                    set(gca,'xlim', xlim, 'ylim', ylim)
                     title(['Iteration # ' num2str(S.iter) ' Wave #' num2str(iw) ' Probe # ' num2str(ip) ' Amplitude'])
                     
                 end
@@ -1689,10 +1709,12 @@ classdef CRunData < handle & CConstants
             % [hfig, hax] = DisplayProbeCube(S, varargin)
             % ProbeCube is 2nd HDU of reduced data cube
             %
-            %             hfig = CheckOption('hfig', [], varargin{:});
-            %             iwvplot = CheckOption('iwv', ceil(S.NofW/2), varargin{:});
-            %             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
-            %             bLog = CheckOption('blog', true, varargin{:});
+            %             CheckOption('hfig', [], varargin{:});
+            %             CheckOption('iwv', ceil(S.NofW/2), varargin{:});
+            %             CheckOption('xylim', S.XYlimDefault, varargin{:});
+            %             CheckOption('blog', true, varargin{:});
+            %             CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
+            %             CheckOption('ylim', [], varargin{:});
             
             if isempty(S.ProbeModel),
                 S.ReadProbeCube;
@@ -1705,9 +1727,14 @@ classdef CRunData < handle & CConstants
             iwvplot = CheckOption('iwv', ceil(S.NofW/2), varargin{:});
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             bLog = CheckOption('blog', true, varargin{:});
+            xlim = CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
+            ylim = CheckOption('ylim', [], varargin{:});
+            
+            % explicit xlim, ylim overrides dispXYlim
+            if isempty(xlim), xlim = dispXYlim*[-1 1]; end
+            if isempty(ylim), ylim = dispXYlim*[-1 1]; end
 
-            [x, y] = CreateGrid(S.ProbeModel{1,1}, 1./S.ppl0);
-                        
+            [x, y] = CreateGrid(S.ProbeModel{1,1}, 1./S.ppl0);                        
             
             if bLog,
                 funPlot = @(Ep) real(log10( abs(Ep).^2 ));
@@ -1729,13 +1756,13 @@ classdef CRunData < handle & CConstants
             for ip = 1:S.Nppair,
                 ha(ip) = subplot(2,S.Nppair+1,ip);
                 imageschcit(x,y, funPlot(S.ProbeModel{iwvplot,ip})), axis image, colorbartitle(sctitle)
-                set(gca,'xlim',dispXYlim*[-1 1],'ylim',dispXYlim*[-1 1])
+                set(gca,'xlim', xlim, 'ylim', ylim)
                 xlabel('\lambda / D'), ylabel('\lambda / D')
                 title(['wave #' num2str(iwvplot) ', it ' num2str(S.iter) ', Model Probe #' num2str(ip)])
                 
                 ha(S.Nppair+ip) = subplot(2,S.Nppair+1,S.Nppair+1+ip);
                 imageschcit(x,y, funPlot(S.ProbeMeasAmp{iwvplot,ip})), axis image, colorbartitle(sctitle)
-                set(gca,'xlim',dispXYlim*[-1 1],'ylim',dispXYlim*[-1 1])
+                set(gca,'xlim', xlim, 'ylim', ylim)
                 xlabel('\lambda / D'), ylabel('\lambda / D')
                 title(['wave #' num2str(iwvplot) ', it ' num2str(S.iter) ', Measure Probe #' num2str(ip)])
             end
@@ -1752,12 +1779,16 @@ classdef CRunData < handle & CConstants
                 ProbeMeasPlot{ip}  = abs(S.ProbeMeasAmp{iwvplot,ip}).^2;
                 legstr{ip} = ['# ' num2str(ip)];
             end
+            % plot limits for radial plot
+            mean_rad = hypot(mean(xlim), mean(ylim));
+            max_rad = max(hypot(xlim, ylim));
+            radlim = mean_rad + (max_rad-mean_rad)*[-1 1];
+            nr = min([128 ceil(2*(max_rad-mean_rad)*S.ppl0)]);
+            %
             harad(1) = subplot(2,S.Nppair+1,S.Nppair+1);
-            S.DisplayRadialPlot(ProbeModelPlot, 'hax', harad(1),'title', ['Iter #' num2str(S.iter) ', Model'], 'legstr', legstr);
-            %legend('location','south')
+            S.DisplayRadialPlot(ProbeModelPlot, 'dispradlim', radlim, 'nr', nr, 'hax', harad(1),'title', ['Iter #' num2str(S.iter) ', Model'], 'legstr', legstr);
             harad(2) = subplot(2,S.Nppair+1,2*(S.Nppair+1));
-            S.DisplayRadialPlot(ProbeMeasPlot,'hax',harad(2),'title', ['Iter #' num2str(S.iter) ', Measure'], 'legstr', legstr);
-            %legend('location','south')
+            S.DisplayRadialPlot(ProbeMeasPlot, 'dispradlim', radlim, 'nr', nr, 'hax',harad(2),'title', ['Iter #' num2str(S.iter) ', Measure'], 'legstr', legstr);
             
             ylim = get(harad,'ylim');
             set(harad,'ylim',[min([ylim{:}]), max([ylim{:}])])
@@ -1767,10 +1798,14 @@ classdef CRunData < handle & CConstants
         function [hfig, hax] = DisplayCohInt(S, varargin)
             % [hfig, hax] = DisplayCohInt(S, varargin)
             % options:
-            %    'drawradii'
-            %    'bLog' (default = true)
-            %    'clim'
-            %    'hax'
+            %             CheckOption('blog', true, varargin{:});
+            %             CheckOption('xylim', S.XYlimDefault, varargin{:});
+            %             CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            %             CheckOption('drawylimlines', [], varargin{:});
+            %             CheckOption('clim', [], varargin{:});
+            %             CheckOption('hax', [], varargin{:}); % put image on this axes
+            %             CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
+            %             CheckOption('ylim', [], varargin{:});
             
             if isempty(S.E_t),
                 S.ReadReducedCube;
@@ -1788,6 +1823,8 @@ classdef CRunData < handle & CConstants
             drawYlimLines = CheckOption('drawylimlines', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
+            xlim = CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
+            ylim = CheckOption('ylim', [], varargin{:});
             
             %%%% end options
             
@@ -1803,7 +1840,9 @@ classdef CRunData < handle & CConstants
             
             if isempty(haxuse), hfig = figure_mxn(1,S.Nlamcorr); else hfig = gcf; end
             
-            xlim = dispXYlim*[-1 1]; ylim = xlim;
+            % explicit xlim, ylim option overrides dispXYlim option
+            if isempty(xlim), xlim = dispXYlim*[-1 1]; end
+            if isempty(ylim), ylim = dispXYlim*[-1 1]; end
 
             if isempty(clim),
                 clim = pClim(pFun([S.CohInt{:}]));
@@ -2161,11 +2200,19 @@ classdef CRunData < handle & CConstants
             % CheckOption('hfig', [], varargin{:});
             % CheckOption('clim', [], varargin{:});
             % CheckOption('nodisplay', false, varargin{:});
+            % CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
+            % CheckOption('ylim', [], varargin{:});
 
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             bNodisplay = CheckOption('nodisplay', false, varargin{:});
+            xlim = CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
+            ylim = CheckOption('ylim', [], varargin{:});
+            
+            %
+            if isempty(xlim), xlim = dispXYlim*[-1 1]; end
+            if isempty(ylim), ylim = dispXYlim*[-1 1]; end
 
             if isempty(S.E_t),
                 S.ReadReducedCube;
@@ -2242,7 +2289,7 @@ classdef CRunData < handle & CConstants
             else,
                 hfig = figure_mxn(Nplr,S.NofW);
             end
-            [x, y] = CreateGrid([nc nr], 1./S.ppl0);
+            [x, y] = CreateGrid([nr nc], 1./S.ppl0);
             ha = zeros(Nplr,S.NofW);
             for iwv = 1:S.NofW,
                 % subplot #
@@ -2271,7 +2318,6 @@ classdef CRunData < handle & CConstants
             end            
 
             % xlim, ylim
-            xlim = dispXYlim*[-1 1]; ylim = xlim;
             set(ha,'xlim',xlim,'ylim',ylim)
 
             % clim
@@ -2320,6 +2366,8 @@ classdef CRunData < handle & CConstants
             %             CheckOption('debug', false, varargin{:});
             %             CheckOption('bMaskDisplay', [], varargin{:}); % default is mask from CohInt
             %             CheckOption('nodisplay', false, varargin{:}); % calc metrics and return, don't display graph
+            %             CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
+            %             CheckOption('ylim', [], varargin{:});
 
             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
@@ -2328,6 +2376,8 @@ classdef CRunData < handle & CConstants
             bDebugAutoMetric = CheckOption('debug', false, varargin{:});
             bMaskDisplay = CheckOption('bMaskDisplay', [], varargin{:});
             bNodisplay = CheckOption('nodisplay', false, varargin{:});
+            xlim = CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
+            ylim = CheckOption('ylim', [], varargin{:});
             
             if isempty(S.E_t),
                 S.ReadReducedCube;
@@ -2414,7 +2464,7 @@ classdef CRunData < handle & CConstants
             else
                 hfig = figure_mxn(Nplr,S.NofW);
             end
-            [x, y] = CreateGrid([nc nr], 1./S.ppl0);
+            [x, y] = CreateGrid([nr nc], 1./S.ppl0);
             ha = zeros(Nplr,S.NofW);
 
             for iwv = 1:S.NofW,
@@ -2440,6 +2490,10 @@ classdef CRunData < handle & CConstants
                     bMaskce = bMaskDisplay;
                 end
                 
+                % add to display mask pixels where amp == 0 so pha is not
+                % displayed
+                bMaskce(CEampiwv <= 0) = false;
+                
                 % apply display mask
                 CEphaiwv = squeeze(angle(CE(iwv,:,:)));
                 CEphaiwv(~bMaskce) = nan;
@@ -2459,18 +2513,21 @@ classdef CRunData < handle & CConstants
                 title([sRI ', CE = |dE_m''dE_t|/\surd{<dE_t.dE_t><dE_m.dE_m>}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 
                 ha(2,iwv) = subplot(Nplr, S.NofW, iphapl);
-                %imageschcit(x,y,CEphaiwv/pi); 
-                surf(x, y, CEphaiwv/pi, 'linestyle','none'); view(2); % doesn't plot NaN
+                him_pha = imageschcit(x,y,CEphaiwv/pi);                 
+                %mesh(x, y, CEphaiwv/pi, 'linestyle','none'); view(2); % doesn't plot NaN
                 title([sRI ', \angle{CE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 colorbartitle('Phase (\pi rad)')
                 % circular colormap for phase plots
                 set(ha(2,iwv),'clim',[-1 1]) % pi radians
                 colormap(ha(2,iwv), hsv) %phasemap) % hsv also works
-                
+                set(him_pha, 'AlphaData', ~isnan(CEphaiwv))
+                %axis(ha(2,iwv), 'image')
             end
 
             % xlim, ylim
-            xlim = dispXYlim*[-1 1]; ylim = xlim;
+            % explicit xlim, ylim overrides dispXYlim
+            if isempty(xlim), xlim = dispXYlim*[-1 1]; end
+            if isempty(ylim), ylim = dispXYlim*[-1 1]; end
             set(ha,'xlim',xlim,'ylim',ylim)
 
             % make clim for abs plots the same for all wavelengths
