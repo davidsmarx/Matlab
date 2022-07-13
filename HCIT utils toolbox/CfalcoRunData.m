@@ -140,9 +140,10 @@ classdef CfalcoRunData < CRunData
                 corr.xiOffset = mp.Fend.xiOffset;
                 corr.etaOffset = mp.Fend.etaOffset;
                 corr.FOV = mp.Fend.FOV;
-                [S.bMask] = falco_gen_SW_mask(corr);
+                [S.bMask] = falco_gen_SW_mask(corr); % corr should have Neta, Nxi
                 %figure, imageschcit(bMaskSc)
 
+                % Fend.Neta, Nxi
                 S.Ndm = length(mp.dm_ind);
                 
             end % if load confi
@@ -258,6 +259,9 @@ classdef CfalcoRunData < CRunData
             % image cube (:,:,2*Nppair+1)
             S.ImCube = ev.imageArray;
             S.imgindex = 1; % slice of ImCube of unprobed image for each subband
+            
+            % replaces bMask defined in loadRunData, need to reconcile
+            S.bMask = ev.maskBool;
             
             % E-fields, S.E_t(iwl,:,:)
             S.E_t(1,:,:) = zeros(size(S.bMask));
