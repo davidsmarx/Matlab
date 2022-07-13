@@ -103,7 +103,7 @@ hax(2,2) = subplot(2,2,4); rmsdDMv = PlotRMSdDMv(S, 'hfig', hfig, 'hax', hax(2,2
 if ~isempty(Sppt),
     hPic = Sppt.CopyFigSlide(slide, hfig);
 else
-    fSaveas(hfig, saveas_pn, '', ['summary_it' num2str(S(1).iter) '_it' num2str(S(end).iter)], []);
+    fSaveas(hfig, saveas_pn, 'summary', ['summary_it' num2str(S(1).iter) '_it' num2str(S(end).iter)], []);
 end
 
 % add saved falco figures
@@ -220,7 +220,7 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                     newslide = Sppt.NewSlide(2);
                     Sppt.CopyFigSlide(newslide, hfig_de);
                 else
-                    fSaveas(hfig_de, save_pn, '', ['magdE_it' num2str(S(1).iter) '_it' num2str(S(end).iter)], []);
+                    fSaveas(hfig_de, save_pn, 'summary', ['magdE_it' num2str(S(1).iter) '_it' num2str(S(end).iter)], []);
                 end
             end
             
@@ -254,7 +254,7 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                 newslide = Sppt.NewSlide(2);
                 Sppt.CopyFigSlide(newslide, hfig_ce);
             else
-                fSaveas(hfig_ce, save_pn, '', ['CE_it' num2str(S(1).iter) '_it' num2str(S(end).iter)], []);
+                fSaveas(hfig_ce, save_pn, 'summary', ['CE_it' num2str(S(1).iter) '_it' num2str(S(end).iter)], []);
             end
         otherwise, % one call per iteration
             sCmetrics = struct;
