@@ -1,10 +1,11 @@
 function fitswrite_hcit(out_fn, img, kwds, varargin)
-% fitswrite_hcit(fn, img, kwds, 'image', {img, kwds}, ...)
+% fitswrite_hcit(fn, img, kwds, 'image', {img, kwds}, 'image', {img, kwds}, ...)
 % 
 % my fits write wrapper to include headers and multiple hdus
 %
 % kwds is n x 3 cell array, just like finfo.PrimaryData.Keywords
 %   comment string cannot be empty
+%
 % options:
 %   'overwrite', false (default), or true
 

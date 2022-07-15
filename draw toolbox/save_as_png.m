@@ -1,6 +1,7 @@
 function save_as_png(handle, filename, r1)
 % save_as_png(handle, filename, r1)
-% '-r300' sets the output resolution to 300 dots per inch. To specify screen resolution, use '-r0'. 
+%   r1 = 300 (default) sets '-r300' sets the output resolution to 300 dots per inch
+%        0 specifies screen resolution, '-r0'. 
 
 % default resolution
 if ~exist('r1','var'),

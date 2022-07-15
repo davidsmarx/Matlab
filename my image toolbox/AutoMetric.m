@@ -235,7 +235,8 @@ function sOptions = ValidateOptions(varargin)
     
     % copy given option values over the default values
     if isempty(varargin), return, end
-    
+
+    % varargin can be a struct or list of keyword, value
     if isstruct(varargin{1})
         sTmp = varargin{1};
         fnames = fieldnames(sTmp);
@@ -244,20 +245,14 @@ function sOptions = ValidateOptions(varargin)
             sOptions.(fnames{ii}) = sTmp.(fnames{ii});
         end
         
-    else
+    elseif iscell(varargin)
+        fnames = fieldnames(sOptions);
+        
+        for ii = 1:length(fnames),
+            fname = fnames{ii};
+            sOptions.(fname) = CheckOption(fname, sOptions.(fname), varargin{:});            
+        end
 
-        % TO DO allow for string type CheckOption()
-        warning('options is not a struct');
-        %         'Wgt_mask', [] ... % option to supply a real valued array to create the mask
-        %         ,'image_type', 'pupil' ... % 'pupil' or 'psf'
-        %         ,'eps_inside', 1.0e-15 ...
-        %         ,'eps_outside', 1.0e-12 ...
-        %         ,'AutoThreshold_Nbins', 21 ...
-        %         ,'bScaleAmp', false ...
-        %         ,'logPSF', false ...
-        %         ,'debug', false ...
-        %         ,'PSF_thresh_nsig', 2 ...
-        %
     end
     
     % validate option values here

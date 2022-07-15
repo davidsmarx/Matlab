@@ -34,7 +34,6 @@ more off
 
 % options
 ppt_fn = CheckOption('pptfn', '', varargin{:});
-sOptin = CheckOption('sOptin', [], varargin{:}); % passed to CfalcoRunData
 Sppt = CheckOption('Sppt', [], varargin{:});
 max_empties = CheckOption('max_empties', 3, varargin{:});
 
@@ -50,6 +49,9 @@ if isempty(Sppt) && ispc && ~isempty(varargin),
     Sppt = Cppt(ppt_fn);
 end
 
+% initial mp is empty, gets read by first iteration
+mp = [];
+
 % get the CfalcoRunData objects
 % if 3 successive iterations have no data, stop
 cnt_empty = 0;
@@ -61,7 +63,7 @@ if isnumeric(listItnum),
     for ii = 1:N;
         fprintf('reading itnum %d\n', listItnum(ii));
         %try
-            S(ii) = CfalcoRunData(runnum, TrialNum, listItnum(ii), sOptin);
+            S(ii) = CfalcoRunData(runnum, TrialNum, listItnum(ii), 'mp', mp);
         %catch
         %    warning(['iter# ' num2str(listItnum(ii)) ' not found']);
         %end
@@ -76,12 +78,20 @@ if isnumeric(listItnum),
             S = S(1:end-max_empties);
             break
         end
+        
+        % update mp, so it is used for next iteration and avoid reading
+        % config every iteration
+        mp = S(ii).mp;
+        
     end
 elseif isa(listItnum, 'CfalcoRunData')
     S = listItnum;
 else
     error(['listItnum type error: ' class(listItnum)]);
 end
+
+%
+saveas_pn = ['./falco_testbed_run' num2str(S(1).runnum) '/data/' S(1).runLabel '/figures'];
 
 % plot graphs of metrics v itnum on the first slide
 if ~isempty(Sppt), slide = Sppt.NewSlide(1); end
@@ -90,7 +100,11 @@ hax(1,1) = subplot(2,2,1); [~, ~, ~, itnum_min] = PlotNormIntensity(S, 'hfig', h
 hax(1,2) = subplot(2,2,2); PlotBeta(S, 'hfig', hfig, 'hax', hax(1,2));
 hax(2,1) = subplot(2,2,3); probeh = PlotProbeh(S, 'hfig', hfig, 'hax', hax(2,1));
 hax(2,2) = subplot(2,2,4); rmsdDMv = PlotRMSdDMv(S, 'hfig', hfig, 'hax', hax(2,2));
-if ~isempty(Sppt), hPic = Sppt.CopyFigSlide(slide, hfig); end
+if ~isempty(Sppt),
+    hPic = Sppt.CopyFigSlide(slide, hfig);
+else
+    fSaveas(hfig, saveas_pn, 'summary', ['summary_it' num2str(S(1).iter) '_it' num2str(S(end).iter)], []);
+end
 
 % add saved falco figures
 list_fignum_to_copy = [1 2 51 91 401];
@@ -114,7 +128,7 @@ end
 listHfig = {};
 for iplot = 1:length(varargin),
     if iscell(varargin{iplot}),
-        listHfig{end+1} = CreatePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end});        
+        listHfig{end+1} = CreatePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end}, 'save_pn', saveas_pn);        
     end
 end
 
@@ -142,7 +156,7 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
     % some plots are differential
     % some plots we also plot metrics v itnum
 
-    save_pn = CheckOption('save_pn', ['./' sDisplayFun '/'], varargin{:}); % is ~ispc
+    save_pn = CheckOption('save_pn', ['./' sDisplayFun '/'], varargin{:}); % if ~ispc
     figheight = CheckOption('figheight', 700, varargin{:}); % for ppt display
     trialname = CheckOption('trialname', '', varargin{:});
 
@@ -175,7 +189,7 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                         htmp = Sppt.CopyFigNewSlide(hfig);
                         %set(htmp,'Height',figheight);
                     else
-                        saveas(hfig, [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
+                        fSaveas(hfig, save_pn, sDisplayFun, 'it', S(ii).iter);
                     end
                 end % if hfig
                 
@@ -205,6 +219,8 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                 if ispc
                     newslide = Sppt.NewSlide(2);
                     Sppt.CopyFigSlide(newslide, hfig_de);
+                else
+                    fSaveas(hfig_de, save_pn, 'summary', ['magdE_it' num2str(S(1).iter) '_it' num2str(S(end).iter)], []);
                 end
             end
             
@@ -224,7 +240,7 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                         htmp = Sppt.CopyFigNewSlide(hfig);
                         %set(htmp,'Height',figheight);
                     else
-                        saveas(hfig, [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
+                        fSaveas(hfig, save_pn, sDisplayFun, 'it', S(ii).iter);
                     end % if ispc
                     
                 end % if hfig
@@ -237,6 +253,8 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
             if ~isempty(Sppt)
                 newslide = Sppt.NewSlide(2);
                 Sppt.CopyFigSlide(newslide, hfig_ce);
+            else
+                fSaveas(hfig_ce, save_pn, 'summary', ['CE_it' num2str(S(1).iter) '_it' num2str(S(end).iter)], []);
             end
         otherwise, % one call per iteration
             sCmetrics = struct;
@@ -254,12 +272,21 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                     htmp = Sppt.CopyFigNewSlide(hfig);
                     %set(htmp,'Height',figheight);
                 else
-                    saveas(hfig, [save_pn 'it' num2str(S(ii).iter) '_' sDisplayFun '.jpg']);
+                    fSaveas(hfig, save_pn, sDisplayFun, 'it', S(ii).iter);
                 end
             end
     end
 
 end % CreatePlots
+
+function fSaveas(hfig, save_pn, sDisplayFun, bn, iter)
+
+    fn = fullfile(save_pn, sDisplayFun, [bn '_' num2str(iter) '.jpg']);
+    pn = fileparts(fn);
+    if ~exist(pn, 'dir'), mkdir(pn); end
+    saveas(hfig, fn);
+
+end
 
 function figscale = CalcFigscale(hfig, figheight)
     
@@ -368,37 +395,46 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
     itnum = itnum(:); % force column vector
     [NInt_co, NInt_inco, NInt_total] = deal(zeros(length(itnum), max([listS.Nlamcorr]) ));
     NInt_mean = zeros(length(itnum),1);
-    for ii = 1:length(itnum)
-        
-        %         if isempty(listS(ii).NormIntensity_total)
-        %             listS(ii).ReadImageCube;
-        %         end
-        %         if isempty(listS(ii).NormIntensity_co)
-        %             listS(ii).ReadReducedCube;
-        %         end
-        %
-        %
-        %         for ilam = 1:listS(ii).Nlamcorr,
-        %             NInt_co(ii, ilam) = listS(ii).NormIntensity_co(ilam);
-        %             NInt_inco(ii, ilam) = listS(ii).NormIntensity_inco(ilam);
-        %             NInt_total(ii, ilam) = listS(ii).NormIntensity_total(ilam);
-        %         end % for ilam
-        
-        sC = listS(ii).GetContrast('display',false);
-        if ~isempty(sC.co_lam_NI),
-            NInt_co(ii, :) = sC.co_lam_NI;
-            NInt_inco(ii, :) = sC.inco_lam_NI;
-            NInt_total(ii, :) = sC.score_lam;
-            NInt_mean(ii) = sC.mean;
-        else
-            NInt_co(ii, :) = NaN; % so it's not plotted
-            NInt_inco(ii, :) = NaN;
-            NInt_total(ii, :) = NaN;            
-            NInt_mean(ii) = NaN;
-        end
-        
-    end % ii
+    
+    % %%% this parts calculates contrast or NI for each iteration
+    % %%% not working right now, probably because of bMask problems
+    % %%% use falcoData instead
+    %     for ii = 1:length(itnum)
+    %
+    %         %         if isempty(listS(ii).NormIntensity_total)
+    %         %             listS(ii).ReadImageCube;
+    %         %         end
+    %         %         if isempty(listS(ii).NormIntensity_co)
+    %         %             listS(ii).ReadReducedCube;
+    %         %         end
+    %         %
+    %         %
+    %         %         for ilam = 1:listS(ii).Nlamcorr,
+    %         %             NInt_co(ii, ilam) = listS(ii).NormIntensity_co(ilam);
+    %         %             NInt_inco(ii, ilam) = listS(ii).NormIntensity_inco(ilam);
+    %         %             NInt_total(ii, ilam) = listS(ii).NormIntensity_total(ilam);
+    %         %         end % for ilam
+    %
+    %         %sC = listS(ii).GetContrast('display',false);
+    %         if ~isempty(sC.co_lam_NI),
+    %             NInt_co(ii, :) = sC.co_lam_NI;
+    %             NInt_inco(ii, :) = sC.inco_lam_NI;
+    %             NInt_total(ii, :) = sC.score_lam;
+    %             NInt_mean(ii) = sC.mean;
+    %         else
+    %             NInt_co(ii, :) = NaN; % so it's not plotted
+    %             NInt_inco(ii, :) = NaN;
+    %             NInt_total(ii, :) = NaN;
+    %             NInt_mean(ii) = NaN;
+    %         end
+    %
+    %     end % ii
 
+    NInt_co = listS(1).falcoData.normIntModScore(itnum, :);
+    NInt_inco = listS(1).falcoData.normIntUnmodScore(itnum, :);
+    NInt_total = listS(1).falcoData.normIntMeasScore(itnum, :);
+    NInt_mean = mean(NInt_total, 2); % mean across the band
+    
     if isempty(hfig),
         hfig = figure;
     else
