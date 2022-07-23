@@ -439,13 +439,15 @@ classdef CGS < handle
             % ampplot = CheckOption('ampplot', 'absE', varargin{:});
             %     other choices 'amp'
             % stitle = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
-
+            % bRemoveTipTilt = CheckOption('removetiptilt', true, varargin{:});            
+            
             pMask = CheckOption('pMask', S.bMask, varargin{:});
             xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             climph = CheckOption('climph', [], varargin{:});
             phplot = CheckOption('phplot', 'angleE', varargin{:}); % or S.(phplot)
             ampplot = CheckOption('ampplot', 'absE', varargin{:});
             stitle = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
+            bRemoveTipTilt = CheckOption('removetiptilt', true, varargin{:});
             
             %hfig = figure;
             %hax = imagescampphase(S.E, x, y, ['gsnum ' num2str(S.gsnum)]);
@@ -465,15 +467,25 @@ classdef CGS < handle
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
             title(stitle)
 
+            % remove tip/tilt?
+
             % bMask is only for phase plot
             % check options for what to plot
+            % [ZZ, rz, pharesidual] = ZernikeFit(S, nz, varargin)
+            %
+            % zernike fit using bMask pixels
+            % nz = array of zernike modes to fit
+            %
+            % phase = CheckOption('phase', 'ph', varargin{:});
+            % bDisplay = CheckOption('display', true, varargin{:});
+            %[~, ~, ph] = S.ZernikeFit(1:3, 'phase', phplot, 'display', false);
+            
             switch phplot
                 case 'angleE'
                     ph = angle(S.E);
                 otherwise
                     ph = S.(phplot);
             end
-
             
             if isempty(pMask), pMask = ones(size(S.E)); end
             hax(2) = subplot(1,2,2);
@@ -505,7 +517,14 @@ classdef CGS < handle
             %    ('climph', [], varargin{:});
             %    ('dph_units', 1, varargin{:}); % default = radians, 'nm', 'waves', or double
             %    ('dph_units_str', 'Phase (rad)', varargin{:});
-            
+            %   
+            % dphaResult = struct(...
+            %    'ZZ', ZZ ...
+            %    ,'phaimg', phaimg ... % dphase with Zernike 1:3 = 0
+            %    ,'dpha', dpha ... % residual dphase with Zernike 1:4 = 0
+            %    ,'sOptions', sOptions ...
+            %    );
+
             U = CConstants;
             
             % parse options
@@ -697,7 +716,8 @@ classdef CGS < handle
         function [ZZout, rz, pharesidual] = ZernikeFit(S, nz, varargin)
             % [ZZ, rz, pharesidual] = ZernikeFit(S, nz, varargin)
             %
-            % zernike fit using bMask pixes
+            % zernike fit using bMask pixels
+            % nz = array of zernike modes to fit
             %
             % phase = CheckOption('phase', 'ph', varargin{:});
             % bDisplay = CheckOption('display', true, varargin{:});
@@ -706,6 +726,12 @@ classdef CGS < handle
             % phresclim = CheckOption('phresclim', [], varargin{:});
             % ylimZ = CheckOption('ylimZplot', [], varargin{:});
             % CheckOption('zernikeunits', 'rad', varargin{:}); % 'nm'
+            %
+            % return:
+            % ZZout = zernike coefficients, ZZout(1:3) are always piston,
+            %     tip, tilt
+            % rz = normalization radius (pixels)
+            % pharesidual = S.(phase) - zernikeval(ZZout)
 
             phasefieldname = CheckOption('phase', 'ph', varargin{:});
             bDisplay = CheckOption('display', true, varargin{:});
@@ -1060,16 +1086,22 @@ classdef CGS < handle
             
         end % DisplayAllPlanes
         
-        function [r, Ir, hax] = DisplayRadialIntensity(S, varargin)
+        function [r, Ir, hfig, hax, hl] = DisplayRadialIntensity(S, ipl, varargin)
+            % [r, Ir, hax] = DisplayRadialIntensity(S, ipl, varargin)
             % display mean intensity vs radius
             
-            [r, Ir] = RadialMean(abs(S.amp).^2);
+            if isempty(S.cAmpPlanes), S.ReadAmpImages; end
             
-            figure, hl = semilogy(r, Ir);
+            [xx, yy] = CreateGrid(S.cAmpPlanes{8}(:,:,1));
+            [r_cam, Ir_cam] = RadialMean(xx, yy, abs(S.cAmpPlanes{ipl}(:,:,1)).^2);
+            [r_est, Ir_est] = RadialMean(xx, yy, abs(S.cAmpPlanes{ipl}(:,:,2)).^2);
+            
+            figure, hl = semilogy(r_cam, Ir_cam./max(Ir_cam(:)), r_est, Ir_est./max(Ir_est(:)));
             grid on
-            hl.LineWidth = 2;
+            set(hl, 'LineWidth', 2);
             xlabel('Radius (pix)')
             ylabel('Mean Intensity')
+            legend('Camera', 'Estimated')
             hax = gca;
             
             

@@ -17,7 +17,7 @@ function [ZZ, phaimg, phares, sOptions] = ZernikeAnalysis(field, varargin)
 % ZZ = Zernike coeffs, (rad normalized rms), ZZ(1:3) == 0
 % phaimg = phase with ZZ(1:3) = 0, (rad), phaimg(~bMask) = 0
 % phares = residual phase = phaimg - zernikeval(ZZ)
-% sOptions = struct('bMask', bMask, 'Rnorm', Rnorm, 'Nz', Nz);
+% sOptions = struct('bMask', bMask, 'Rnorm', Rnorm, 'Nz', Nz, 'xim', xim, 'yim', yim, 'phafit', phafit, 'phafit_ptt', phafit_ptt);
 
 
 % options

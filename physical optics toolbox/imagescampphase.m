@@ -40,9 +40,10 @@ xylim = CheckOption('xylim', [], varargin{:}); % [min max]
 phasescale = CheckOption('phasescale', 'pi rad', varargin{:}); % or 'rad', 'deg', 'nm'
 lam = CheckOption('lam', [], varargin{:}); % required if phasescale = 'nm'
 
-pos = get(gcf,'position');
-pos(3) = 1.75*pos(3);
-set(gcf,'position',pos)
+% pos = get(gcf,'position');
+% pos(3) = 1.75*pos(3);
+% set(gcf,'position',pos)
+hfig = figure_mxn(gcf, 1, 2);
 
 hax(1) = subplot(1,2,1);
 if islogical(bLog) && bLog,

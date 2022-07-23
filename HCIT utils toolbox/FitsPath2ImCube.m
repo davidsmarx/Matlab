@@ -24,6 +24,7 @@ function varargout = FitsPath2ImCube(pn, varargin)
 % refImg = CheckOption('refimg', [], varargin{:}); ImCube = ImCube - refImg
 % comTitlestr = CheckOption('comtitlestr', '', varargin{:}); % common title to start each titlestr
 % clim = CheckOption('clim', [], varargin{:});
+% hifg = CheckOption('hfig', [], varargin{:}); % if empty, and plottype ~= 'none', FitsPath2ImCube creates a new figure
 % 
 % output:
 % ImCube = [Nimages nr nc]
@@ -40,11 +41,11 @@ hdrkwdvalfmt = CheckOption('hdrkwdvalfmt', '%.3f ', varargin{:});
 refImg = CheckOption('refimg', [], varargin{:}); % ImCube = ImCube - refImg
 comTitlestr = CheckOption('comtitlestr', '', varargin{:}); % common title to start each titlestr
 clim = CheckOption('clim', [], varargin{:});
+hfig = CheckOption('hfig', [], varargin{:}); % if empty, and plottype ~= 'none', FitsPath2ImCube creates a new figure
 
 %
 
 % initialize return vals
-hfig = [];
 hax = [];
  
 switch class(pn)
@@ -130,13 +131,13 @@ switch lower(plottype),
             hdrkwdval = 1:Nf; % just to have labels for the image cube slices
         end
         
-        figure,        
+        if isempty(hfig), hfig = figure; end
         [hfig, hax, sUserData] = ImageCube(ImCube, hdrkwdval, ...
             'fTitleStr', fTitleStr, ...
-            'x', plotx, 'y', ploty);
+            'x', plotx, 'y', ploty, 'hfig', hfig);
         
     case 'spread'
-        figure
+        if isempty(hfig), hfig = figure; else, figure(hfig), end
         [hfig, hax] = PlotSpread;
 
     case 'none',
