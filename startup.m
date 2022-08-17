@@ -23,5 +23,8 @@ if isunix,
         disp(ME.getReport);
     end
 end
-    
+
+% graphics
+set(0,'defaultAxesfontsize',14);
+
 more on
