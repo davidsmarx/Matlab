@@ -108,7 +108,7 @@ classdef CGS < handle
             else
                 switch lower(bn),
                     case 'dst'
-                        bn = '/proj/dst/data/dB_PR/gsdst_';
+                        bn = ['/proj/dst/data/hcim/dB_PR/gsdst_' num2str(gsnum,'%d')];
                         if gsnum <= 284,
                             year = '2019';
                             uname = 'bseo';
