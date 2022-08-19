@@ -469,14 +469,7 @@ function [rmsdDMv, hfig, hax] = PlotRMSdDMv(listS, varargin)
     % plotting differential, start with itnum(2)
     itnum_plot = itnum(2:end);
     itnum_plot = itnum_plot(:);
-    
-    % read all the DMv cubes
-    for ii = 1:length(listS),
-        if isempty(listS(ii).DMvCube)
-            listS(ii).ReadDMvCube;
-        end
-    end
-    
+        
     Ndm = length(listS(1).DMvCube);
     
     % select the unprobed DMv from each cube
