@@ -10,7 +10,7 @@ function [Lens, zchan] = z_Getlens(zchan,nconfig)
 % nsurf, type, curv, thick, glass, radius, conic, parms, coat
 
 % parse inputs
-if ~exist('nconfig','var') | isempty(nconfig), nconfig = 1; end
+if ~exist('nconfig','var') || isempty(nconfig), nconfig = 1; end
 if exist('zchan','var') & ~isempty(zchan),
     % check if zchan exists and is valid, and get system data
     try,
@@ -36,8 +36,11 @@ end
 nsurf = sscanf(sysstr,'%d',1);
 
 % set the configuration
-z_setconfig(zchan,nconfig);
 [cf, ncf] = z_getconfig(zchan);
+if nconfig > ncf || nconfig <= 0, error(['invalid nconfig: ' num2str(nconfig)]); end
+if nconfig ~= cf,
+    z_setconfig(zchan,nconfig);
+end
 %disp(['current configuration: #' num2str(cf) ' out of ' num2str(ncf)]);
 
 Lens = struct;

@@ -67,28 +67,22 @@ if isempty(finfo.PrimaryData.Size),
 else
     sExtension = 'primary';
 end
-imtmp = fitsread(PathTranslator([pn '/' listfn(1).name]),sExtension);
-
-[Nr, Nc] = size(imtmp);
+%imtmp = fitsread(PathTranslator([pn '/' listfn(1).name]),sExtension);
 
 % check header keyword, make sure it's cell
 if ischar(hdrkwd), hdrkwd = {hdrkwd}; end
 
 % allocate
-ImCube = zeros([Nf Nr Nc]);
 hdrkwdval = zeros(Nf,length(hdrkwd));
-
+[nr_ii, nc_ii] = deal(zeros(Nf,1));
 for ii = 1:Nf
 
-    imtmp = fitsread(PathTranslator([pn '/' listfn(ii).name]),sExtension);
+    img_ii{ii} = fitsread(PathTranslator([pn '/' listfn(ii).name]),sExtension);
     finfo = fitsinfo(PathTranslator([pn '/' listfn(ii).name]));
-
-    if ~isempty(refImg),
-        imtmp = imtmp - refImg;
-    end
     
-    ImCube(ii,:,:) = imtmp;
-
+    %
+    [nr_ii(ii), nc_ii(ii)] = size(img_ii{ii});
+    
     % this way, FitsGetKeywordVal always returns a cell array
     % even if only one hdrkwd
     ctmp = FitsGetKeywordVal(finfo.PrimaryData.Keywords,hdrkwd);
@@ -98,6 +92,22 @@ for ii = 1:Nf
     hdrkwdval(ii,:) = [ctmp{:}];
     %hdrkwdval(ii,:) = 1;
     
+end
+
+% build image cube
+Nr = max(nr_ii);
+Nc = max(nc_ii);
+ImCube = zeros([Nf Nr Nc]);
+for ii = 1:Nf
+    ImCube(ii,:,:) = PadImArray(img_ii{ii}, [Nr Nc]);
+end
+
+% if subtract reference image
+if ~isempty(refImg),
+    if ~isequal(size(refImg), [Nr Nc])
+        refImg = PadImArray(refImg, [Nr Nc]);
+    end    
+    ImCube = ImCube - shiftdim(repmat(refImg, [1 1 Nf]));
 end
 
 % apply scale (stretch)

@@ -97,6 +97,7 @@ classdef CRunData < handle & CConstants
         
         runnum
         iter      = 0;
+        timestamp   % taken from raw camera image file date
         
         % results:
         IncInt
@@ -530,7 +531,14 @@ classdef CRunData < handle & CConstants
             end
             
             S.lambda = S.NKTcenter;
-            
+
+            % get timestamp from raw image file
+            fntmp = FitsGetKeywordVal(S.ImKeys, ['C' num2str(iwv-1) 'P0J0']);
+            if ~isempty(fntmp)
+                dtmp = dir(PathTranslator(fn));
+                S.timestamp = datetime(dtmp.date);
+            end
+    
             % if requested in varargin, run methods right away
             for icom = 1:length(varargin),
                 if any(strcmpi(varargin{icom}, methods(S)))

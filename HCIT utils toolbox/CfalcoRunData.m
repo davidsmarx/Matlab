@@ -118,7 +118,7 @@ classdef CfalcoRunData < CRunData
                 copyfile(config_fn, './config_tmp.m');
                 eval('config_tmp');
                 
-            end
+            end % if isempty(mp)
             
             S.ppl0 = mp.Fend.res;
             %S.Nppair = mp.est.probe.Npairs;
@@ -283,6 +283,9 @@ classdef CfalcoRunData < CRunData
             % image cube (:,:,2*Nppair+1)
             S.ImCube = ev.imageArray;
             S.imgindex = 1; % slice of ImCube of unprobed image for each subband
+            
+            % replaces bMask defined in loadRunData, need to reconcile
+            S.bMask = ev.maskBool;
             
             % E-fields, S.E_t(iwl,:,:)
             S.E_t(1,:,:) = zeros(size(S.bMask));

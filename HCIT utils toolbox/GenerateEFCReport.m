@@ -90,6 +90,21 @@ hax(1,1) = subplot(2,2,1); [~, ~, ~, itnum_min] = PlotNormIntensity(S, 'hfig', h
 hax(1,2) = subplot(2,2,2); PlotBeta(S, 'hfig', hfig, 'hax', hax(1,2));
 hax(2,1) = subplot(2,2,3); probeh = PlotProbeh(S, 'hfig', hfig, 'hax', hax(2,1));
 hax(2,2) = subplot(2,2,4); rmsdDMv = PlotRMSdDMv(S, 'hfig', hfig, 'hax', hax(2,2));
+
+% add date time string to xticklabels for NormIntensity
+xticklabels = get(hax(1,1),'xticklabel');
+xticks = get(hax(1,1),'xtick');
+for ixt = 1:length(xticks),
+    Sixt = S([S.iter] == xticks(ixt));
+    if ~isempty(Sixt) && ~isempty(Sixt.timestamp)
+        newtxt = ['   ' xticklabels{ixt} ...
+            '\newline ' datestr(Sixt.timestamp,'ddd HH:MM') ...
+            '\newline ' datestr(Sixt.timestamp,'mm/dd')];
+        xticklabels{ixt} = newtxt;
+    end
+end
+set(hax(1,1), 'xticklabel', xticklabels)
+set(hax,'fontsize',14)
 hPic = Sppt.CopyFigSlide(slide, hfig);
 
 % call the plotting methods
