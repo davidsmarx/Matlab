@@ -36,6 +36,7 @@ more off
 ppt_fn = CheckOption('pptfn', '', varargin{:});
 Sppt = CheckOption('Sppt', [], varargin{:});
 max_empties = CheckOption('max_empties', 3, varargin{:});
+run_pn = CheckOption('run_pn', 'falco_testbed_run', varargin{:});
 
 % % check if PowerPoint Presentation already exists and still there
 % try
@@ -63,7 +64,7 @@ if isnumeric(listItnum),
     for ii = 1:N;
         fprintf('reading itnum %d\n', listItnum(ii));
         %try
-            S(ii) = CfalcoRunData(runnum, TrialNum, listItnum(ii), 'mp', mp);
+            S(ii) = CfalcoRunData(runnum, TrialNum, listItnum(ii), 'mp', mp, 'run_pn', run_pn);
         %catch
         %    warning(['iter# ' num2str(listItnum(ii)) ' not found']);
         %end
@@ -91,7 +92,8 @@ else
 end
 
 %
-saveas_pn = ['./falco_testbed_run' num2str(S(1).runnum) '/data/' S(1).runLabel '/figures'];
+%saveas_pn = ['./falco_testbed_run' num2str(S(1).runnum) '/data/' S(1).runLabel '/figures'];
+saveas_pn = ['./' run_pn num2str(S(1).runnum) '/data/' S(1).runLabel '/figures'];
 
 % plot graphs of metrics v itnum on the first slide
 if ~isempty(Sppt), slide = Sppt.NewSlide(1); end
@@ -339,7 +341,11 @@ function [hfig, hax, itnum, texp] = PlotTexp(S, varargin)
     for ii = 1:length(S)
         itnum(ii) = S(ii).iter;
         if ~isempty(S(ii).ReducedKeys)
-            texp(ii) = FitsGetKeywordVal(S(ii).ReducedKeys, 'texp1');
+            try
+                texp(ii) = FitsGetKeywordVal(S(ii).ReducedKeys, 'texp1');
+            catch
+                texp(ii) = 0;
+            end
         else
             % empty instance
             texp(ii) = NaN;

@@ -23,6 +23,7 @@ classdef CfalcoRunData < CRunData
             
             % options
             mp = CheckOption('mp', [], varargin{:});
+            run_pn = CheckOption('run_pn', 'falco_testbed_run', varargin{:});
             
             %
             S.runnum = seriesNum;
@@ -31,7 +32,7 @@ classdef CfalcoRunData < CRunData
             
             % paths to data
             S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
-            S.Rundir_pn = ['/home/hcit/OMC/OMC_MSWC/falco_testbed_run' num2str(seriesNum) '/data/' S.runLabel]; % for snippet file
+            S.Rundir_pn = ['/home/hcit/OMC/OMC_MSWC/' run_pn num2str(seriesNum) '/data/' S.runLabel]; % for snippet file
             S.Reduced_pn = [S.Rundir_pn '/' S.runLabel];
             
             % if given mp, perhaps read in another iteration of this trial
@@ -64,10 +65,18 @@ classdef CfalcoRunData < CRunData
             finfo = fitsinfo(PathTranslator([S.Reduced_pn '/normI_it' num2str(S.iter) '.fits']));
             S.ReducedKeys = finfo.PrimaryData.Keywords;
             iwv = 1;
-            S.NKTlower(iwv) = FitsGetKeywordVal(S.ReducedKeys,'NKTLOWER')*S.NM;
-            S.NKTupper(iwv) = FitsGetKeywordVal(S.ReducedKeys,'NKTUPPER')*S.NM;
-            S.NKTcenter(iwv) = mean([S.NKTlower(iwv) S.NKTupper(iwv)]);
-            S.lambda = S.NKTcenter;
+            
+            try
+                S.NKTlower(iwv) = FitsGetKeywordVal(S.ReducedKeys,'NKTLOWER')*S.NM;
+                S.NKTupper(iwv) = FitsGetKeywordVal(S.ReducedKeys,'NKTUPPER')*S.NM;
+                S.NKTcenter(iwv) = mean([S.NKTlower(iwv) S.NKTupper(iwv)]);
+                S.lambda = S.NKTcenter;
+            catch
+                S.NKTlower(iwv) = 0;
+                S.NKTupper(iwv) = 0;
+                S.NKTcenter(iwv) = 0;
+                S.lambda = 0;
+            end
 
         end % init
         
