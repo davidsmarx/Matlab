@@ -519,10 +519,10 @@ classdef CGS < handle
             %    ('dph_units_str', 'Phase (rad)', varargin{:});
             %   
             % dphaResult = struct(...
-            %    'ZZ', ZZ ...
+            %    'ZZ', ZZ ...  % only when removeDefocus is true
             %    ,'phaimg', phaimg ... % dphase with Zernike 1:3 = 0
             %    ,'dpha', dpha ... % residual dphase with Zernike 1:4 = 0
-            %    ,'sOptions', sOptions ...
+            %    ,'sOptions', sOptions ... % only when removeDefocus is true
             %    );
 
             U = CConstants;
