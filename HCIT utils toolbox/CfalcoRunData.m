@@ -92,9 +92,7 @@ classdef CfalcoRunData < CRunData
                     %                     S.ppl0 = 5.54*520/575;
                     %                     S.Nppair = 3;
                     %                     S.NofW = 1;
-                    %                     S.XYlimDefault = 22;
                     %                     S.Nlamcorr = 1;
-                    %                     S.XYlimDefault = 22;
                     %                     S.RminSc = 3; % = mp.Fend.score.Rin
                     %                     S.RmaxSc = 9; % = mp.Fend.score.Rout
                     %                     S.ThminSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
@@ -108,6 +106,7 @@ classdef CfalcoRunData < CRunData
                 % create mp
                 copyfile(config_fn, './config_tmp.m');
                 eval('config_tmp');
+                mp = falco_flesh_out_workspace(mp);
                 
             end % if isempty(mp)
             
@@ -115,7 +114,6 @@ classdef CfalcoRunData < CRunData
             %S.Nppair = mp.est.probe.Npairs;
             S.NofW = mp.Nsbp;
             S.Nlamcorr = mp.Nsbp;
-            S.XYlimDefault = 22;
             
             %                 S.RminSc = mp.Fend.score.Rin;
             %                 S.RmaxSc = mp.Fend.score.Rout;
@@ -200,6 +198,11 @@ classdef CfalcoRunData < CRunData
         
             S.bMask = S.falcoData.Fend.corr.maskBool;
             S.bMaskSc = S.falcoData.Fend.score.maskBool;
+            
+            % default XYlim for display dark zone
+            [~, ~, Xld, Yld] = CreateGrid(S.mp.Fend.corr.mask, 1./S.mp.Fend.res);
+            S.XlimDefault = [min(Xld(S.mp.Fend.corr.maskBool)) max(Xld(S.mp.Fend.corr.maskBool))] + [-1 1];
+            S.YlimDefault = [min(Yld(S.mp.Fend.corr.maskBool)) max(Yld(S.mp.Fend.corr.maskBool))] + [-1 1];
             
         end % end loadTBdata
         

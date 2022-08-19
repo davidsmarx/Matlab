@@ -62,11 +62,11 @@ if isnumeric(listItnum),
     %while true,
     for ii = 1:N;
         fprintf('reading itnum %d\n', listItnum(ii));
-        %try
-            S(ii) = CfalcoRunData(runnum, TrialNum, listItnum(ii), 'mp', mp);
-        %catch
-        %    warning(['iter# ' num2str(listItnum(ii)) ' not found']);
-        %end
+
+        % loads mp from config on the first call, then copies mp to each
+        % iteration S(ii).mp
+        S(ii) = CfalcoRunData(runnum, TrialNum, listItnum(ii), 'mp', mp);
+
         if isempty(S(ii).ImCube)
             cnt_empty = cnt_empty + 1;
         else
@@ -164,7 +164,7 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
     if ~ispc && ~exist(save_pn)
         mkdir(save_pn)
     end
-    
+
     % list of CfalcoRunData methods where the first argument is a reference
     % iteration:
     listDiff = {
