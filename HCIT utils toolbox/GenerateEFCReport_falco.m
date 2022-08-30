@@ -63,11 +63,8 @@ if isnumeric(listItnum),
     %while true,
     for ii = 1:N;
         fprintf('reading itnum %d\n', listItnum(ii));
-        %try
-            S(ii) = CfalcoRunData(runnum, TrialNum, listItnum(ii), 'mp', mp, 'run_pn', run_pn);
-        %catch
-        %    warning(['iter# ' num2str(listItnum(ii)) ' not found']);
-        %end
+        S(ii) = CfalcoRunData(runnum, TrialNum, listItnum(ii), 'mp', mp, 'run_pn', run_pn);
+
         if isempty(S(ii).ImCube)
             cnt_empty = cnt_empty + 1;
         else
@@ -166,7 +163,7 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
     if ~ispc && ~exist(save_pn)
         mkdir(save_pn)
     end
-    
+
     % list of CfalcoRunData methods where the first argument is a reference
     % iteration:
     listDiff = {
@@ -475,14 +472,7 @@ function [rmsdDMv, hfig, hax] = PlotRMSdDMv(listS, varargin)
     % plotting differential, start with itnum(2)
     itnum_plot = itnum(2:end);
     itnum_plot = itnum_plot(:);
-    
-    % read all the DMv cubes
-    for ii = 1:length(listS),
-        if isempty(listS(ii).DMvCube)
-            listS(ii).ReadDMvCube;
-        end
-    end
-    
+        
     Ndm = length(listS(1).DMvCube);
     
     % select the unprobed DMv from each cube

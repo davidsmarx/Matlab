@@ -974,7 +974,6 @@ classdef CGS < handle
                     % create figure if necessary
                     if isempty(hfig), hfig = figure_mxn(2, Nplanes); else, figure(hfig); end
                     
-                    hax = zeros(2, Nplanes);
                     for iipl = 1:Nplanes,
                         hax(1,iipl) = subplot(2,Nplanes,iipl);
                         imageschcit(funPlot(S.cAmpPlanes{ipl(iipl)},1)), title(['Camera, ipl = ' num2str(ipl(iipl))])
