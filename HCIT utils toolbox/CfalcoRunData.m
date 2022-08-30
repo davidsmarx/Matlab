@@ -201,8 +201,8 @@ classdef CfalcoRunData < CRunData
             
             % default XYlim for display dark zone
             [~, ~, Xld, Yld] = CreateGrid(S.mp.Fend.corr.mask, 1./S.mp.Fend.res);
-            S.XlimDefault = [min(Xld(S.mp.Fend.corr.maskBool)) max(Xld(S.mp.Fend.corr.maskBool))] + [-1 1];
-            S.YlimDefault = [min(Yld(S.mp.Fend.corr.maskBool)) max(Yld(S.mp.Fend.corr.maskBool))] + [-1 1];
+            S.XlimDefault = [min(Xld(S.mp.Fend.corr.maskBool)) max(Xld(S.mp.Fend.corr.maskBool))] + 2*[-1 1];
+            S.YlimDefault = [min(Yld(S.mp.Fend.corr.maskBool)) max(Yld(S.mp.Fend.corr.maskBool))] + 2*[-1 1];
             
         end % end loadTBdata
         

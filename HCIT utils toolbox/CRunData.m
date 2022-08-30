@@ -1247,7 +1247,14 @@ classdef CRunData < handle & CConstants
             %
             
             if isempty(S.ImCubeUnProb),
-                S.ReadImageCube;
+                try
+                    S.ReadImageCube;
+                catch ME
+                    disp(ME.message);
+                    hfig = [];
+                    ha = [];
+                    return
+                end
             end
             %             if isempty(S.bMask),
             %                 S.ReadMaskCube;
