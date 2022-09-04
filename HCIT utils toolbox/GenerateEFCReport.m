@@ -163,7 +163,12 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
             %if any(strcmp(sDisplayFun, listDiff)),
             for ii = 1:N-1,
                 [hfig, hax, sMtmp] = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
-                sCmetrics(ii) = sMtmp;
+                %%sCmetrics(ii) = UpdateStruct(sCmetrics(ii), sMtmp);
+                try
+                    sCmetrics(ii) = sMtmp;
+                catch
+                    keyboard;
+                end
                 
                 if ~isempty(hfig)
                     figscale = CalcFigscale(hfig, figheight);
@@ -205,12 +210,16 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
             end
             
         case 'DisplayCEfields'
-
             for ii = 1:N-1,
                 
                 [hfig, hax, sCtmp] = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
                 if ~isempty(sCtmp),
-                    sCmetrics(ii) = sCtmp;
+                    %sCmetrics(ii) = UpdateStruct(sCmetrics(ii), sCtmp);
+                    try
+                        sCmetrics(ii) = sCtmp;
+                    catch
+                        keyboard;
+                    end
                 end
                 
                 if ~isempty(hfig),

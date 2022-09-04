@@ -613,7 +613,7 @@ classdef CRunData < handle & CConstants
             ymaxsc = CheckOption('YmaxSc', S.YmaxSc, varargin{:});
             xminsc = CheckOption('XminSc', S.XminSc, varargin{:});
             xmaxsc = CheckOption('XmaxSc', S.XmaxSc, varargin{:});
-            bMaskScUse= CheckOption('bMasSc', S.bMaskSc, varargin{:});
+            bMaskScUse= CheckOption('bMaskSc', S.bMaskSc, varargin{:});
             bDisplay = CheckOption('display', true, varargin{:});
             
             % coordinate system in back-end lam/D
@@ -621,7 +621,7 @@ classdef CRunData < handle & CConstants
 
             % FOV score mask for calculating contrast
             % options can override object settings
-            bMaskScUse = bMaskScUse & (R >= rminsc) & (R <= rmaxsc) & (Y >= yminsc) & (Y <= ymaxsc) & (X >= xminsc) & (X <= xmaxsc);            
+            bMaskScUse = bMaskScUse & (R >= rminsc) & (R <= rmaxsc) & (Y >= yminsc) & (Y <= ymaxsc) & (X >= xminsc) & (X <= xmaxsc);
 
             % resample throughput data to pixels in scoring region
             if ~isempty(S.Sthpt),
@@ -2573,8 +2573,8 @@ classdef CRunData < handle & CConstants
             [hfig, hax] = deal([]);
             sMetrics = struct(...
                 'type', 'DMv' ...
-                , 'rmsdDMv', [] ...
-                , 'dDMv', [] ...
+                , 'rmsdDMv', NaN ...
+                , 'dDMv', {} ...
                 );
 
             % check if empty instance
@@ -2679,7 +2679,7 @@ classdef CRunData < handle & CConstants
             sMetrics = struct(...
                 'type', 'DMv' ...
                 ,'rmsdDMv', rmsdDMv ...
-                ,'cdDMv', {cdDMv} ... % {} so that the cell array is assigned to one struct
+                ,'dDMv', {cdDMv} ... % {} so that the cell array is assigned to one struct
                 );
             
             %             fprintf('rms dDMv1 = %.3f Vmu\n',rmsdDMv1);
