@@ -268,12 +268,12 @@ classdef CRunData < handle & CConstants
                     S.YlimDefault = 12 * [-1 1];
 
                     S.PIAAMAG = 1.12; % should get this from config
-                    S.DrawradiiDefault = S.PIAAMAG*[1.8 9.0];
+                    S.DrawradiiDefault = [1.8 9.0];
                     
                     % config_piaa_20210524.py
-                    S.RminSc    = S.PIAAMAG * 4.0; % back-end (system) lam/D
-                    S.RmaxSc    = S.PIAAMAG * 9.0;
-                    S.YmaxSc    = S.PIAAMAG *-1.8;
+                    S.RminSc    = 4.0; % sky lam/D
+                    S.RmaxSc    = 9.0;
+                    S.YmaxSc    = -1.8;
                     S.YminSc    = -Inf;
 
                     % overwritten if camera image is found
@@ -490,7 +490,9 @@ classdef CRunData < handle & CConstants
             
             % useful parameters from ReducedKeys
             ppl0tmp = FitsGetKeywordVal(S.ReducedKeys,'ppl0');
-            if ~isempty(ppl0tmp), S.ppl0 = ppl0tmp; end
+            if ~isempty(ppl0tmp),
+                S.ppl0 = ppl0tmp*S.PIAAMAG; % ppl0-system * PIAAMAG = ppl0-sky
+            end
             
             % bscan list
             if ~isempty(S.ReducedKeys)
@@ -874,6 +876,14 @@ classdef CRunData < handle & CConstants
             
             % 1st slice is mask of control region (md)
             % next nlamcorr * 2 slices are real and imag occulter transmission profile
+            %             RminSc = CheckOption('RminSc', S.RminSc, varargin{:});
+            %             RmaxSc = CheckOption('RmaxSc', S.RmaxSc, varargin{:});
+            %             TminSc = CheckOption('TminSc', S.ThminSc, varargin{:});
+            %             TmaxSc = CheckOption('TmaxSc', S.ThmaxSc, varargin{:});
+            %             YminSc = CheckOption('YminSc', S.YminSc, varargin{:});
+            %             YmaxSc = CheckOption('YmaxSc', S.YmaxSc, varargin{:});
+            %             XminSc = CheckOption('XminSc', S.XminSc, varargin{:});
+            %             XmaxSc = CheckOption('XmaxSc', S.XmaxSc, varargin{:});
 
             try,
                 MaskCubeData = fitsread(S.Reduced_fn,'image',1);
@@ -1132,7 +1142,8 @@ classdef CRunData < handle & CConstants
         function [sHandles, rplot, IntRad] = DisplayRadialPlot(S, ImCube, varargin)
             % [sHandles, rplot, IntRad] = DisplayRadialPlot(S, ImCube, varargin)
             % generic routine for radial plot of intensity or contrast
-            % ImCube is cell array (1 x NofW)
+            % ImCube is cell array
+            % e.g. 1 x NofW
             % e.g. ImCubeUnProbe, ImCubeUnProbe/Thrpt
             %      ImCubeCohInt, ImCubeIncInt
             %
@@ -1148,9 +1159,10 @@ classdef CRunData < handle & CConstants
             %             legstr = CheckOption('legstr', [], varargin{:});
             %             strTitle = CheckOption('title', ['Iter #' num2str(S.iter)], varargin{:});
             %             bPlotMean = CheckOption('plotmean', true, varargin{:});
+            %             bPlotScatter = CheckOption('plotscatter', false, varargin{:});
             %             haxuse = CheckOption('hax', [], varargin{:});
 
-            [x, y, X, Y, R] = CreateGrid(ImCube{1}, 1./(S.ppl0*S.PIAAMAG));
+            [x, y, X, Y, R] = CreateGrid(ImCube{1}, 1./S.ppl0);
 
             Nr = CheckOption('nr', ceil(min([128 length(R)/4])), varargin{:}); % # of radial sample pts
             dispRadlim = CheckOption('dispradlim', [0 max(S.DrawradiiDefault)], varargin{:});
@@ -1162,11 +1174,11 @@ classdef CRunData < handle & CConstants
             legstr = CheckOption('legstr', [], varargin{:});
             strTitle = CheckOption('title', ['Iter #' num2str(S.iter)], varargin{:});
             bPlotMean = CheckOption('plotmean', true, varargin{:});
+            bPlotScatter = CheckOption('plotscatter', false, varargin{:});
             haxuse = CheckOption('hax', [], varargin{:});
             
             re = linspace(dispRadlim(1), dispRadlim(2), Nr+1)';
             IntRad = cell(length(iplot),1);
-            legstrwv = cell(1,length(iplot));
             for iiwv = 1:length(iplot),
                 iwv = iplot(iiwv);
                 Itmp = zeros(Nr,1);
@@ -1175,11 +1187,9 @@ classdef CRunData < handle & CConstants
                     Itmp(ir) = mean(ImCube{iwv}(R > re(ir) & R <= re(ir+1) & bMaskUse));
                 end % for ir
                 IntRad{iiwv} = Itmp;
-                %legstrwv{iiwv} = [num2str(S.NKTcenter(iwv)/S.NM,'%.1f') 'nm'];
+                % 
             end % for iwv
             rplot = mean([re(1:end-1) re(2:end)],2); % radii midway between edges
-            
-            if isempty(legstr), legstr = legstrwv; end            
             
             if ~isempty(haxuse),
                 axes(haxuse);
@@ -1191,21 +1201,36 @@ classdef CRunData < handle & CConstants
             ha = gca;
             hold on
             
+            % add scatter plot, if requested
+            if bPlotScatter
+                for iiwv = 1:length(iplot)
+                    iwv = iplot(iiwv);
+                    [rscatter, Imscatter] = filterdata( (R(:) > dispRadlim(1) & R(:) < dispRadlim(2)) & bMaskUse(:), R(:), ImCube{iwv}(:));
+                    hltmp = semilogy(rscatter, Imscatter, '.');
+                    hltmp.Color = hl(iiwv).Color;
+                    hltmp.MarkerSize = 3;
+                    hl(end+1) = hltmp;
+                end % for each iiwv
+            end % if plot scatter
+            
             % add plot of mean
             if bPlotMean,
                 hl(end+1) = semilogy(rplot, mean([IntRad{:}],2), '-k');
-                legstr{end+1} = 'Mean';
                 set(hl(end),'LineWidth',2);
+                legstr{length(hl)} = 'Mean';
             end
             
             % add plot of contrast requirement, if provided
             if ~isempty(plotRequired),
                 hl(end+1) = semilogy(plotRequired(:,1), plotRequired(:,2), '--r');
                 set(hl(end),'LineWidth',2);
-                legstr{end+1} = 'Requirement';
+                legstr{length(hl)} = 'Requirement';
             end %
             
             grid on
+            
+            % 
+            if ~isempty(ylim), set(gca, 'ylim', ylim); end
             
             if ~isempty(drawRadii),
                 ylim = get(gca,'ylim');
@@ -1219,7 +1244,16 @@ classdef CRunData < handle & CConstants
 
             xlabel('Radius (\lambda/D)')
             ylabel(strYlabel)
-            hleg = legend(legstr{:}); %, 'location','north');
+            if ~isempty(legstr)
+                % check for [] vs ''
+                for ii = 1:length(legstr)
+                    if isempty(legstr{ii}), legstr{ii} = ''; end
+                end
+                hleg = legend(legstr{:}); %, 'location','north');
+            else
+                warning('legend string is empty');
+                hleg = [];
+            end
             title(strTitle)
 
             % return all the handles
@@ -1273,7 +1307,7 @@ classdef CRunData < handle & CConstants
             xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
             ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
             
-            [x, y, X, Y, R] = CreateGrid(S.ImCubeUnProb{1}, 1./(S.ppl0*S.PIAAMAG));
+            [x, y, X, Y, R] = CreateGrid(S.ImCubeUnProb{1}, 1./S.ppl0);
             
             Nlam = length(ilam);
             
@@ -1288,7 +1322,6 @@ classdef CRunData < handle & CConstants
                 end
                 
                 if bPlotLog,
-                    %imageschcit(x/S.PIAAMAG, y/S.PIAAMAG, log10(abs(S.ImCubeUnProb{iwvpl}))), axis image,
                     imageschcit(x, y, log10(abs(S.ImCubeUnProb{iwvpl}))), axis image,
                     colorbartitle('log_{10} Norm Intensity')
                 else
@@ -1581,7 +1614,7 @@ classdef CRunData < handle & CConstants
                 clim = pClim(pFun([plIncInt{:}]));
             end
             
-            [x, y] = CreateGrid(plIncInt{1}, 1./(S.ppl0*S.PIAAMAG));
+            [x, y] = CreateGrid(plIncInt{1}, 1./S.ppl0);
             % auto-scale
             %Agg = [
             for iwv = 1:S.Nlamcorr,
@@ -1848,7 +1881,7 @@ classdef CRunData < handle & CConstants
                 clim = pClim(pFun([S.CohInt{:}]));
             end
             
-            [x, y] = CreateGrid(S.CohInt{1}, 1./(S.ppl0*S.PIAAMAG));
+            [x, y] = CreateGrid(S.CohInt{1}, 1./S.ppl0);
 
             for iwv = 1:S.Nlamcorr,
                 if isempty(haxuse),
@@ -1882,10 +1915,12 @@ classdef CRunData < handle & CConstants
             % S.DisplayIncInt
             % 
             % some options
-            %    drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
-            %    drawylimlines = CheckOption('drawylimlines', [], varargin{:})
-            %    clim = CheckOption('clim', [-9 -6.5], varargin{:});
-
+            %    CheckOption('DisplayRadialIntensity', true, varargin{:});
+            %    CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            %    CheckOption('drawylimlines', [], varargin{:})
+            %    CheckOption('clim', [-9 -6.5], varargin{:});
+            %    CheckOption('hfig', [], varargin{:});
+            
             bPlotRadialIntensity = CheckOption('DisplayRadialIntensity', true, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             
@@ -1996,6 +2031,7 @@ classdef CRunData < handle & CConstants
             % [hfig, hax, hl, rplot, IntRad] = DisplayRadialIntensity(S, varargin)
             %
             % radial plot of full band mean total, unmodulated, modulated
+            %
             
             xlim = CheckOption('xlim', [], varargin{:});
             ylim = CheckOption('clim', [], varargin{:}); % same as clim for the images
@@ -2011,19 +2047,19 @@ classdef CRunData < handle & CConstants
             end
             
             if ~isempty(drawylimlines)
-                [x, y, X, Y, R] = CreateGrid(S.ImCubeUnProbFullBand, 1./(S.ppl0*S.PIAAMAG));
+                [x, y, X, Y, R] = CreateGrid(S.ImCubeUnProbFullBand, 1./S.ppl0);
                 bMaskuse = S.bMask & Y > drawylimlines(1); % & (~squeeze(S.bMask_badpix(1,:,:)));
             else
                 bMaskuse = S.bMask;
             end
             [sHandles, rplot, IntRad] = S.DisplayRadialPlot( ...
-                {S.ImCubeUnProbFullBand, S.CohIntFullBand, S.IncIntFullBand}, ...
+                {S.ImCubeUnProbFullBand, S.CohIntFullBand, S.IncIntEstFullBand}, ...
                 'legstr', {'Total','Modulated','Unmodulated'}, ...
                 'plotmean', false, 'bMask', bMaskuse, varargin{:}, 'nr', 88);
             set(sHandles.hline,'LineWidth',2)
             set(sHandles.hline(1),'color','k')
             set(sHandles.hline(3),'color','b')
-            if ~isempty(xlim), set(sHandles.hax,'xlim',xlim), end
+            if ~isempty(xlim), set(sHandles.hax,'xlim', [0 xlim(2)]), end
             if isempty(ylim)
                 ylim = get(sHandles.hax,'ylim'); set(sHandles.hax,'ylim', [max([ylim(1) 1e-9]), ylim(2)]);
             else
