@@ -73,7 +73,9 @@ if isempty(x) || isempty(y),
     [x, y] = CreateGrid(Im);
 elseif isscalar(x) || isscalar(y),
     % make zero-offset axis to match python arrays
-    [nr, nc] = size(Im);
+    sizeIm = size(Im); % could be [nr nc] or [nr nc 3] for rgb
+    nr = sizeIm(1);
+    nc = sizeIm(2);
     if isscalar(x), x = x + (1:nc)'-1; end
     if isscalar(y), y = y + (1:nr)'-1; end
 end

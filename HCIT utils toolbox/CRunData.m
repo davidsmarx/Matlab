@@ -159,7 +159,8 @@ classdef CRunData < handle & CConstants
         
         rplot
         IntRad
-        XYlimDefault = []; % lam/D for all imageschcit
+        XlimDefault = []; % lam/D
+        YlimDefault = []; % lam/D
         DrawradiiDefault = [];
         DrawthetaDefault = [];
 
@@ -195,18 +196,21 @@ classdef CRunData < handle & CConstants
             switch S.runnum,
                 case 0 % DST
                     S.Results_pn = '/home/dmarx/ln_dst_data/hcim/EFC/HLC/run000/';
-                    S.XYlimDefault = 12;
+                    S.XlimDefault = 12 * [-1 1];
+                    S.YlimDefault = 12 * [-1 1];
                     
                 case 001,
                     S.Results_pn = '/home/dmarx/HCIT/MCB/hcim_model2_run001/results/run001/';
                     
-                    S.XYlimDefault = 10;
+                    S.XlimDefault = 10 * [-1 1];
+                    S.YlimDefault = 10 * [-1 1];
                     S.DrawradiiDefault = [3.0 9.0];
 
                 case 10 % DST with BMC50.B DM at dm1
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run010/';
                     S.S383temp_pn= '/home/dmarx/HCIT/DST/hcim_testbed_run010/results/';
-                    S.XYlimDefault = 12;
+                    S.XlimDefault = 12 * [-1 1];
+                    S.YlimDefault = 12 * [-1 1];
                     S.DrawradiiDefault = [3.0 9.0];
                     S.DrawthetaDefault = 180*[-0.5 0.5]*CConstants.P;
                     
@@ -223,7 +227,8 @@ classdef CRunData < handle & CConstants
                 case 12 % DST with BMC50.B DM at dm1 & BMC 50.A dm2
                     S.Results_pn = '/home/dmarx/ln_dst_data/EFC/HLC/run012/';
                     S.S383temp_pn= '/home/dmarx/HCIT/DST/hcim_testbed_run012/results/';
-                    S.XYlimDefault = 12;
+                    S.XlimDefault = 12* [-1 1];
+                    S.YlimDefault = 12* [-1 1];
                     S.DrawradiiDefault = [3.0 9.0];
                     
                     S.RminSc    = 3.0; % lam/D
@@ -240,7 +245,8 @@ classdef CRunData < handle & CConstants
                     S.Results_pn = '/home/dmarx/HCIT/DST/hcim_model2_run013/results/run013/';
                     S.S383temp_pn = S.Results_pn; % it's all local
                     
-                    S.XYlimDefault = 12;
+                    S.XlimDefault = 12 * [-1 1];
+                    S.YlimDefault = 12 * [-1 1];
 
                     S.DrawradiiDefault = [3.0 9.0];
                     
@@ -258,7 +264,8 @@ classdef CRunData < handle & CConstants
                     S.Results_pn = '/proj/piaacmc/EFC/data/run100/';
                     S.S383temp_pn= '/home/dmarx/HCIT/PIAA/hcim_testbed_run100/results/';
                     
-                    S.XYlimDefault = 12;
+                    S.XlimDefault = 12 * [-1 1];
+                    S.YlimDefault = 12 * [-1 1];
 
                     S.PIAAMAG = 1.12; % should get this from config
                     S.DrawradiiDefault = [1.8 9.0];
@@ -294,7 +301,8 @@ classdef CRunData < handle & CConstants
                     
                     S.S383temp_pn= '/home/dmarx/HCIT/PIAA/hcim_testbed_run101/results/';
                     
-                    S.XYlimDefault = 12;
+                    S.XlimDefault = 12 * [-1 1];
+                    S.YlimDefault = 12 * [-1 1];
 
                     S.PIAAMAG = 1.12; % should get this from config
                     S.DrawradiiDefault = S.PIAAMAG*[1.8 9.0];
@@ -313,7 +321,8 @@ classdef CRunData < handle & CConstants
                     S.Results_pn = '/proj/piaacmc/EFC/data/run102/';
                     S.S383temp_pn= '/home/dmarx/HCIT/PIAA/hcim_testbed_run102/results/';
                     
-                    S.XYlimDefault = 12;
+                    S.XlimDefault = 12 * [-1 1];
+                    S.YlimDefault = 12 * [-1 1];
 
                     S.PIAAMAG = 1.12; % should get this from config
                     S.DrawradiiDefault = S.PIAAMAG*[1.8 9.0];
@@ -331,7 +340,8 @@ classdef CRunData < handle & CConstants
                     
                 case 603, % SPC_disc
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run603/';
-                    S.XYlimDefault = 22;
+                    S.XlimDefault = 22 * [-1 1];
+                    S.YlimDefault = 22 * [-1 1];
                     
                     throughput_fn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/Throughput_20171003T122253_20190829.mat';
                     S.Sthpt = load(PathTranslator(throughput_fn));
@@ -342,12 +352,14 @@ classdef CRunData < handle & CConstants
                     
                 case 604, % SPC_disc
                     S.Results_pn = '/home/dmarx/HCIT/SPC_disc/hcim_testbed_20170705/results/run604/';
-                    S.XYlimDefault = 22;
+                    S.XlimDefault = 22 * [-1 1];
+                    S.YlimDefault = 22 * [-1 1];
                 
                 case 606, % MCB-SPC
                     S.Results_pn = '/home/dmarx/ln_mcb_data/EFC/SPC/run606/';
                     S.ppl0 = 6.09; % MCB SPC from config_MCB_SPC_20181015.py
-                    S.XYlimDefault = 12;
+                    S.XlimDefault = 12 * [-1 1];
+                    S.YlimDefault = 12 * [-1 1];
                     S.DrawradiiDefault = [2.6 9.0];
                     S.DrawthetaDefault = 65*[-0.5 0.5]*CConstants.P;
 
@@ -366,7 +378,8 @@ classdef CRunData < handle & CConstants
                 case 607, % MCB-SPC model 2
                     S.Results_pn = '/home/dmarx/HCIT/MCB_SPC/hcim_model2_20181021/results/run607/';
                     S.ppl0 = 6.09;
-                    S.XYlimDefault = 12;
+                    S.XlimDefault = 12 * [-1 1];
+                    S.YlimDefault = 12 * [-1 1];
                     S.DrawradiiDefault = [2.6 9.0];
                     S.DrawthetaDefault = 65*[-0.5 0.5]*CConstants.P;
                     
@@ -382,7 +395,8 @@ classdef CRunData < handle & CConstants
                     %S.ppl0 = 3.628; % IFS value
                     % starting itnum 854, defined in ReducedKeys
 
-                    S.XYlimDefault = 12;
+                    S.XlimDefault = 12 * [-1 1];
+                    S.YlimDefault = 12 * [-1 1];
                     S.DrawradiiDefault = [2.6 9.0];
                     S.DrawthetaDefault = 65*[-0.5 0.5]*CConstants.P;
 
@@ -1067,7 +1081,6 @@ classdef CRunData < handle & CConstants
             % default options and set requested options
             %             bPlotLog = CheckOption('bLog', false, varargin{:});
             %             sTitle = CheckOption('title', '', varargin{:});
-            %             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             %             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
             %             climopt = CheckOption('clim', [], varargin{:});
@@ -1078,7 +1091,8 @@ classdef CRunData < handle & CConstants
             %  val = CheckOption(sOpt, valDefault, varargin)
             bPlotLog = CheckOption('bLog', false, varargin{:});
             sTitle = CheckOption('title', '', varargin{:});
-            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
+            ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
             climopt = CheckOption('clim', [], varargin{:});
@@ -1091,8 +1105,6 @@ classdef CRunData < handle & CConstants
             x = x - xcoff/S.ppl0;
             y = y - ycoff/S.ppl0;
             
-            xlim = dispXYlim*[-1 1]; ylim = xlim;
-
             if isempty(hfig) && isempty(hax),
                 hfig = figure;
             end
@@ -1138,8 +1150,7 @@ classdef CRunData < handle & CConstants
             % output rplot, IntRad = radius, radial intensity data
             %            
             %             Nr = CheckOption('nr', ceil(min([128 length(R)/4])), varargin{:}); % # of radial sample pts
-            %             dispRadlim = CheckOption('dispradlim', [0 S.XYlimDefault], varargin{:});
-            %             ylim = CheckOption('ylim', [], varargin{:});
+            %             dispRadlim = CheckOption('dispradlim', [0 max(S.DrawradiiDefault)], varargin{:});
             %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             %             bMaskUse = CheckOption('bMask', S.bMask, varargin{:});
             %             strYlabel = CheckOption('ylabel', 'Average Normalized Intensity', varargin{:});
@@ -1154,8 +1165,7 @@ classdef CRunData < handle & CConstants
             [x, y, X, Y, R] = CreateGrid(ImCube{1}, 1./S.ppl0);
 
             Nr = CheckOption('nr', ceil(min([128 length(R)/4])), varargin{:}); % # of radial sample pts
-            dispRadlim = CheckOption('dispradlim', [0 S.XYlimDefault], varargin{:});
-            ylim = CheckOption('ylim', [], varargin{:});
+            dispRadlim = CheckOption('dispradlim', [0 max(S.DrawradiiDefault)], varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             bMaskUse = CheckOption('bMask', S.bMask, varargin{:});
             strYlabel = CheckOption('ylabel', 'Average Normalized Intensity', varargin{:});
@@ -1260,19 +1270,25 @@ classdef CRunData < handle & CConstants
             % [hfig, ha] = DisplayImCubeUnProb(S, ...)
             % default options and set requested options
             %             bPlotLog = CheckOption('bLog', false, varargin{:});
-            %             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             %             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
             %             drawylimlines = CheckOption('drawylimlines', [], varargin{:})
             %             climopt = CheckOption('clim', [], varargin{:});
             %             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             %             haxuse = CheckOption('hax', [], varargin{:});
-            %             xlim = CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
+            %             xlim = CheckOption('xlim', [], varargin{:});
             %             ylim = CheckOption('ylim', [], varargin{:});
             %
             
             if isempty(S.ImCubeUnProb),
-                S.ReadImageCube;
+                try
+                    S.ReadImageCube;
+                catch ME
+                    disp(ME.message);
+                    hfig = [];
+                    ha = [];
+                    return
+                end
             end
             %             if isempty(S.bMask),
             %                 S.ReadMaskCube;
@@ -1281,7 +1297,6 @@ classdef CRunData < handle & CConstants
             % default options and set requested options
             %  val = CheckOption(sOpt, valDefault, varargin)
             bPlotLog = CheckOption('bLog', false, varargin{:});
-            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
             drawYlimLines = CheckOption('drawylimlines', [], varargin{:});
@@ -1289,13 +1304,10 @@ classdef CRunData < handle & CConstants
             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             haxuse = CheckOption('hax', [], varargin{:});
             bPlotRadialIntensity = CheckOption('DisplayRadialIntensity', false, varargin{:});
-            xlim = CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
-            ylim = CheckOption('ylim', [], varargin{:});
+            xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
+            ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
             
             [x, y, X, Y, R] = CreateGrid(S.ImCubeUnProb{1}, 1./S.ppl0);
-            
-            if isempty(xlim), xlim = dispXYlim*[-1 1]; end
-            if isempty(ylim), ylim = dispXYlim*[-1 1]; end
             
             Nlam = length(ilam);
             
@@ -1354,7 +1366,8 @@ classdef CRunData < handle & CConstants
             % [hfig, ha] = DisplayImCubeContrast(S, ...)
             % default options and set requested options
             %             bPlotLog = CheckOption('bLog', false, varargin{:});
-            %             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            %             xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
+            %             ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
             %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             %             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
             %             climopt = CheckOption('clim', [], varargin{:});
@@ -1372,7 +1385,8 @@ classdef CRunData < handle & CConstants
             % default options and set requested options
             %  val = CheckOption(sOpt, valDefault, varargin)
             bPlotLog = CheckOption('bLog', true, varargin{:});
-            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
+            ylim = CheckOption('ylim', S.YlimDefault, varargin{:});            
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
             climopt = CheckOption('clim', [], varargin{:});
@@ -1380,7 +1394,6 @@ classdef CRunData < handle & CConstants
             haxuse = CheckOption('hax', [], varargin{:});
             
             [x, y, X, Y, R] = CreateGrid(S.ImCubeContrast{1}, 1./S.ppl0);
-            xlim = dispXYlim*[-1 1]; ylim = xlim;
             
             Nlam = length(ilam);
             
@@ -1452,7 +1465,8 @@ classdef CRunData < handle & CConstants
             %
             % options:
             %             bPlotLog = CheckOption('bLog', false, varargin{:});
-            %             dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            %             xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
+            %             ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
             %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             %             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
             %             climopt = CheckOption('clim', [], varargin{:});
@@ -1467,7 +1481,8 @@ classdef CRunData < handle & CConstants
             % default options and set requested options
             %  val = CheckOption(sOpt, valDefault, varargin)
             bPlotLog = CheckOption('bLog', false, varargin{:});
-            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
+            ylim = CheckOption('ylim', S.YlimDefault, varargin{:});            
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
             climopt = CheckOption('clim', [], varargin{:});
@@ -1476,7 +1491,6 @@ classdef CRunData < handle & CConstants
             haxuse = CheckOption('hax', [], varargin{:});
             
             [x, y, X, Y, R] = CreateGrid(S.ImCubeSigProb{1,1}, 1./S.ppl0);
-            xlim = dispXYlim*[-1 1]; ylim = xlim;
             
             Nlam = length(ilam);
             Npro = length(ipro);
@@ -1548,13 +1562,12 @@ classdef CRunData < handle & CConstants
             % [hfig, hax] = DisplayIncInt(S, varargin)
             % options:
             %             CheckOption('bLog', true, varargin{:});
-            %             CheckOption('xylim', S.XYlimDefault, varargin{:});
             %             CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             %             CheckOption('drawylimlines', [], varargin{:});
             %             CheckOption('clim', [], varargin{:});
             %             CheckOption('hax', [], varargin{:}); % put image on this axes
             %             CheckOption('type', 'est', varargin{:});
-            %             CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
+            %             CheckOption('xlim', [], varargin{:});
             %             CheckOption('ylim', [], varargin{:});
             
             if isempty(S.IncInt),
@@ -1564,14 +1577,13 @@ classdef CRunData < handle & CConstants
             % options:
             % %  val = CheckOption(sOpt, valDefault, varargin)
             bLog = CheckOption('bLog', true, varargin{:});
-            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             drawYlimLines = CheckOption('drawylimlines', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
             IncIntType = CheckOption('type', 'est', varargin{:});
-            xlim = CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
-            ylim = CheckOption('ylim', [], varargin{:});
+            xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
+            ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
             
             %%%% end options
 
@@ -1598,10 +1610,6 @@ classdef CRunData < handle & CConstants
             
             if isempty(haxuse), hfig = figure_mxn(1,S.Nlamcorr); else hfig = gcf; end
             
-            % explicity xlim, ylim option overrides
-            if isempty(xlim), xlim = dispXYlim*[-1 1]; end
-            if isempty(ylim), ylim = dispXYlim*[-1 1]; end
-
             if isempty(clim),
                 clim = pClim(pFun([plIncInt{:}]));
             end
@@ -1643,14 +1651,9 @@ classdef CRunData < handle & CConstants
             
             % check options
             clim = CheckOption('clim', [], varargin{:});
-            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
-            xlim = CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
-            ylim = CheckOption('ylim', [], varargin{:});
+            xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
+            ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
             
-            % explicity xlim, ylim option overrides
-            if isempty(xlim), xlim = dispXYlim*[-1 1]; end
-            if isempty(ylim), ylim = dispXYlim*[-1 1]; end
-
             % grid in lam/D
             [x, y] = CreateGrid(S.ProbeAmp{1,1}, 1./S.ppl0);
             
@@ -1720,7 +1723,6 @@ classdef CRunData < handle & CConstants
                 S.ReadReducedCube;
             end
 
-            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
                 
             % display one probe at all wavelengths and plot cross sections
@@ -1754,10 +1756,9 @@ classdef CRunData < handle & CConstants
             %
             %             CheckOption('hfig', [], varargin{:});
             %             CheckOption('iwv', ceil(S.NofW/2), varargin{:});
-            %             CheckOption('xylim', S.XYlimDefault, varargin{:});
             %             CheckOption('blog', true, varargin{:});
-            %             CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
-            %             CheckOption('ylim', [], varargin{:});
+            %             CheckOption('xlim', S.XlimDefault, varargin{:});
+            %             CheckOption('ylim', S.YlimDefault, varargin{:});
             
             if isempty(S.ProbeModel),
                 S.ReadProbeCube;
@@ -1768,15 +1769,10 @@ classdef CRunData < handle & CConstants
             
             hfig = CheckOption('hfig', [], varargin{:});
             iwvplot = CheckOption('iwv', ceil(S.NofW/2), varargin{:});
-            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             bLog = CheckOption('blog', true, varargin{:});
-            xlim = CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
-            ylim = CheckOption('ylim', [], varargin{:});
+            xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
+            ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
             
-            % explicit xlim, ylim overrides dispXYlim
-            if isempty(xlim), xlim = dispXYlim*[-1 1]; end
-            if isempty(ylim), ylim = dispXYlim*[-1 1]; end
-
             [x, y] = CreateGrid(S.ProbeModel{1,1}, 1./S.ppl0);                        
             
             if bLog,
@@ -1842,12 +1838,11 @@ classdef CRunData < handle & CConstants
             % [hfig, hax] = DisplayCohInt(S, varargin)
             % options:
             %             CheckOption('blog', true, varargin{:});
-            %             CheckOption('xylim', S.XYlimDefault, varargin{:});
             %             CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             %             CheckOption('drawylimlines', [], varargin{:});
             %             CheckOption('clim', [], varargin{:});
             %             CheckOption('hax', [], varargin{:}); % put image on this axes
-            %             CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
+            %             CheckOption('xlim', [], varargin{:});
             %             CheckOption('ylim', [], varargin{:});
             
             if isempty(S.E_t),
@@ -1861,13 +1856,12 @@ classdef CRunData < handle & CConstants
             % options:
             % %  val = CheckOption(sOpt, valDefault, varargin)
             bLog = CheckOption('blog', true, varargin{:});
-            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             drawYlimLines = CheckOption('drawylimlines', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
-            xlim = CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
-            ylim = CheckOption('ylim', [], varargin{:});
+            xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
+            ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
             
             %%%% end options
             
@@ -1883,10 +1877,6 @@ classdef CRunData < handle & CConstants
             
             if isempty(haxuse), hfig = figure_mxn(1,S.Nlamcorr); else hfig = gcf; end
             
-            % explicit xlim, ylim option overrides dispXYlim option
-            if isempty(xlim), xlim = dispXYlim*[-1 1]; end
-            if isempty(ylim), ylim = dispXYlim*[-1 1]; end
-
             if isempty(clim),
                 clim = pClim(pFun([S.CohInt{:}]));
             end
@@ -1926,11 +1916,11 @@ classdef CRunData < handle & CConstants
             % 
             % some options
             %    CheckOption('DisplayRadialIntensity', true, varargin{:});
-            %    CheckOption('xylim', S.XYlimDefault, varargin{:});
             %    CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             %    CheckOption('drawylimlines', [], varargin{:})
             %    CheckOption('clim', [-9 -6.5], varargin{:});
-
+            %    CheckOption('hfig', [], varargin{:});
+            
             bPlotRadialIntensity = CheckOption('DisplayRadialIntensity', true, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             
@@ -2160,7 +2150,8 @@ classdef CRunData < handle & CConstants
             % testbed measured E fields
             % amp, real, imag x each wavelength
             %
-            %   CheckOption('xylim', S.XYlimDefault, varargin{:});
+            %             xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
+            %             ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
             %   CheckOption('hfig', [], varargin{:});
             %   CheckOption('clim', [], varargin{:});
             %   CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
@@ -2169,7 +2160,8 @@ classdef CRunData < handle & CConstants
                 S.ReadReducedCube;
             end
             
-            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+            xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
+            ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
@@ -2209,9 +2201,8 @@ classdef CRunData < handle & CConstants
                 imageschcit(x, y, imag(squeeze(S.E_t(iwv,:,:)))), colorbar
                 title(['Imag, Wave#' num2str(iwv) ', ' sRI])
             end
-                        
-            % xlim, ylim
-            xlim = dispXYlim*[-1 1]; ylim = xlim;
+
+            %
             set(hax,'xlim',xlim,'ylim',ylim)
             
             % clim
@@ -2241,24 +2232,18 @@ classdef CRunData < handle & CConstants
             %                     ,'dE_t', [] ...
             %                     ,'dE_m', [] ...
             % 
-            % CheckOption('xylim', S.XYlimDefault, varargin{:});
             % CheckOption('hfig', [], varargin{:});
             % CheckOption('clim', [], varargin{:});
             % CheckOption('nodisplay', false, varargin{:});
-            % CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
-            % CheckOption('ylim', [], varargin{:});
+            % CheckOption('xlim', S.XlimDefault, varargin{:});
+            % CheckOption('ylim', S.YlimDefault, varargin{:});
 
-            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             bNodisplay = CheckOption('nodisplay', false, varargin{:});
-            xlim = CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
-            ylim = CheckOption('ylim', [], varargin{:});
+            xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
+            ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
             
-            %
-            if isempty(xlim), xlim = dispXYlim*[-1 1]; end
-            if isempty(ylim), ylim = dispXYlim*[-1 1]; end
-
             if isempty(S.E_t),
                 S.ReadReducedCube;
             end
@@ -2404,25 +2389,23 @@ classdef CRunData < handle & CConstants
             % [hfig, ha] = DisplayCEfields(S, Sref, varargin)
             % correlation metrics DE_t .* conj(DE_m)
             %
-            %             CheckOption('xylim', S.XYlimDefault, varargin{:});
             %             CheckOption('hfig', [], varargin{:});
             %             CheckOption('clim', [], varargin{:});
             %             CheckOption('PSF_thresh_nsig', 4, varargin{:});
             %             CheckOption('debug', false, varargin{:});
             %             CheckOption('bMaskDisplay', [], varargin{:}); % default is mask from CohInt
             %             CheckOption('nodisplay', false, varargin{:}); % calc metrics and return, don't display graph
-            %             CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
-            %             CheckOption('ylim', [], varargin{:});
+            %             xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
+            %             ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
 
-            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             PSF_thresh_nsig = CheckOption('PSF_thresh_nsig', 4, varargin{:});
             bDebugAutoMetric = CheckOption('debug', false, varargin{:});
             bMaskDisplay = CheckOption('bMaskDisplay', [], varargin{:});
             bNodisplay = CheckOption('nodisplay', false, varargin{:});
-            xlim = CheckOption('xlim', [], varargin{:}); % overrides dispXYlim if defined
-            ylim = CheckOption('ylim', [], varargin{:});
+            xlim = CheckOption('xlim', S.XlimDefault, varargin{:}); 
+            ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
             
             if isempty(S.E_t),
                 S.ReadReducedCube;
@@ -2570,9 +2553,6 @@ classdef CRunData < handle & CConstants
             end
 
             % xlim, ylim
-            % explicit xlim, ylim overrides dispXYlim
-            if isempty(xlim), xlim = dispXYlim*[-1 1]; end
-            if isempty(ylim), ylim = dispXYlim*[-1 1]; end
             set(ha,'xlim',xlim,'ylim',ylim)
 
             % make clim for abs plots the same for all wavelengths
@@ -2588,106 +2568,11 @@ classdef CRunData < handle & CConstants
             
         end % DisplayCEfields
 
-
-        function [hfig, ha] = DisplayDEold(S, Sref, varargin)
-            % [hfig, ha] = DisplayDE(S, Sref, varargin)
-            % old version
-            
-            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
-            hfig = CheckOption('hfig', [], varargin{:});
-            
-            if isempty(S.E_t),
-                S.ReadReducedCube;
-            end
-
-            if isempty(Sref.E_t),
-                Sref.ReadReducedCube;
-            end
-
-            if isempty(S.ImCube),
-                S.ReadImageCube;
-            end
-            
-            if isempty(Sref.ImCube),
-                Sref.ReadImageCube;
-            end
-            
-            [nw, nr, nc] = size(S.E_t);
-            
-            sRI = ['run #' num2str(S.runnum) ', iter #' num2str(S.iter) '--' num2str(Sref.iter)];
-            
-            %             E_t = squeeze(S.E_t(iwvplot,:,:));
-            %             E_m = squeeze(S.E_m(iwvplot,:,:));
-
-            % top row = real(DE_t)
-            % middle row = imag(DE_t)
-            % bottom row = UnProbInt - UnProbInt(ref)
-            Nplr = 4;
-            if isa(hfig,'matlab.ui.Figure'),
-                figure(hfig)
-            else,
-                hfig = figure_mxn(Nplr,S.NofW);
-            end
-            [x, y] = CreateGrid([nc nr], 1./S.ppl0);
-            ha = zeros(Nplr,S.NofW);
-            %
-            dE = S.E_t - Sref.E_t;
-            
-            % FFT of dE
-            Nlam2 = 1200; % a guess right now, about ppl0*D in pixels
-            Nfft = Nlam2 ./(mean(S.NKTcenter)./S.NKTcenter);
-            for iwv = 1:S.NofW,
-                dEtmp = squeeze(dE(iwv,:,:));
-                % need to eliminate outliers
-                rmsAmp = rms(dEtmp(abs(dEtmp)>0));
-                dEtmp(abs(dEtmp)>3*rmsAmp) = 0;
-
-                dEtmp = PadImArray( dEtmp, Nfft(iwv) );
-                Epup{iwv} = fftshift(fft2(fftshift(dEtmp)));
-            end
-            
-            climE = zeros(2*S.NofW,2);
-            climI = zeros(S.NofW,2);
-            for iwv = 1:S.NofW,
-                ipu = iwv+0*S.NofW;
-                ipr = iwv+1*S.NofW;
-                ipi = iwv+2*S.NofW;
-                ipf = iwv+3*S.NofW;
-                
-                % change in unprobed image intensity
-                ha(1,iwv) = subplot(Nplr, S.NofW, ipu);
-                him = imageschcit(x,y, S.ImCubeUnProb{iwv}-Sref.ImCubeUnProb{iwv}); colorbar
-                title([sRI ', \Delta UnPr Int, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
-                climI(iwv,:) = AutoClim(get(him,'CData'),'symmetric',true);
-
-                ha(2,iwv) = subplot(Nplr, S.NofW, ipr);
-                him = imageschcit(x,y,squeeze(real(dE(iwv,:,:)))); colorbar
-                title([sRI ', real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
-                climE(ipr,:) = AutoClim(get(him,'CData'),'symmetric',true);
-                
-                ha(3,iwv) = subplot(Nplr, S.NofW, ipi);
-                him = imageschcit(x,y,squeeze(imag(dE(iwv,:,:)))); colorbar
-                title([sRI ', imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
-                climE(ipi,:) = AutoClim(get(him,'CData'),'symmetric',true);
-
-                ha(4,iwv) = subplot(Nplr, S.NofW, ipf);
-                [xf, yf] = CreateGrid(Epup{iwv});
-                him = imageschcit(xf, yf, abs(Epup{iwv}));
-                xfyflim = 4*46.3;
-                set(gca,'xlim',xfyflim*[-1 1],'ylim',xfyflim*[-1 1])
-                title([sRI ', FFT{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
-                
-            end
-            set(ha(1,:),'clim',median(climI))
-            set(ha(2:3,:),'clim',median(climE))
-            set(ha(1:3,:),'xlim',dispXYlim*[-1 1],'ylim',dispXYlim*[-1 1]);
-            
-        end % DisplayDE
-
         function [hfig, ha] = DisplayPampzero(S, varargin)
             % [hfig, ha] = DisplayPampzero(S, varargin)
-            
-            dispXYlim = CheckOption('xylim', S.XYlimDefault, varargin{:});
+
+            xlim = CheckOption('xlim', S.XlimDefault, varargin{:}); 
+            ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
 
             [nw, ny, nx] = size(S.bPampzero);
             [x, y] = CreateGrid([nx ny], 1./S.ppl0);
@@ -2700,7 +2585,7 @@ classdef CRunData < handle & CConstants
                xlabel('\lambda / D')
                ylabel('\lambda / D')
                
-               set(gca,'xlim',dispXYlim*[-1 1],'ylim',dispXYlim*[-1 1])
+               set(gca,'xlim', xlim,'ylim', ylim)
                
             end
             

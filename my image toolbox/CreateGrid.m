@@ -32,7 +32,9 @@ if isscalar(Ima),
 elseif isequal(size(Ima),[1 2]),
     ny = Ima(1); nx = Ima(2);
 else
-    [ny, nx] = size(Ima);
+    sizeIma = size(Ima); % could be [nr nc] or [nr nc 3]
+    ny = sizeIma(1);
+    nx = sizeIma(2);
 end
 
 switch OriginLoc
