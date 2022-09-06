@@ -334,25 +334,42 @@ classdef CfalcoRunData < CRunData
             % ReadDMvCube(S, whichdm)
             % whichdm = 'dm1', or 'dm2'
                         
-            %             %
-            %             flnm = PathTranslator([S.Reduced_pn '/' whichdm '_model_it',num2str(S.iter),'.fits']);
-            %             if exist(flnm, 'file')
-            %                 dmSurf = fitsread(flnm);
-            %             else
-            %                 S.DMvCube{end+1} = zeros(48);
-            %             end
-            
+            % 
             flnm = PathTranslator([S.Reduced_pn '/' whichdm '_Vbias.fits']);
             if exist(flnm,'file')
                 DMdata.dmVbias = fitsread(flnm);
                 flnm = PathTranslator([S.Reduced_pn '/' whichdm '_V_it',num2str(S.iter),'.fits']);
                 dmV = fitsread(flnm);
-                S.DMvCube{end+1} = DMdata.dmVbias + dmV;
+                dmV_total = DMdata.dmVbias + dmV;
             else
-                S.DMvCube{end+1} = zeros(48);
+                dmV_total = zeros(48);
             end
+
+            % rotating, etc. should be only for display
+            %             % rotate, flip according to dm registration
+            %             % not sure of all the possible values of orientation
+            %             switch S.mp.(whichdm).orientation
+            %                 case 'flipxrot180'
+            %                     dmV_total = flipud(dmV_total);
+            %
+            %                 otherwise
+            %                     error(['unknown DM orientation: ' S.mp.(whichdm).orientation]);
+            %             end
+                
+            % add to DMvCube
+            S.DMvCube{end+1} = dmV_total;
             
         end % ReadDMvCube
+        
+        function [hfig, hax, sMetrics] = DisplayDMv(S, dmvref, varargin)
+            cOrientation = cell([1 S.Ndm]);
+            for idm = 1:S.Ndm
+                whichdm = ['dm' num2str(S.mp.dm_ind(idm))];
+                cOrientation{idm} = S.mp.(whichdm).orientation;
+            end
+            [hfig, hax, sMetrics] = DisplayDMv@CRunData(S, dmvref, varargin{:}, ...
+                'applyorientation', cOrientation);
+        end
         
     end % methods
     

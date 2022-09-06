@@ -739,7 +739,7 @@ classdef CGS < handle
             titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             xylim = CheckOption('xylim', [], varargin{:});
             phresclim = CheckOption('phresclim', [], varargin{:});
-            ylimZ = CheckOption('ylimZplot', [], varargin{:});
+            ylimZ = CheckOption('ylimzplot', [], varargin{:});
             zzunits = CheckOption('zernikeunits', 'rad', varargin{:}); % 'nm'
             
             % fit should always include piston, tip, tilt, even if not

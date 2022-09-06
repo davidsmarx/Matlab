@@ -173,6 +173,13 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
     
     N = length(S);
 
+    % if only 1 iteration, can't do displays that use differences
+    if N <= 1 && any(strcmp(sDisplayFun, [listDiff(:); {'DisplayCEfields'}]))
+        % just return
+        hfig = []; hax = []; sCmetrics = struct;
+        return
+    end
+    
     hfig = [];
     switch sDisplayFun,
         case listDiff
@@ -255,6 +262,7 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
             else
                 fSaveas(hfig_ce, save_pn, 'summary', ['CE_it' num2str(S(1).iter) '_it' num2str(S(end).iter)], []);
             end
+            
         otherwise, % one call per iteration
             sCmetrics = struct;
             for ii = 1:N,
@@ -274,7 +282,8 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                     fSaveas(hfig, save_pn, sDisplayFun, 'it', S(ii).iter);
                 end
             end
-    end
+            
+    end % switch
 
 end % CreatePlots
 
