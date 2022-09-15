@@ -2620,9 +2620,12 @@ classdef CRunData < handle & CConstants
                 return
             end
             
+            % options
             climDelta = CheckOption('climdelta', [], varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
-
+            applyorientation = CheckOption('applyorientation', {}, varargin{:}); % {string per DMvcube}
+            
+            
             % extract the DV v to plot
             for idm = 1:S.Ndm,
                 DMvtmp = squeeze(S.DMvCube{idm}(:,:,1));
@@ -2634,6 +2637,29 @@ classdef CRunData < handle & CConstants
                     ', ' num2str(rmsDMv(idm),'%.4f') 'V rms'];
             end
 
+            % check display orientation
+            % default display orientation is normal
+            cYdir = cell(size(DMv));
+            [cYdir{:}] = deal('normal'); % identity function
+            cXdir = cell(size(DMv));
+            [cXdir{:}] = deal('normal');
+            if ~isempty(applyorientation)
+                if ~isequal(size(applyorientation), size(cYdir))
+                    error('applyorientation must be cell array same size as DMv');
+                end
+                
+                for idm = 1:length(DMv)
+                    switch applyorientation{idm}
+                        case 'flipxrot180'
+                            cYdir{idm} = 'reverse';
+                        otherwise
+                            error(['dm orientation ' applyorientation{idm} ' not implemented']);
+                    end % switch
+                    
+                end % for each dm
+                
+            end % if applyorienation
+                
             % is there a reference DMv
             refDMv = [];
             strRefDM = [];
@@ -2676,9 +2702,10 @@ classdef CRunData < handle & CConstants
 
                 % plot S DMv
                 hax(idm) = subplot(Nr, S.Ndm, idm);
-                imageschcit(0,0,DMv{idm}), 
+                imageschcit(0, 0, DMv{idm}),
                 colorbartitle('Vmu')
                 title(strDM{idm})
+                set(gca, 'ydir', cYdir{idm}, 'xdir', cXdir{idm})
                 
                 % if Ref defined:
                 if ~isempty(refDMv),
@@ -2687,10 +2714,11 @@ classdef CRunData < handle & CConstants
                     dDMv = DMv{idm} - refDMv{idm};
                     rmsdDMv(idm) = rms(dDMv(abs(dDMv)>0));
 
-                    imageschcit(0,0,dDMv)
+                    imageschcit(0, 0, dDMv)
                     colorbartitle('Vmu')
                     title(['\Delta ' strRefDM{idm} ', ' num2str(rmsdDMv(idm),'%.4f') 'V rms'])
-                    
+                    set(gca, 'ydir', cYdir{idm}, 'xdir', cXdir{idm})
+
                     % save
                     cdDMv{idm} = dDMv;
                 end
