@@ -33,6 +33,7 @@ more off
 % persistent Sppt;
 
 % options
+bOpenPpt = CheckOption('openppt', true, varargin{:});
 ppt_fn = CheckOption('pptfn', '', varargin{:});
 sOptin = CheckOption('sOptin', [], varargin{:}); % passed to CRunData
 Sppt = CheckOption('Sppt', [], varargin{:});
@@ -46,7 +47,7 @@ max_empties = CheckOption('max_empties', 3, varargin{:});
 % end
 
 % open PowerPoint if necessary, and plots are requested
-if isempty(Sppt) && ispc && ~isempty(varargin),
+if ispc && isempty(Sppt) && bOpenPpt
     Sppt = Cppt(ppt_fn);
 end
 
@@ -84,7 +85,7 @@ else
 end
 
 % plot graphs of metrics v itnum on the first slide
-slide = Sppt.NewSlide(1);
+if ~isempty(Sppt), slide = Sppt.NewSlide(1); end
 hfig = figure_mxn(2,2);
 hax(1,1) = subplot(2,2,1); [~, ~, ~, itnum_min] = PlotNormIntensity(S, 'hfig', hfig, 'hax', hax(1,1));
 hax(1,2) = subplot(2,2,2); PlotBeta(S, 'hfig', hfig, 'hax', hax(1,2));
@@ -105,7 +106,7 @@ for ixt = 1:length(xticks),
 end
 set(hax(1,1), 'xticklabel', xticklabels)
 set(hax,'fontsize',14)
-hPic = Sppt.CopyFigSlide(slide, hfig);
+if ~isempty(Sppt), hPic = Sppt.CopyFigSlide(slide, hfig); end
 
 % call the plotting methods
 listHfig = {};

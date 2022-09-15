@@ -1152,6 +1152,7 @@ classdef CRunData < handle & CConstants
             %             Nr = CheckOption('nr', ceil(min([128 length(R)/4])), varargin{:}); % # of radial sample pts
             %             dispRadlim = CheckOption('dispradlim', [0 max(S.DrawradiiDefault)], varargin{:});
             %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            %             ylim = CheckOption('ylim', [], varargin{:});
             %             bMaskUse = CheckOption('bMask', S.bMask, varargin{:});
             %             strYlabel = CheckOption('ylabel', 'Average Normalized Intensity', varargin{:});
             %             plotRequired = CheckOption('plotrequired', [], varargin{:}); % [r(:) contrast(:)]
@@ -1167,6 +1168,7 @@ classdef CRunData < handle & CConstants
             Nr = CheckOption('nr', ceil(min([128 length(R)/4])), varargin{:}); % # of radial sample pts
             dispRadlim = CheckOption('dispradlim', [0 max(S.DrawradiiDefault)], varargin{:});
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
+            ylim = CheckOption('ylim', [], varargin{:});
             bMaskUse = CheckOption('bMask', S.bMask, varargin{:});
             strYlabel = CheckOption('ylabel', 'Average Normalized Intensity', varargin{:});
             plotRequired = CheckOption('plotrequired', [], varargin{:}); % [r(:) contrast(:)]
@@ -1229,7 +1231,7 @@ classdef CRunData < handle & CConstants
             
             grid on
             
-            % 
+            % ylimits on semilogy plot
             if ~isempty(ylim), set(gca, 'ylim', ylim); end
             
             if ~isempty(drawRadii),
