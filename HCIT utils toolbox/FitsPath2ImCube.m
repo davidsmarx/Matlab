@@ -75,12 +75,21 @@ if ischar(hdrkwd), hdrkwd = {hdrkwd}; end
 % allocate
 hdrkwdval = zeros(Nf,length(hdrkwd));
 [nr_ii, nc_ii] = deal(zeros(Nf,1));
+img_ii = cell(Nf,1);
+list_ii_skip = [];
 for ii = 1:Nf
 
-    img_ii{ii} = fitsread(PathTranslator([pn '/' listfn(ii).name]),sExtension);
+    img_tmp = fitsread(PathTranslator([pn '/' listfn(ii).name]),sExtension);
     finfo = fitsinfo(PathTranslator([pn '/' listfn(ii).name]));
     
+    % can only handle 2-d images
+    if ~isequal(ndims(img_tmp), 2)
+        list_ii_skip = [list_ii_skip ii];
+        continue
+    end
+    
     %
+    img_ii{ii} = img_tmp;
     [nr_ii(ii), nc_ii(ii)] = size(img_ii{ii});
     
     % this way, FitsGetKeywordVal always returns a cell array
@@ -93,6 +102,15 @@ for ii = 1:Nf
     %hdrkwdval(ii,:) = 1;
     
 end
+% remove skipped
+if ~isempty(list_ii_skip)
+    img_ii(list_ii_skip) = [];
+    hdrkwdval(list_ii_skip,:) = [];
+    nr_ii(list_ii_skip) = [];
+    nc_ii(list_ii_skip) = [];
+    listfn(list_ii_skip) = [];
+end
+Nf = length(img_ii);
 
 % build image cube
 Nr = max(nr_ii);
