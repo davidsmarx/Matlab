@@ -75,12 +75,21 @@ if ischar(hdrkwd), hdrkwd = {hdrkwd}; end
 % allocate
 hdrkwdval = zeros(Nf,length(hdrkwd));
 [nr_ii, nc_ii] = deal(zeros(Nf,1));
+img_ii = cell(Nf,1);
+list_ii_skip = [];
 for ii = 1:Nf
 
-    img_ii{ii} = fitsread(PathTranslator([pn '/' listfn(ii).name]),sExtension);
+    img_tmp = fitsread(PathTranslator([pn '/' listfn(ii).name]),sExtension);
     finfo = fitsinfo(PathTranslator([pn '/' listfn(ii).name]));
     
+    % can only handle 2-d images
+    if ~isequal(ndims(img_tmp), 2)
+        list_ii_skip = [list_ii_skip ii];
+        continue
+    end
+    
     %
+    img_ii{ii} = img_tmp;
     [nr_ii(ii), nc_ii(ii)] = size(img_ii{ii});
     
     % this way, FitsGetKeywordVal always returns a cell array
@@ -93,6 +102,15 @@ for ii = 1:Nf
     %hdrkwdval(ii,:) = 1;
     
 end
+% remove skipped
+if ~isempty(list_ii_skip)
+    img_ii(list_ii_skip) = [];
+    hdrkwdval(list_ii_skip,:) = [];
+    nr_ii(list_ii_skip) = [];
+    nc_ii(list_ii_skip) = [];
+    listfn(list_ii_skip) = [];
+end
+Nf = length(img_ii);
 
 % build image cube
 Nr = max(nr_ii);
@@ -115,21 +133,25 @@ switch lower(scale),
     case 'linear',
         % do nothing
     case 'log'
-        ImCube = log10(ImCube);
+        %ImCube = log10(ImCube);
+        % scale to 0..1
+        ImCube_sc = (ImCube - min(ImCube(:)))./range(ImCube(:));
+        ImCube = log(1000*ImCube_sc+1)./log(1000); % from http://ds9.si.edu/doc/ref/how.html
         
     otherwise,
         error(['unknown scale: ' scale]);
 end
 
+% title strings
+if ~isempty(hdrkwd)
+    fTitleStr = @(isl) [[comTitlestr '#' num2str(isl)] join(string(hdrkwd), ', ') sprintf(hdrkwdvalfmt, hdrkwdval(isl,:))];
+else
+    fTitleStr = @(isl) ['# ' num2str(isl)];
+    hdrkwdval = 1:Nf; % just to have labels for the image cube slices
+end
 
 switch lower(plottype),
     case 'cube',
-        if ~isempty(hdrkwd)
-            fTitleStr = @(isl) [[comTitlestr '#' num2str(isl)] join(string(hdrkwd), ', ') sprintf(hdrkwdvalfmt, hdrkwdval(isl,:))];
-        else
-            fTitleStr = @(isl) ['# ' num2str(isl)];
-            hdrkwdval = 1:Nf; % just to have labels for the image cube slices
-        end
         
         if isempty(hfig), hfig = figure; end
         [hfig, hax, sUserData] = ImageCube(ImCube, hdrkwdval, ...
@@ -138,7 +160,10 @@ switch lower(plottype),
         
     case 'spread'
         if isempty(hfig), hfig = figure; else, figure(hfig), end
-        [hfig, hax] = PlotSpread;
+        %[hfig, hax] = PlotSpread;
+        [hfig, hax, sUserData] = ImageCubeSpread(ImCube,  hdrkwdval, ...
+            'fTitleStr', fTitleStr, ...
+            'x', plotx, 'y', ploty, 'hfig', hfig);
 
     case 'none',
         % no dispaly, do nothing
@@ -169,51 +194,6 @@ else
 
     varargout = {ImCube, sParms};
 end
-
-
-return % end of main
-
-%%%%%%%%%%%%%% nested plot functions
-    % nested function to create panoramic spread plot has all the options
-    % already in scope
-    function [hfig, hax] = PlotSpread
-        hfig = gcf;
-        
-        % x, y axes
-        if isscalar(plotx),
-            x = (plotx:(Nc-plotx-1))';
-        else
-            x = plotx;
-        end
-        if isscalar(ploty),
-            y = (ploty:(Nr-ploty-1))';
-        else
-            y = ploty;
-        end
-        
-        % apply xlim, ylim directly to ImCube
-        if ~isempty(xlim)
-            ix = x>=xlim(1) & x<=xlim(2);
-            ImCube = ImCube(:,:,ix);
-            x = x(ix);
-        end
-        if ~isempty(ylim)
-            iy = (y>=ylim(1) & y<=ylim(2));
-            ImCube = ImCube(:,iy,:);
-            y = y(iy);
-        end
-        
-        % unfold cube
-        nr = length(y); nc = length(x);
-        img = zeros(nr, Nf*nc);
-        for isl = 1:Nf,
-            img(:, (isl-1)*nc + (1:nc)) = squeeze(ImCube(isl,:,:));
-        end %
-        imageschcit(img)
-        hax = gca;
-        title(pwd2titlestr(pn),'fontsize',14)
-        
-    end % PlotSpread
 
 end % main
 
