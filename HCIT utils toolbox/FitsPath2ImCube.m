@@ -134,7 +134,9 @@ switch lower(scale),
         % do nothing
     case 'log'
         %ImCube = log10(ImCube);
-        ImCube = log(1000*ImCube+1)./log(1000); % from http://ds9.si.edu/doc/ref/how.html
+        % scale to 0..1
+        ImCube_sc = (ImCube - min(ImCube(:)))./range(ImCube(:));
+        ImCube = log(1000*ImCube_sc+1)./log(1000); % from http://ds9.si.edu/doc/ref/how.html
         
     otherwise,
         error(['unknown scale: ' scale]);
@@ -192,51 +194,6 @@ else
 
     varargout = {ImCube, sParms};
 end
-
-
-return % end of main
-
-%%%%%%%%%%%%%% nested plot functions
-    % nested function to create panoramic spread plot has all the options
-    % already in scope
-    function [hfig, hax] = PlotSpread
-        hfig = gcf;
-        
-        % x, y axes
-        if isscalar(plotx),
-            x = (plotx:(Nc-plotx-1))';
-        else
-            x = plotx;
-        end
-        if isscalar(ploty),
-            y = (ploty:(Nr-ploty-1))';
-        else
-            y = ploty;
-        end
-        
-        % apply xlim, ylim directly to ImCube
-        if ~isempty(xlim)
-            ix = x>=xlim(1) & x<=xlim(2);
-            ImCube = ImCube(:,:,ix);
-            x = x(ix);
-        end
-        if ~isempty(ylim)
-            iy = (y>=ylim(1) & y<=ylim(2));
-            ImCube = ImCube(:,iy,:);
-            y = y(iy);
-        end
-        
-        % unfold cube
-        nr = length(y); nc = length(x);
-        img = zeros(nr, Nf*nc);
-        for isl = 1:Nf,
-            img(:, (isl-1)*nc + (1:nc)) = squeeze(ImCube(isl,:,:));
-        end %
-        imageschcit(img)
-        hax = gca;
-        title(pwd2titlestr(pn),'fontsize',14)
-        
-    end % PlotSpread
 
 end % main
 
