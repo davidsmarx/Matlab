@@ -115,21 +115,23 @@ switch lower(scale),
     case 'linear',
         % do nothing
     case 'log'
-        ImCube = log10(ImCube);
+        %ImCube = log10(ImCube);
+        ImCube = log(1000*ImCube+1)./log(1000); % from http://ds9.si.edu/doc/ref/how.html
         
     otherwise,
         error(['unknown scale: ' scale]);
 end
 
+% title strings
+if ~isempty(hdrkwd)
+    fTitleStr = @(isl) [[comTitlestr '#' num2str(isl)] join(string(hdrkwd), ', ') sprintf(hdrkwdvalfmt, hdrkwdval(isl,:))];
+else
+    fTitleStr = @(isl) ['# ' num2str(isl)];
+    hdrkwdval = 1:Nf; % just to have labels for the image cube slices
+end
 
 switch lower(plottype),
     case 'cube',
-        if ~isempty(hdrkwd)
-            fTitleStr = @(isl) [[comTitlestr '#' num2str(isl)] join(string(hdrkwd), ', ') sprintf(hdrkwdvalfmt, hdrkwdval(isl,:))];
-        else
-            fTitleStr = @(isl) ['# ' num2str(isl)];
-            hdrkwdval = 1:Nf; % just to have labels for the image cube slices
-        end
         
         if isempty(hfig), hfig = figure; end
         [hfig, hax, sUserData] = ImageCube(ImCube, hdrkwdval, ...
@@ -138,7 +140,10 @@ switch lower(plottype),
         
     case 'spread'
         if isempty(hfig), hfig = figure; else, figure(hfig), end
-        [hfig, hax] = PlotSpread;
+        %[hfig, hax] = PlotSpread;
+        [hfig, hax, sUserData] = ImageCubeSpread(ImCube,  hdrkwdval, ...
+            'fTitleStr', fTitleStr, ...
+            'x', plotx, 'y', ploty, 'hfig', hfig);
 
     case 'none',
         % no dispaly, do nothing
