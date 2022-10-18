@@ -290,9 +290,13 @@ end % CreatePlots
 function fSaveas(hfig, save_pn, sDisplayFun, bn, iter)
 
     fn = fullfile(save_pn, sDisplayFun, [bn '_' num2str(iter) '.jpg']);
+    fnfig = fullfile(save_pn, sDisplayFun, [bn '_' num2str(iter) '.fig']);
+
     pn = fileparts(fn);
     if ~exist(pn, 'dir'), mkdir(pn); end
     saveas(hfig, fn);
+    saveas(hfig, fnfig);
+
 
 end
 

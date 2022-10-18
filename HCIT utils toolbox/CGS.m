@@ -724,7 +724,7 @@ classdef CGS < handle
             % titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             % xylim = CheckOption('xylim', [], varargin{:});
             % phresclim = CheckOption('phresclim', [], varargin{:});
-            % ylimZ = CheckOption('ylimZplot', [], varargin{:});
+            % ylimZ = CheckOption('ylimzplot', [], varargin{:});
             % CheckOption('zernikeunits', 'rad', varargin{:}); % 'nm'
             %
             % return:

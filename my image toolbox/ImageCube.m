@@ -29,6 +29,11 @@ if ischar(imgCube)
     imgCube = shiftdim(fitsread(imgCube),2);
 end
 
+if ismatrix(imgCube)
+    atmp(1,:,:) = imgCube;    
+    imgCube = atmp;
+end
+
 [Nsl, nr, nc] = size(imgCube);
 if nargin == 1,
     listI = 1:Nsl;
