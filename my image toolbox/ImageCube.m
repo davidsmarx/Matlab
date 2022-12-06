@@ -15,7 +15,8 @@ function [hfig_out, hax_out, sUserData_out] = ImageCube(imgCube, listI, varargin
 % fImageDisplay = CheckOption('fImageDisplay', @imageschcit, varargin{:});
 % xplot = CheckOption('x', [], varargin{:});
 % yplot = CheckOption('y', [], varargin{:});
-% xylim = CheckOption('xylim', [], varargin{:});
+% xlim = CheckOption('xlim', [], varargin{:});
+% ylim = CheckOption('ylim', [], varargin{:});
 % clim = CheckOption('clim', [], varargin{:});
 % cmap = CheckOption('colormap', 'gray', varargin{:});
 % fTitleStr = CheckOption('fTitleStr', @(isl) ['slice #' num2str(isl) '; Label ' num2str(listI(isl))], varargin{:});
@@ -48,7 +49,8 @@ hax = CheckOption('hax', [], varargin{:});
 fImageDisplay = CheckOption('fImageDisplay', @imageschcit, varargin{:});
 xplot = CheckOption('x', [], varargin{:});
 yplot = CheckOption('y', [], varargin{:});
-xylim = CheckOption('xylim', [], varargin{:});
+xlim = CheckOption('xlim', [], varargin{:});
+ylim = CheckOption('ylim', [], varargin{:});
 clim = CheckOption('clim', [], varargin{:});
 cmap = CheckOption('colormap', 'gray', varargin{:});
 fTitleStr = CheckOption('fTitleStr', @(isl) ['slice #' num2str(isl) '; Label ' num2str(listI(isl))], varargin{:});
@@ -66,7 +68,8 @@ if ~isempty(hax), axes(hax); end
 himage = fImageDisplay(xplot, yplot, squeeze(imgCube(islinit,:,:)));
 if isempty(hax), hax = gca; end
 if ~isempty(clim), set(gca,'clim',clim), end
-if ~isempty(xylim), set(gca,'xlim', xylim, 'ylim', xylim), end
+if ~isempty(xlim), set(gca,'xlim', xlim), end
+if ~isempty(ylim), set(gca,'ylim', ylim), end
 colormap(cmap);
 htitle = title(fTitleStr(islinit));
 
