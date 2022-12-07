@@ -258,7 +258,8 @@ classdef CGS < handle
             try
                 %ampinfo = fitsinfo(PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits']));
                 ampinfo = fitsinfo(PathTranslator([bn 'amp.fits']));
-            catch
+            catch ME
+                %disp(ME.message);
                 fprintf('failed to open fits file: \n%s\n',PathTranslator([bn 'amp.fits']));
             end
             
@@ -713,8 +714,8 @@ classdef CGS < handle
             
         end % RemovePTTfft
         
-        function [ZZout, rz, pharesidual] = ZernikeFit(S, nz, varargin)
-            % [ZZ, rz, pharesidual] = ZernikeFit(S, nz, varargin)
+        function [ZZout, rz, pharesidual, sFitParms] = ZernikeFit(S, nz, varargin)
+            % [ZZ, rz, pharesidual, sFitParms] = ZernikeFit(S, nz, varargin)
             %
             % zernike fit using bMask pixels
             % nz = array of zernike modes to fit
@@ -756,10 +757,10 @@ classdef CGS < handle
             %             phwfit(S.bMask) = zernikeval(ZZ, S.X(S.bMask), S.Y(S.bMask), rz, 'noll', 'nz', nzfit);
             %             pharesidual = nan(size(S.X));
             %             pharesidual(S.bMask) = mod2pi(S.(phasefieldname)(S.bMask) - phwfit(S.bMask));
-            [ZZ, phaimg_1_3, pharesidual, sOptions] = ZernikeAnalysis(S.(phasefieldname),...
+            [ZZ, phaimg_1_3, pharesidual, sFitParms] = ZernikeAnalysis(S.(phasefieldname),...
                 'isphase', true, 'bMask', S.bMask, 'Rnorm', rz, 'modes', nzfit, 'polyorder', 'Noll',...
                 'do_phaseunwrap', false);
-            phwfit = S.bMask.*sOptions.phafit_ptt;
+            phwfit = S.bMask.*sFitParms.phafit_ptt;
             
             % return zernike coeffs in requested units
             switch zzunits
