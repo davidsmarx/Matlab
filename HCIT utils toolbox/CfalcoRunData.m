@@ -337,12 +337,29 @@ classdef CfalcoRunData < CRunData
             % 
             flnm = PathTranslator([S.Reduced_pn '/' whichdm '_Vbias.fits']);
             if exist(flnm,'file')
-                DMdata.dmVbias = fitsread(flnm);
-                flnm = PathTranslator([S.Reduced_pn '/' whichdm '_V_it',num2str(S.iter),'.fits']);
-                dmV = fitsread(flnm);
-                dmV_total = DMdata.dmVbias + dmV;
+                dmVbias = fitsread(flnm);
             else
-                dmV_total = zeros(48);
+                dmVbias = zeros(48);
+            end
+            
+            % if this dm was used for probes, get dmv cube from probe
+            if num2str(S.mp.est.probe.whichDM) == whichdm(end)
+                
+                % ev
+                fn = [S.Reduced_pn '/probing_data_' num2str(S.iter) '.mat'];
+                load(PathTranslator(fn), 'ev');
+                dmV_total = dmVbias + ev.(whichdm).Vall;
+                
+            else
+                
+                flnm = PathTranslator([S.Reduced_pn '/' whichdm '_V_it',num2str(S.iter),'.fits']);
+                if exist(flnm, 'file')
+                    dmV = fitsread(flnm);
+                else
+                    dmV = zeros(48);
+                end
+                dmV_total = dmVbias + dmV;
+
             end
 
             % rotating, etc. should be only for display

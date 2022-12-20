@@ -81,6 +81,12 @@ if isnumeric(listItnum),
         % config every iteration
         mp = S(ii).mp;
         
+        % check if this is the last iteration
+        % out.Itr from "_snippet.mat" is last iteration
+        if listItnum(ii) >= S(ii).falcoData.Itr, 
+            break;
+        end
+        
     end
 elseif isa(listItnum, 'CfalcoRunData')
     S = listItnum;
