@@ -8,6 +8,8 @@ function val = CheckOption(varstring, defaultval, varargin)
 % the value of the following entry in varargin is returned
 % else the defaultval is returned
 %
+% if varstring is found multiple times, the first value is returned
+%
 % example:
 % RminSc = CheckOption('RminSc', S.RminSc, varargin{:});
 val = defaultval;

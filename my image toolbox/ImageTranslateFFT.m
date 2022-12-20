@@ -1,5 +1,5 @@
 function Im_sh = ImageTranslateFFT(Im, dx, dy)
-% Im_sh = ImageShiftFFT(Im, dx, dy)
+% Im_sh = ImageTranslateFFT(Im, dx, dy)
 %
 % dx, dy are pixels
 
