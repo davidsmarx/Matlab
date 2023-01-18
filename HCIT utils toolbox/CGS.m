@@ -435,8 +435,8 @@ classdef CGS < handle
             % pMask = CheckOption('pMask', S.bMask, varargin{:});
             % xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             % climph = CheckOption('climph', [], varargin{:});
-            % phplot = CheckOption('phplot', 'angleE', varargin{:}); %
-            %     other choices = 'phw_ptt', 'ph', 'phw', 'phunwrap'
+            % phplot = CheckOption('phplot', 'phw_ptt', varargin{:}); %
+            %     other choices = 'phw_ptt', 'ph', 'phw', 'phunwrap', 'angleE'
             % ampplot = CheckOption('ampplot', 'absE', varargin{:});
             %     other choices 'amp'
             % stitle = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
@@ -445,7 +445,7 @@ classdef CGS < handle
             pMask = CheckOption('pMask', S.bMask, varargin{:});
             xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             climph = CheckOption('climph', [], varargin{:});
-            phplot = CheckOption('phplot', 'angleE', varargin{:}); % or S.(phplot)
+            phplot = CheckOption('phplot', 'phw_ptt', varargin{:}); % or S.(phplot), e.g. 'angleE'
             ampplot = CheckOption('ampplot', 'absE', varargin{:});
             stitle = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             bRemoveTipTilt = CheckOption('removetiptilt', true, varargin{:});
@@ -512,7 +512,7 @@ classdef CGS < handle
             %    ('pMask', S.bMask, varargin{:}); % bMask only for phase display
             %    ('removeDefocus', false, varargin{:});
             %    ('doRegister', false, varargin{:}); % (false), true
-            %    ('phplot', 'angleE', (default) 'phw_ptt', 'phunwrap', S.(phplot)
+            %    ('phplot', 'phw_ptt', (default) 'phw_ptt', 'phunwrap', 'angleE' S.(phplot)
             %    ('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             %    ('dphclim', [], varargin{:});
             %    ('climph', [], varargin{:});
@@ -534,7 +534,7 @@ classdef CGS < handle
             pMask = CheckOption('pMask', S.bMask, varargin{:}); % bMask only for phase display
             removeDefocus = CheckOption('removeDefocus', false, varargin{:});
             doRegister = CheckOption('doRegister', false, varargin{:});
-            phplot = CheckOption('phplot', 'angleE', varargin{:}); % S.(phplot)
+            phplot = CheckOption('phplot', 'phw_ptt', varargin{:}); % S.(phplot)
             xylim = CheckOption('xylim', [], varargin{:});
             climdph = CheckOption('dphclim', [], varargin{:});
             climph = CheckOption('climph', [], varargin{:});

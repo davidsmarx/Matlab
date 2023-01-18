@@ -1,6 +1,9 @@
 function [r, Ar] = RadialMean(x,y,A,varargin)
 % [r, Ar] = RadialMean(x, y, A, varargin)
 % 
+% x,  y are vectors defining a 2-d regular grid
+% A is size length(y) x length(x)
+% 
 % options:
 %    CheckOption('Nr', 128
 %    CheckOption('bMask', true(size(A))
