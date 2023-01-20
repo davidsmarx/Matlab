@@ -1,5 +1,7 @@
 function opval = z_getoperand(zchan,row,column)
 % opval = z_getoperand(zchan,row,column)
+% 
+%   gets the operand from the Merit Function Editor
 
 if nargin == 0,
     disp(['usage: opval = z_getoperand(zchan,row,column)']);
