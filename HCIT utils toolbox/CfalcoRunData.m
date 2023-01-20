@@ -226,29 +226,33 @@ classdef CfalcoRunData < CRunData
             %             XminSc = CheckOption('XminSc', S.XminSc, varargin{:});
             %             XmaxSc = CheckOption('XmaxSc', S.XmaxSc, varargin{:});
 
+            ev = CheckOption('ev', [], varargin{:});
+            
             % ev
-            fn = [S.Reduced_pn '/probing_data_' num2str(S.iter) '.mat'];
-            if exist(PathTranslator(fn),'file')
-                load(PathTranslator(fn), 'ev');
-                %       imageArray: [134×134×7 double]
-                %               dm1: [1×1 struct]
-                %              Eest: [9428×1 double]
-                %          IincoEst: [9428×1 double]
-                %       IprobedMean: 4.6198e-05
-                %                Im: [134×134 double]
-                %             score: [1×1 struct]
-                %              corr: [1×1 struct]
-                %     InormProbeMax: 1.0000e-04
-                %             iStar: 1
-                %         ampSqMean: 4.2476e-06
-                %           ampNorm: [9428×3 double]
-                %        InormProbe: 5.0000e-05
-                %          maskBool: [120×120 logical]
-                %         amp_model: [7240×3 double]
-
-            else
-                warning(['cannot find probe data, iter#' num2str(S.iter)]);
-                return
+            if isempty(ev)
+                fn = [S.Reduced_pn '/probing_data_' num2str(S.iter) '.mat'];
+                if exist(PathTranslator(fn),'file')
+                    load(PathTranslator(fn), 'ev');
+                    %       imageArray: [134×134×7 double]
+                    %               dm1: [1×1 struct]
+                    %              Eest: [9428×1 double]
+                    %          IincoEst: [9428×1 double]
+                    %       IprobedMean: 4.6198e-05
+                    %                Im: [134×134 double]
+                    %             score: [1×1 struct]
+                    %              corr: [1×1 struct]
+                    %     InormProbeMax: 1.0000e-04
+                    %             iStar: 1
+                    %         ampSqMean: 4.2476e-06
+                    %           ampNorm: [9428×3 double]
+                    %        InormProbe: 5.0000e-05
+                    %          maskBool: [120×120 logical]
+                    %         amp_model: [7240×3 double]
+                    
+                else
+                    warning(['cannot find probe data, iter#' num2str(S.iter)]);
+                    return
+                end
             end
             % put into CRunData object
             
@@ -294,8 +298,10 @@ classdef CfalcoRunData < CRunData
             S.E_t(1,:,:) = zeros(size(S.bMask));
             S.E_t(1,S.bMask) = ev.Eest;
             
-            S.E_m(1,:,:) = zeros(size(S.bMask));
-            S.E_m(1,S.bMask) = ev.Esim;
+            if isfield(ev, 'Esim')
+                S.E_m(1,:,:) = zeros(size(S.bMask));
+                S.E_m(1,S.bMask) = ev.Esim;
+            end
             
         end % loadProbeData
         

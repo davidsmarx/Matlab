@@ -30,12 +30,11 @@ if ischar(imgCube)
     imgCube = shiftdim(fitsread(imgCube),2);
 end
 
-if ismatrix(imgCube)
-    atmp(1,:,:) = imgCube;    
-    imgCube = atmp;
-end
+imcube_size = size(imgCube); % allow for rgb
+Nsl = imcube_size(1);
+nr = imcube_size(2);
+nc = imcube_size(3);
 
-[Nsl, nr, nc] = size(imgCube);
 if nargin == 1,
     listI = 1:Nsl;
 end
@@ -107,88 +106,120 @@ if ~isempty(S.multi_key_seq),
 end
 
 %disp(event.Key)
-switch event.Key
-    case 'f'
-        %disp('forward');
-        %S.isl = min(S.Nsl, S.isl + 1);
-        S.isl = mod(S.isl, S.Nsl) + 1;
-        
-    case 'b'
-        %disp('backward');
-        %S.isl = max(1, S.isl - 1);
-        S.isl = S.isl - 1;
-        if S.isl == 0, S.isl = S.Nsl; end
-        
-    case '1'
-        if isempty(S.multi_key_seq),
-            % go to first slice
-            S.isl = 1;
-        end
-        
-    case 'e'
-        % go to last slice
-        S.isl = S.Nsl;
-        
-    case 'g'
-        % goto frame number
-        % command is g number g
-        % start or end multi-key sequence
-        if isempty(S.multi_key_seq),
-            % start new multi-key sequence
-            S.multi_key_seq = 'g';
-        else
-            % check that multi key sequence starts with 'g'
-            if S.multi_key_seq(1) == 'g',
-                % assumes all keys in the middle are numbers
-                isl = str2double(S.multi_key_seq(2:end-1));
-                if ~isnan(isl),
-                    S.isl = isl;
-                end
+% check for 'shift', 'control', etc
+if any(strcmp(event.Modifier,'shift'))
+    switch event.Key
+        case 'g'
+            % export to GIF, requires ver 2022a ?
+            [fn, pn] = uiputfile({'*.gif'});
+            if isequal(fn, 0)
+                % user pressed Cancel
+                return
             end
-            % reset
-            S.multi_key_seq = '';
             
-        end
-        
-    case 'm'
-        % save as movie?
-        [fn, pn] = uiputfile({'*.avi'});
-        a = inputdlg('enter frames per sec');
-        fps = str2double(a{1});
-        if ~isequal(fn,0),
-            v = VideoWriter([pn fn]);
-            v.FrameRate = fps; % frames/sec
-            open(v);            
-        end
-        
-        % make a movie
-        loops = S.Nsl;
-        F(loops) = struct('cdata',[],'colormap',[]);
-        for isl = 1:loops,
-            Img = squeeze(S.imgCube(isl,:,:));
-            S.himage.CData = Img;
-            S.htitle.String = S.fTitleStr(isl);
-            drawnow;
-            F(isl) = getframe(S.hfig);
+            % loop through frames
+            loops = S.Nsl;
+            for isl = 1:loops,
+                Img = squeeze(S.imgCube(isl,:,:));
+                S.himage.CData = Img;
+                S.htitle.String = S.fTitleStr(isl);
+                drawnow;
+                exportgraphics(gcf, fullfile(pn, fn), 'Append', true);
+            end
+        otherwise
+            
+    end % switch 'shift' event.Key
+    
+%elseif isequal(event.Modifier,'control')
+    
+    
+else
+    switch event.Key
+        case 'f'
+            %disp('forward');
+            %S.isl = min(S.Nsl, S.isl + 1);
+            S.isl = mod(S.isl, S.Nsl) + 1;
+            
+        case 'b'
+            %disp('backward');
+            %S.isl = max(1, S.isl - 1);
+            S.isl = S.isl - 1;
+            if S.isl == 0, S.isl = S.Nsl; end
+            
+        case '1'
+            if isempty(S.multi_key_seq),
+                % go to first slice
+                S.isl = 1;
+            end
+            
+        case 'e'
+            % go to last slice
+            S.isl = S.Nsl;
+            
+        case 'g'
+            % goto frame number
+            % command is g number g
+            % start or end multi-key sequence
+            if isempty(S.multi_key_seq),
+                % start new multi-key sequence
+                S.multi_key_seq = 'g';
+            else
+                % check that multi key sequence starts with 'g'
+                if S.multi_key_seq(1) == 'g',
+                    % assumes all keys in the middle are numbers
+                    isl = str2double(S.multi_key_seq(2:end-1));
+                    if ~isnan(isl),
+                        S.isl = isl;
+                    end
+                end
+                % reset
+                S.multi_key_seq = '';
+                
+            end
+            
+        case 'm'
+            % save as movie?
+            [fn, pn] = uiputfile({'*.avi'});
+            if isequal(fn, 0)
+                % user pressed Cancel
+                return
+            end
+            a = inputdlg('enter frames per sec');
+            fps = str2double(a{1});
+            if ~isequal(fn,0),
+                v = VideoWriter([pn fn]);
+                v.FrameRate = fps; % frames/sec
+                open(v);
+            end
+            
+            % make a movie
+            loops = S.Nsl;
+            F(loops) = struct('cdata',[],'colormap',[]);
+            for isl = 1:loops,
+                Img = squeeze(S.imgCube(isl,:,:));
+                S.himage.CData = Img;
+                S.htitle.String = S.fTitleStr(isl);
+                drawnow;
+                F(isl) = getframe(S.hfig);
+                
+                if ~isequal(fn,0),
+                    writeVideo(v, F(isl));
+                end
+                
+            end
             
             if ~isequal(fn,0),
-                writeVideo(v, F(isl));
+                close(v);
             end
             
-        end
-   
-        if ~isequal(fn,0),
-            close(v);
-        end
-        
-        % playback and save as movie
-        hfigm = figure; movie(hfigm, F, 2);
-        
-        
-        
-    otherwise
-        
-end
+            % playback and save as movie
+            hfigm = figure; movie(hfigm, F, 2);
+                        
+        otherwise
+            
+    end % switch event.Key
+    
+end % if 'shift', etc
 
 if S.isl >=1 && S.isl <= S.Nsl,
     Img = squeeze(S.imgCube(S.isl,:,:));
