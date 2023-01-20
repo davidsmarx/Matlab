@@ -23,6 +23,7 @@ classdef CfalcoRunData < CRunData
             
             % options
             mp = CheckOption('mp', [], varargin{:});
+            run_pn = CheckOption('run_pn', 'falco_testbed_run', varargin{:});
             
             %
             S.runnum = seriesNum;
@@ -31,7 +32,7 @@ classdef CfalcoRunData < CRunData
             
             % paths to data
             S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
-            S.Rundir_pn = ['/home/hcit/OMC/OMC_MSWC/falco_testbed_run' num2str(seriesNum) '/data/' S.runLabel]; % for snippet file
+            S.Rundir_pn = ['/home/hcit/OMC/OMC_MSWC/' run_pn num2str(seriesNum) '/data/' S.runLabel]; % for snippet file
             S.Reduced_pn = [S.Rundir_pn '/' S.runLabel];
             
             % if given mp, perhaps read in another iteration of this trial
@@ -64,10 +65,18 @@ classdef CfalcoRunData < CRunData
             finfo = fitsinfo(PathTranslator([S.Reduced_pn '/normI_it' num2str(S.iter) '.fits']));
             S.ReducedKeys = finfo.PrimaryData.Keywords;
             iwv = 1;
-            S.NKTlower(iwv) = FitsGetKeywordVal(S.ReducedKeys,'NKTLOWER')*S.NM;
-            S.NKTupper(iwv) = FitsGetKeywordVal(S.ReducedKeys,'NKTUPPER')*S.NM;
-            S.NKTcenter(iwv) = mean([S.NKTlower(iwv) S.NKTupper(iwv)]);
-            S.lambda = S.NKTcenter;
+            
+            try
+                S.NKTlower(iwv) = FitsGetKeywordVal(S.ReducedKeys,'NKTLOWER')*S.NM;
+                S.NKTupper(iwv) = FitsGetKeywordVal(S.ReducedKeys,'NKTUPPER')*S.NM;
+                S.NKTcenter(iwv) = mean([S.NKTlower(iwv) S.NKTupper(iwv)]);
+                S.lambda = S.NKTcenter;
+            catch
+                S.NKTlower(iwv) = 0;
+                S.NKTupper(iwv) = 0;
+                S.NKTcenter(iwv) = 0;
+                S.lambda = 0;
+            end
 
         end % init
         
@@ -325,25 +334,59 @@ classdef CfalcoRunData < CRunData
             % ReadDMvCube(S, whichdm)
             % whichdm = 'dm1', or 'dm2'
                         
-            %             %
-            %             flnm = PathTranslator([S.Reduced_pn '/' whichdm '_model_it',num2str(S.iter),'.fits']);
-            %             if exist(flnm, 'file')
-            %                 dmSurf = fitsread(flnm);
-            %             else
-            %                 S.DMvCube{end+1} = zeros(48);
-            %             end
-            
+            % 
             flnm = PathTranslator([S.Reduced_pn '/' whichdm '_Vbias.fits']);
             if exist(flnm,'file')
-                DMdata.dmVbias = fitsread(flnm);
-                flnm = PathTranslator([S.Reduced_pn '/' whichdm '_V_it',num2str(S.iter),'.fits']);
-                dmV = fitsread(flnm);
-                S.DMvCube{end+1} = DMdata.dmVbias + dmV;
+                dmVbias = fitsread(flnm);
             else
-                S.DMvCube{end+1} = zeros(48);
+                dmVbias = zeros(48);
             end
             
+            % if this dm was used for probes, get dmv cube from probe
+            if num2str(S.mp.est.probe.whichDM) == whichdm(end)
+                
+                % ev
+                fn = [S.Reduced_pn '/probing_data_' num2str(S.iter) '.mat'];
+                load(PathTranslator(fn), 'ev');
+                dmV_total = dmVbias + ev.(whichdm).Vall;
+                
+            else
+                
+                flnm = PathTranslator([S.Reduced_pn '/' whichdm '_V_it',num2str(S.iter),'.fits']);
+                if exist(flnm, 'file')
+                    dmV = fitsread(flnm);
+                else
+                    dmV = zeros(48);
+                end
+                dmV_total = dmVbias + dmV;
+
+            end
+
+            % rotating, etc. should be only for display
+            %             % rotate, flip according to dm registration
+            %             % not sure of all the possible values of orientation
+            %             switch S.mp.(whichdm).orientation
+            %                 case 'flipxrot180'
+            %                     dmV_total = flipud(dmV_total);
+            %
+            %                 otherwise
+            %                     error(['unknown DM orientation: ' S.mp.(whichdm).orientation]);
+            %             end
+                
+            % add to DMvCube
+            S.DMvCube{end+1} = dmV_total;
+            
         end % ReadDMvCube
+        
+        function [hfig, hax, sMetrics] = DisplayDMv(S, dmvref, varargin)
+            cOrientation = cell([1 S.Ndm]);
+            for idm = 1:S.Ndm
+                whichdm = ['dm' num2str(S.mp.dm_ind(idm))];
+                cOrientation{idm} = S.mp.(whichdm).orientation;
+            end
+            [hfig, hax, sMetrics] = DisplayDMv@CRunData(S, dmvref, varargin{:}, ...
+                'applyorientation', cOrientation);
+        end
         
     end % methods
     

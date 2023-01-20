@@ -7,7 +7,13 @@ function hout = imageschcit(varargin)
 % Im can be an array or a fits filename
 % x, y can be vectors size(Im), or offset scalars
 %
-% not for rgb images (:,:,3), need to add this capability
+% rgb images are size (:,:,3)
+% 
+% hout return value is handle to image object
+%
+% other options:
+%    'hax', hax % axes handle to put image (default = new axes)
+%    'scale', 'linear' or 'log', % default = 'linear'
 
 cProperties = {};
 hax = [];
@@ -27,12 +33,12 @@ elseif nargin == 3,
 elseif nargin > 3,
     [x, y, Im] = deal(varargin{1:3});
     cProperties = {varargin{4:end}};
+
     % if hax option is specified, get it and remove from the list
-    iv = find(strcmp(cProperties, 'hax'));
-    if ~isempty(iv),
-        hax = cProperties{iv+1};
-        cProperties(iv:(iv+1)) = [];
-    end
+    [hax, cProperties] = CheckOptionPop('hax', [], cProperties{:});
+    
+    % option 'scale'
+    [scale, cProperties] = CheckOptionPop('scale', 'linear', cProperties{:});
 
 else,
     error('usage: hh = imageschcit(x, y, Im);');

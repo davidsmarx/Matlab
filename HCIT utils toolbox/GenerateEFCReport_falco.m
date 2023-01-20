@@ -36,6 +36,7 @@ more off
 ppt_fn = CheckOption('pptfn', '', varargin{:});
 Sppt = CheckOption('Sppt', [], varargin{:});
 max_empties = CheckOption('max_empties', 3, varargin{:});
+run_pn = CheckOption('run_pn', 'falco_testbed_run', varargin{:});
 
 % % check if PowerPoint Presentation already exists and still there
 % try
@@ -62,10 +63,7 @@ if isnumeric(listItnum),
     %while true,
     for ii = 1:N;
         fprintf('reading itnum %d\n', listItnum(ii));
-
-        % loads mp from config on the first call, then copies mp to each
-        % iteration S(ii).mp
-        S(ii) = CfalcoRunData(runnum, TrialNum, listItnum(ii), 'mp', mp);
+        S(ii) = CfalcoRunData(runnum, TrialNum, listItnum(ii), 'mp', mp, 'run_pn', run_pn);
 
         if isempty(S(ii).ImCube)
             cnt_empty = cnt_empty + 1;
@@ -83,6 +81,12 @@ if isnumeric(listItnum),
         % config every iteration
         mp = S(ii).mp;
         
+        % check if this is the last iteration
+        % out.Itr from "_snippet.mat" is last iteration
+        if listItnum(ii) >= S(ii).falcoData.Itr, 
+            break;
+        end
+        
     end
 elseif isa(listItnum, 'CfalcoRunData')
     S = listItnum;
@@ -91,7 +95,8 @@ else
 end
 
 %
-saveas_pn = ['./falco_testbed_run' num2str(S(1).runnum) '/data/' S(1).runLabel '/figures'];
+%saveas_pn = ['./falco_testbed_run' num2str(S(1).runnum) '/data/' S(1).runLabel '/figures'];
+saveas_pn = ['./' run_pn num2str(S(1).runnum) '/data/' S(1).runLabel '/figures'];
 
 % plot graphs of metrics v itnum on the first slide
 if ~isempty(Sppt), slide = Sppt.NewSlide(1); end
@@ -174,6 +179,13 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
     
     N = length(S);
 
+    % if only 1 iteration, can't do displays that use differences
+    if N <= 1 && any(strcmp(sDisplayFun, [listDiff(:); {'DisplayCEfields'}]))
+        % just return
+        hfig = []; hax = []; sCmetrics = struct;
+        return
+    end
+    
     hfig = [];
     switch sDisplayFun,
         case listDiff
@@ -256,6 +268,7 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
             else
                 fSaveas(hfig_ce, save_pn, 'summary', ['CE_it' num2str(S(1).iter) '_it' num2str(S(end).iter)], []);
             end
+            
         otherwise, % one call per iteration
             sCmetrics = struct;
             for ii = 1:N,
@@ -275,16 +288,21 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                     fSaveas(hfig, save_pn, sDisplayFun, 'it', S(ii).iter);
                 end
             end
-    end
+            
+    end % switch
 
 end % CreatePlots
 
 function fSaveas(hfig, save_pn, sDisplayFun, bn, iter)
 
     fn = fullfile(save_pn, sDisplayFun, [bn '_' num2str(iter) '.jpg']);
+    fnfig = fullfile(save_pn, sDisplayFun, [bn '_' num2str(iter) '.fig']);
+
     pn = fileparts(fn);
     if ~exist(pn, 'dir'), mkdir(pn); end
     saveas(hfig, fn);
+    saveas(hfig, fnfig);
+
 
 end
 
@@ -339,7 +357,11 @@ function [hfig, hax, itnum, texp] = PlotTexp(S, varargin)
     for ii = 1:length(S)
         itnum(ii) = S(ii).iter;
         if ~isempty(S(ii).ReducedKeys)
-            texp(ii) = FitsGetKeywordVal(S(ii).ReducedKeys, 'texp1');
+            try
+                texp(ii) = FitsGetKeywordVal(S(ii).ReducedKeys, 'texp1');
+            catch
+                texp(ii) = 0;
+            end
         else
             % empty instance
             texp(ii) = NaN;
