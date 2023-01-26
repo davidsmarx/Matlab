@@ -15,6 +15,7 @@ classdef CGS < handle
     %                     case 'mcb_alllens'
     %                     case 'mcb_twolens'
     %                     case 'piaacmc'
+    %                     case 'omc_mswc'
     %
     % read reduced results from gs phase retrieval
     %
@@ -104,155 +105,161 @@ classdef CGS < handle
             
             if ~exist('bn','var') || isempty(bn),
                 %bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
-                bn = '/proj/dst/data/dB_PR/gsdst_';
-            else
-                switch lower(bn),
-                    case 'dst'
-                        bn = ['/proj/dst/data/hcim/dB_PR/gsdst_' num2str(gsnum,'%d')];
-                        if gsnum <= 284,
-                            year = '2019';
-                            uname = 'bseo';
-                        elseif gsnum <= 334,
-                            year = '2019';
-                            uname = 'bseo';
-                        else
-                            year = '2019';
-                            uname = 'dmarx';
-                        end
-                        
-                        S.listPupImDir = dir(PathTranslator(...
-                            ['/proj/piaa-data/Data/' year '-*-*/' uname '/gsdst_p_' num2str(gsnum,'%04d') '/*.fits'] ...
-                            ));
-                        S.listSrcImDir = dir(PathTranslator(...
-                            ['/proj/piaa-data/Data/' year '-*-*/' uname '/gsdst_s_' num2str(gsnum,'%04d') '/*.fits'] ...
-                            ));
-                       
-                    case 'spc_disc'
-                        bn = ['/home/dmarx/HCIT/SPC_disc/gsspc_20171204/reduced/gsspc_' num2str(gsnum)];
-                        
-                    case 'mcb_spc'
-                        bn = ['/home/dmarx/HCIT/MCB_SPC/phaseretrieval/reduced/gsomc_no' num2str(gsnum,'%04d')];
-
-                        % get dir listing of raw camera images
-                        S.listPupImDir = dir(PathTranslator(...
-                            ['/proj/piaa-data/Data/2019-*-*/dmarx/gsomc_p_' num2str(gsnum) '/*.fits']...
-                            ));
-                        S.listSrcImDir = dir(PathTranslator(...
-                            ['/proj/piaa-data/Data/2019-*-*/dmarx/gsomc_s_' num2str(gsnum) '/*.fits']...
-                            ));
-                    case 'mcb_hlc'
-                        bn = ['/proj/mcb/data/dB_PR_Kern/gsomc_no' num2str(gsnum,'%05d')];
-
-                        % get dir listing of raw camera images
-                        if gsnum >= 843,
-                            year = '2019';
-                            gsbn = 'gsttb';
-                        elseif gsnum >= 806,
-                            year = '2018';
-                            gsbn = 'gsomc';
-                        else
-                            error('which year is this?');
-                        end
-                        S.listPupImDir = dir(PathTranslator(...
-                            ['/proj/piaa-data/Data/' year '-*-*/bseo/' gsbn '_p_' num2str(gsnum,'%05d') '/*.fits']...
-                            ));
-                        S.listSrcImDir = dir(PathTranslator(...
-                            ['/proj/piaa-data/Data/' year '-*-*/bseo/' gsbn '_s_' num2str(gsnum,'%05d') '/*.fits']...
-                            ));
-
-                        % for EMCCD, starting, 2020-11-04, gsnum 1369
-                        wavelength_kwd = 'lam';
-                        
-                        % 
-                        S.zunits = U.MM;
-
-                    case 'mcb_alllens'
-                        % optional trial name because we might be testing different ways
-                        % to process one gsnum
-                        trialname = '';
-                        if ~isempty(varargin),  trialname = [varargin{1} '_']; end
-                        bn = ['/home/dmarx/WFIRST/PR_lead/all_lens_PR/all_lens_20201203/reduced/prout_' trialname num2str(gsnum)];
-                                                
-                        S.listPupImDir = dir(PathTranslator(...
-                            ['/proj/mcb/data/excam/2021-*-*/gsomc_p_' num2str(gsnum,'%d') '/*.fits']...
-                            ));
-                        S.listSrcImDir = dir(PathTranslator(...
-                            ['/proj/mcb/data/excam/2021-*-*/gsomc_s_' num2str(gsnum,'%d') '/*.fits']...
-                            ));
-
-                        wavelength_kwd = 'lam';
-                        
-                    case 'mcb_twolens'
-                        % optional trial name because we might be testing different ways
-                        % to process one gsnum
-                        trialname = '';
-                        %if ~isempty(varargin),  trialname = [varargin{1} '_']; end
-                        if ~isempty(varargin),  trialname = [varargin{1}]; end
-                        bn = ['/home/dmarx/WFIRST/PR_lead/all_lens_PR/two_lens_20201109/reduced/prout_' trialname num2str(gsnum)];
-                                                
-                        S.listPupImDir = dir(PathTranslator(...
-                            ['/proj/mcb/data/excam/2021-*-*/gsomc_p_' num2str(gsnum,'%d') '/*.fits']...
-                            ));
-                        S.listSrcImDir = dir(PathTranslator(...
-                            ['/proj/mcb/data/excam/2021-*-*/gsomc_s_' num2str(gsnum,'%d') '/*.fits']...
-                            ));
-
-                        wavelength_kwd = 'lam';
-
-                    case 'ttb_hlc'
-                        bn = ['/proj/mcb/data/dB_PR_Kern/gsomc_no' num2str(gsnum,'%05d')];
-                        % get dir listing of raw camera images
-                        if gsnum >= 843,
-                            year = '2019';
-                        else
-                            error('which year is this?');
-                        end
-                        S.listPupImDir = dir(PathTranslator(...
-                            ['/proj/piaa-data/Data/' year '-*-*/bseo/gsttb_p_' num2str(gsnum,'%05d') '/*.fits']...
-                            ));
-                        S.listSrcImDir = dir(PathTranslator(...
-                            ['/proj/piaa-data/Data/' year '-*-*/bseo/gsttb_s_' num2str(gsnum,'%05d') '/*.fits']...
-                            ));
-
-                    case 'piaacmc'
-                        % optional trial name because we might be testing different ways
-                        % to process one gsnum
-                        trialname = '';
-                        if ~isempty(varargin),  trialname = [varargin{1} '_']; end
-
-                        bn = ['/proj/piaacmc/phaseretrieval/reduced/piaa_' trialname num2str(gsnum,'%03d')];
-                        
-                        % get dir listing of raw camera images                        
-                        S.listPupImDir = dir(PathTranslator(...
-                            ['/proj/piaacmc/scicam/*/gspiaa_p_' num2str(gsnum,'%04d') '/piaa*.fits']...
-                            ));
-                        S.listSrcImDir = dir(PathTranslator(...
-                            ['/proj/piaacmc/scicam/*/gspiaa_s_' num2str(gsnum,'%04d') '/piaa*.fits']...
-                            ));
-                        
-                        wavelength_kwd = 'lam';
-
-                    case 'omc_mswc'
-                        trialname = CheckOption('trialname', '', varargin{:});
-                        
-                        bn = ['/home/hcit/OMC/phaseretrieval/reduced/prout_' trialname num2str(gsnum,'%03d')];
-                        
-                        % get dir listing of raw camera images                        
-                        S.listPupImDir = dir(PathTranslator(...
-                            ['/proj/mcb/data/excam/*/pr_gs_' num2str(gsnum,'%04d') '/emccd.*.fits']...
-                            ));
-                        S.listSrcImDir = dir(PathTranslator(...
-                            ['/proj/mcb/data/excam/*/pr_par_' num2str(gsnum,'%04d') '/emccd.*.fits']...
-                            ));
-                        
-                        wavelength_kwd = 'lam';
-
-                    otherwise
-                        % do nothing, let bn = bn
-                        bn = [bn num2str(gsnum,'%d')];
-                        %disp(bn);
-                end % switch bn
-            end % if ~exist('bn','var') || isempty(bn),
+                %bn = '/proj/dst/data/dB_PR/gsdst_';
+                bn = 'omc_mswc';
+            end
+            
+            switch lower(bn),
+                case 'dst'
+                    bn = ['/proj/dst/data/hcim/dB_PR/gsdst_' num2str(gsnum,'%d')];
+                    if gsnum <= 284,
+                        year = '2019';
+                        uname = 'bseo';
+                    elseif gsnum <= 334,
+                        year = '2019';
+                        uname = 'bseo';
+                    else
+                        year = '2019';
+                        uname = 'dmarx';
+                    end
+                    
+                    S.listPupImDir = dir(PathTranslator(...
+                        ['/proj/piaa-data/Data/' year '-*-*/' uname '/gsdst_p_' num2str(gsnum,'%04d') '/*.fits'] ...
+                        ));
+                    S.listSrcImDir = dir(PathTranslator(...
+                        ['/proj/piaa-data/Data/' year '-*-*/' uname '/gsdst_s_' num2str(gsnum,'%04d') '/*.fits'] ...
+                        ));
+                    
+                case 'spc_disc'
+                    bn = ['/home/dmarx/HCIT/SPC_disc/gsspc_20171204/reduced/gsspc_' num2str(gsnum)];
+                    
+                case 'mcb_spc'
+                    bn = ['/home/dmarx/HCIT/MCB_SPC/phaseretrieval/reduced/gsomc_no' num2str(gsnum,'%04d')];
+                    
+                    % get dir listing of raw camera images
+                    S.listPupImDir = dir(PathTranslator(...
+                        ['/proj/piaa-data/Data/2019-*-*/dmarx/gsomc_p_' num2str(gsnum) '/*.fits']...
+                        ));
+                    S.listSrcImDir = dir(PathTranslator(...
+                        ['/proj/piaa-data/Data/2019-*-*/dmarx/gsomc_s_' num2str(gsnum) '/*.fits']...
+                        ));
+                case 'mcb_hlc'
+                    bn = ['/proj/mcb/data/dB_PR_Kern/gsomc_no' num2str(gsnum,'%05d')];
+                    
+                    % get dir listing of raw camera images
+                    if gsnum >= 843,
+                        year = '2019';
+                        gsbn = 'gsttb';
+                    elseif gsnum >= 806,
+                        year = '2018';
+                        gsbn = 'gsomc';
+                    else
+                        error('which year is this?');
+                    end
+                    S.listPupImDir = dir(PathTranslator(...
+                        ['/proj/piaa-data/Data/' year '-*-*/bseo/' gsbn '_p_' num2str(gsnum,'%05d') '/*.fits']...
+                        ));
+                    S.listSrcImDir = dir(PathTranslator(...
+                        ['/proj/piaa-data/Data/' year '-*-*/bseo/' gsbn '_s_' num2str(gsnum,'%05d') '/*.fits']...
+                        ));
+                    
+                    % for EMCCD, starting, 2020-11-04, gsnum 1369
+                    wavelength_kwd = 'lam';
+                    
+                    %
+                    S.zunits = U.MM;
+                    
+                case 'mcb_alllens'
+                    % optional trial name because we might be testing different ways
+                    % to process one gsnum
+                    trialname = '';
+                    if ~isempty(varargin),  trialname = [varargin{1} '_']; end
+                    bn = ['/home/dmarx/WFIRST/PR_lead/all_lens_PR/all_lens_20201203/reduced/prout_' trialname num2str(gsnum)];
+                    
+                    S.listPupImDir = dir(PathTranslator(...
+                        ['/proj/mcb/data/excam/2021-*-*/gsomc_p_' num2str(gsnum,'%d') '/*.fits']...
+                        ));
+                    S.listSrcImDir = dir(PathTranslator(...
+                        ['/proj/mcb/data/excam/2021-*-*/gsomc_s_' num2str(gsnum,'%d') '/*.fits']...
+                        ));
+                    
+                    wavelength_kwd = 'lam';
+                    
+                case 'mcb_twolens'
+                    % optional trial name because we might be testing different ways
+                    % to process one gsnum
+                    trialname = '';
+                    %if ~isempty(varargin),  trialname = [varargin{1} '_']; end
+                    if ~isempty(varargin),  trialname = [varargin{1}]; end
+                    bn = ['/home/dmarx/WFIRST/PR_lead/all_lens_PR/two_lens_20201109/reduced/prout_' trialname num2str(gsnum)];
+                    
+                    S.listPupImDir = dir(PathTranslator(...
+                        ['/proj/mcb/data/excam/2021-*-*/gsomc_p_' num2str(gsnum,'%d') '/*.fits']...
+                        ));
+                    S.listSrcImDir = dir(PathTranslator(...
+                        ['/proj/mcb/data/excam/2021-*-*/gsomc_s_' num2str(gsnum,'%d') '/*.fits']...
+                        ));
+                    
+                    wavelength_kwd = 'lam';
+                    
+                case 'ttb_hlc'
+                    bn = ['/proj/mcb/data/dB_PR_Kern/gsomc_no' num2str(gsnum,'%05d')];
+                    % get dir listing of raw camera images
+                    if gsnum >= 843,
+                        year = '2019';
+                    else
+                        error('which year is this?');
+                    end
+                    S.listPupImDir = dir(PathTranslator(...
+                        ['/proj/piaa-data/Data/' year '-*-*/bseo/gsttb_p_' num2str(gsnum,'%05d') '/*.fits']...
+                        ));
+                    S.listSrcImDir = dir(PathTranslator(...
+                        ['/proj/piaa-data/Data/' year '-*-*/bseo/gsttb_s_' num2str(gsnum,'%05d') '/*.fits']...
+                        ));
+                    
+                case 'piaacmc'
+                    % optional trial name because we might be testing different ways
+                    % to process one gsnum
+                    trialname = '';
+                    if ~isempty(varargin),  trialname = [varargin{1} '_']; end
+                    
+                    bn = ['/proj/piaacmc/phaseretrieval/reduced/piaa_' trialname num2str(gsnum,'%03d')];
+                    
+                    % get dir listing of raw camera images
+                    S.listPupImDir = dir(PathTranslator(...
+                        ['/proj/piaacmc/scicam/*/gspiaa_p_' num2str(gsnum,'%04d') '/piaa*.fits']...
+                        ));
+                    S.listSrcImDir = dir(PathTranslator(...
+                        ['/proj/piaacmc/scicam/*/gspiaa_s_' num2str(gsnum,'%04d') '/piaa*.fits']...
+                        ));
+                    
+                    wavelength_kwd = 'lam';
+                    
+                case 'omc_mswc'
+                    trialname = CheckOption('trialname', '', varargin{:});
+                    
+                    bn = ['/home/hcit/OMC/phaseretrieval/reduced/prout_' trialname num2str(gsnum,'%03d')];
+                    
+                    % get dir listing of raw camera images
+                    S.listPupImDir = dir(PathTranslator(...
+                        ['/proj/mcb/data/excam/*/pr_gs_' num2str(gsnum,'%04d') '/emccd.*.fits']...
+                        ));
+                    S.listSrcImDir = dir(PathTranslator(...
+                        ['/proj/mcb/data/excam/*/pr_par_' num2str(gsnum,'%04d') '/emccd.*.fits']...
+                        ));
+                    
+                    wavelength_kwd = 'lam';
+                    
+                otherwise
+                    % do nothing, bn is explicit, check that it is
+                    % valid path
+                    bn = [bn num2str(gsnum,'%d')];
+                    %disp(bn);
+                    if isempty(ls(PathTranslator([bn '*'])))
+                        error(['invalid bn: ' bn]);
+                    end
+                    
+            end % switch bn
             
             %disp(['opening: ' PathTranslator([bn num2str(gsnum,'%03d') 'amp.fits'])]);
             try
