@@ -2570,6 +2570,80 @@ classdef CRunData < handle & CConstants
             
         end % DisplayCEfields
 
+        function [hfig, objHist] = DisplayIntHistogram(S, varargin)
+            % [hfig, ha, sMetrics] = DisplayIntHistogram(S, varargin)
+            %
+            % display histograms of pixel counts binned by norm intensity
+            % only pixels in the logical mask are used
+            % only full band images are used
+            
+            ni_to_plot = CheckOption('ni_to_plot', 'total', varargin{:}); % ['total'], 'modulated', 'unmod', 'all'
+            mask = CheckOption('bmask', 'bMaskSc', varargin{:}); % ['bMaskSc'], 'bMask', or a mask array
+            hist_options = CheckOption('hist_options', {}, varargin{:}); % cell array, passed to histogram, example: 'BinLimits', [bmin bmax]
+            hfig = CheckOption('hfig', [], varargin{:});
+            xscale = CheckOption('xscale', [], varargin{:}); % 'linear', 'log', default = 'linear';
+            
+            if isempty(S.E_t),
+                S.ReadReducedCube;
+            end
+            
+            if any(strcmp(mask, {'bMask', 'bMaskSc'}))
+                bmask = S.(mask);                
+            
+            elseif islogical(mask)
+                if ~isequal(size(mask), size(S.bMask))
+                    error(['input bmask is not size ' num2str(size(S.bMask))]);
+                end
+                bmask = mask;
+
+            end
+
+            % create new figure
+            if isempty(hfig)
+                hfig = figure;
+            else
+                figure(hfig);
+            end
+            
+            % {S.ImCubeUnProbFullBand, S.CohIntFullBand, S.IncIntEstFullBand}, ...
+            objHist = {};
+            legStr = {};
+            if any(strcmp(ni_to_plot, {'total', 'all'}))
+                disp('total')
+                hh = histogram(S.ImCubeUnProbFullBand(bmask), hist_options{:});
+                objHist{end+1} = hh;
+                legStr{end+1} = 'Total';
+                hold on
+            end
+            
+            if any(strcmp(ni_to_plot, {'modulated', 'all'}))
+                disp('modulated');
+                hh = histogram(S.CohIntFullBand(bmask), hist_options{:});
+                objHist{end+1} = hh;
+                legStr{end+1} = 'Modulated';
+                hold on
+            end
+            
+            if any(strcmp(ni_to_plot, {'unmod', 'all'}))
+                disp('unmod');
+                hh = histogram(S.IncIntEstFullBand(bmask), hist_options{:});
+                objHist{end+1} = hh;
+                legStr{end+1} = 'Unmodulated';
+                hold on
+            end
+
+            if isempty(objHist)
+                error(['unrecognized: ' ni_to_plot]);
+            end
+            
+            if ~isempty(xscale), set(gca,'xscale', xscale); end
+            xlabel('Norm Int')
+            ylabel('Pixel Count')
+            legend(legStr{:})
+            title(['it#' num2str(S.iter) ', Full Band'], 'fontsize', 14)
+
+        end % DisplayIntHistogram
+        
         function [hfig, ha] = DisplayPampzero(S, varargin)
             % [hfig, ha] = DisplayPampzero(S, varargin)
 

@@ -6,7 +6,10 @@ function imgout = logImage(img, varargin)
 % CheckOption('alpha', 1000, varargin{:});
 
 alpha = CheckOption('alpha', 1000, varargin{:});
-imgout = log(alpha*img+1)./log(alpha);
+
+% img must be scaled 0 to 1
+img_sc = (img - min(img(:)))./range(img(:));
+imgout = log10(alpha*img_sc+1)./log(alpha);
 
 end
 
