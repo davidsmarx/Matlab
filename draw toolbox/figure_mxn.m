@@ -23,7 +23,8 @@ else
 end
 
 % standard figure size
-dx = 560; dy = 420;
+%dx = 560; dy = 420;
+dx = 500; dy = 500;
 newpos = get(hfig,'position').*[1 1 0 0] + [0 0 dx*n dy*m];
 
 % check against screen 

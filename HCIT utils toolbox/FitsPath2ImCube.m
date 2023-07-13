@@ -28,7 +28,13 @@ function varargout = FitsPath2ImCube(pn, varargin)
 % 
 % output:
 % ImCube = [Nimages nr nc]
-% sParms = struct(
+% sParms = struct(...
+%         'hfig', hfig ...
+%         ,'hax', hax ...
+%         ,'listfn', listfn ...
+%         ,hdrkwd{1}, hdrkwdval(:,1) ...
+%         ,(more hdrkwds)
+%         )
 
 plottype = CheckOption('plottype', 'cube', varargin{:}); % 'spread'
 plotx = CheckOption('x', 0, varargin{:});
@@ -132,11 +138,11 @@ end
 switch lower(scale),
     case 'linear',
         % do nothing
+        ImCube_disp = ImCube;
     case 'log'
         %ImCube = log10(ImCube);
         % scale to 0..1
-        ImCube_sc = (ImCube - min(ImCube(:)))./range(ImCube(:));
-        ImCube = log(1000*ImCube_sc+1)./log(1000); % from http://ds9.si.edu/doc/ref/how.html
+        ImCube_disp = logImage(ImCube);
         
     otherwise,
         error(['unknown scale: ' scale]);
@@ -154,14 +160,14 @@ switch lower(plottype),
     case 'cube',
         
         if isempty(hfig), hfig = figure; end
-        [hfig, hax, sUserData] = ImageCube(ImCube, hdrkwdval, ...
+        [hfig, hax, sUserData] = ImageCube(ImCube_disp, hdrkwdval, ...
             'fTitleStr', fTitleStr, ...
             'x', plotx, 'y', ploty, 'hfig', hfig);
         
     case 'spread'
         if isempty(hfig), hfig = figure; else, figure(hfig), end
         %[hfig, hax] = PlotSpread;
-        [hfig, hax, sUserData] = ImageCubeSpread(ImCube,  hdrkwdval, ...
+        [hfig, hax, sUserData] = ImageCubeSpread(ImCube_disp,  hdrkwdval, ...
             'fTitleStr', fTitleStr, ...
             'x', plotx, 'y', ploty, 'hfig', hfig);
 
@@ -174,7 +180,7 @@ end
 
 % set all axes to common clim
 if isempty(clim),
-    clim = AutoClim(ImCube(:), 'one-sided', true);
+    clim = AutoClim(ImCube_disp(:), 'one-sided', true);
 end
 set(hax,'clim',clim)
 

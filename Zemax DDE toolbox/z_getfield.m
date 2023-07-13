@@ -8,8 +8,8 @@ function [xfield, yfield, weight, vdx, vdy, vcx, vcy, van] =...
 %
 % [type, nn, field_max_xy, norm_method] = z_getfield(zchan)
 %
-% type: 0 => angle in degrees,
-%       1 => object height,
+% type: 0 => angle in rad (Zemax returns deg),
+%       1 => object height in m
 %       2 => paraxial image
 %       3 => real image height
 %       4 => theodolite angles
