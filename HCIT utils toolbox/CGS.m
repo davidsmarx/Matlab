@@ -102,7 +102,8 @@ classdef CGS < handle
             U = CConstants;
 
             wavelength_kwd = 'lam'; % default value
-            
+            wavelength_units = 1; % default = m
+
             if ~exist('bn','var') || isempty(bn),
                 %bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
                 %bn = '/proj/dst/data/dB_PR/gsdst_';
@@ -165,6 +166,7 @@ classdef CGS < handle
                     
                     % for EMCCD, starting, 2020-11-04, gsnum 1369
                     wavelength_kwd = 'lam';
+                    wavelength_units = U.MM;
                     
                     %
                     S.zunits = U.MM;
@@ -279,7 +281,7 @@ classdef CGS < handle
             S.ph = rot90( fitsread(PathTranslator([bn 'ph.fits'])), S.nRot90);  % unwrapped phase
             S.phw = rot90( fitsread(PathTranslator([bn 'phwrap.fits'])), S.nRot90); % = angle(eref), wrapped phase
             S.amp_keys = ampinfo.PrimaryData.Keywords;
-            S.wavelength = FitsGetKeywordVal(S.amp_keys, wavelength_kwd);
+            S.wavelength = FitsGetKeywordVal(S.amp_keys, wavelength_kwd)*wavelength_units;
                        
             % phase unwrap in WFSC puts the mask used for PR in the second
             % hdu (starting Feb 2021)
@@ -448,6 +450,10 @@ classdef CGS < handle
             %     other choices 'amp'
             % stitle = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             % bRemoveTipTilt = CheckOption('removetiptilt', true, varargin{:});            
+            % dph_units = CheckOption('dph_units', 1, varargin{:}); % default = 'rad' (radians), 'nm', 'waves', or double
+            % dph_units_str = CheckOption('dph_units_str', 'Phase (rad)', varargin{:});
+
+            U = CConstants;
             
             pMask = CheckOption('pMask', S.bMask, varargin{:});
             xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
@@ -456,6 +462,8 @@ classdef CGS < handle
             ampplot = CheckOption('ampplot', 'absE', varargin{:});
             stitle = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             bRemoveTipTilt = CheckOption('removetiptilt', true, varargin{:});
+            dph_units = CheckOption('dph_units', 1, varargin{:}); % default = 'rad' (radians), 'nm', 'waves', or double
+            dph_units_str = CheckOption('dph_units_str', 'rad', varargin{:});
             
             %hfig = figure;
             %hax = imagescampphase(S.E, x, y, ['gsnum ' num2str(S.gsnum)]);
@@ -495,16 +503,40 @@ classdef CGS < handle
                     ph = S.(phplot);
             end
             
+
+            if ischar(dph_units),
+                switch dph_units
+                    case 'nm'
+                        if ~isempty(S.wavelength),
+                            dph_units = U.NM./(S.wavelength./(2*pi));
+                            dph_units_str = 'nm';
+                        else
+                            warning('wavelength empty, dph units = radians');
+                            dph_units = 1;
+                        end
+                    case {'wave', 'waves'},
+                        dph_units = 2*pi;
+                        dph_units_str = 'waves';
+                        
+                    case 'rad'
+                        dph_units = 1;
+                        dph_units_str = 'rad';
+                    otherwise
+                        error(['unknown phase units: ' dph_units]);
+                end
+            end % ischar(dph_units)
+             
+
             if isempty(pMask), pMask = ones(size(S.E)); end
             hax(2) = subplot(1,2,2);
-            imageschcit(S.x, S.y, pMask.*ph)
-            colorbartitle('Phase (rad)')
+            imageschcit(S.x, S.y, pMask.*ph/dph_units)
+            colorbartitle(['WFE (' dph_units_str ')'])
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
             if isempty(climph),
-                climph = AutoClim(ph, 'symmetric', true);
+                climph = AutoClim(ph/dph_units, 'symmetric', true);
             end
             set(gca,'clim',climph)
-            title(['rms\phi = ' num2str(rms(ph(pMask)),'%.3f') 'rad'])
+            title(['rms\phi = ' num2str(rms(ph(pMask))/dph_units,'%.3f') ' ' dph_units_str])
             
             
             
