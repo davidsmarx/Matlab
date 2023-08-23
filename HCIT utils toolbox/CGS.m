@@ -75,6 +75,8 @@ classdef CGS < handle
         T
         wavelength
 
+        params % from yaml
+        
         % Remap is for PIAA (upstream of PIAA tube is remapped to downstream)
         RemapRadialR2
         RemapRadialR1
@@ -282,7 +284,13 @@ classdef CGS < handle
             S.phw = rot90( fitsread(PathTranslator([bn 'phwrap.fits'])), S.nRot90); % = angle(eref), wrapped phase
             S.amp_keys = ampinfo.PrimaryData.Keywords;
             S.wavelength = FitsGetKeywordVal(S.amp_keys, wavelength_kwd)*wavelength_units;
-                       
+
+            try
+                S.params = yaml.loadFile([S.bn 'parms.yml']);
+            catch ME
+                disp(ME.message);
+            end
+            
             % phase unwrap in WFSC puts the mask used for PR in the second
             % hdu (starting Feb 2021)
             finfo = fitsinfo(PathTranslator([bn 'ph.fits']));
