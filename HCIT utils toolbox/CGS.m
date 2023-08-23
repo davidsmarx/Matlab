@@ -579,6 +579,7 @@ classdef CGS < handle
             climph = CheckOption('climph', [], varargin{:});
             dph_units = CheckOption('dph_units', 1, varargin{:}); % default = radians, 'nm', 'waves', or double
             dph_units_str = CheckOption('dph_units_str', 'Phase (rad)', varargin{:});
+            dph_format = CheckOption('dph_format', '%.3f', varargin{:}); % format for title string
 
             % which phase map to plot
             switch phplot
@@ -669,7 +670,7 @@ classdef CGS < handle
             imageschcit(S.x, S.y, S.amp - Sreftmp.amp)
             colorbartitle('\Delta Amplitude')
             set(gca,'xlim',xylim*[-1 1],'ylim',xylim*[-1 1])
-            title(['gsnum ' num2str(S.gsnum) ' Amp -  Ref gsnum ' num2str(Sref.gsnum) ' Amp'])
+            title(['gsnum ' num2str(S.gsnum) ' -  Ref ' num2str(Sref.gsnum) ' Amp'])
             
             
             % optional remove defocus difference
@@ -700,13 +701,14 @@ classdef CGS < handle
                         if ~isempty(S.wavelength),
                             dph_units = U.NM./(S.wavelength./(2*pi));
                             dph_units_str = 'WFE (nm)';
+                            dph_format = '%.1f';
                         else
                             warning('wavelength empty, dph units = radians');
                             dph_units = 1;
                         end
                     case {'wave', 'waves'},
                         dph_units = 2*pi;
-                        dph_units_str = 'WFE (waves)';
+                        dph_units_str = 'WFE (waves)';                        
                         
                     otherwise
                         error(['unknown phase units: ' dph_units]);
@@ -719,7 +721,7 @@ classdef CGS < handle
             if isempty(climdph), set(gca,'clim',AutoClim(dpha./dph_units,'symmetric',true,'pctscale',100))
             else set(gca,'clim',climdph)
             end
-            title(['gsnum ' num2str(S.gsnum) ' Ref gsnum ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(dpha(pMask))/dph_units,'%.3f') dph_units_str])
+            title(['gsnum ' num2str(S.gsnum) ' Ref ' num2str(Sref.gsnum) ', rms \Delta = ' num2str(rms(dpha(pMask))/dph_units,dph_format) dph_units_str])
             
             % append more to dphaResult
             dphaResult.dpharms = rms(dpha(pMask));
