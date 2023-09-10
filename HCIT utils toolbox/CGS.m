@@ -727,12 +727,12 @@ classdef CGS < handle
             % zernike fit using bMask pixels
             % nz = array of zernike modes to fit
             %
-            % phase = CheckOption('phase', 'ph', varargin{:});
-            % bDisplay = CheckOption('display', true, varargin{:});
-            % titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
-            % xylim = CheckOption('xylim', [], varargin{:});
-            % phresclim = CheckOption('phresclim', [], varargin{:});
-            % ylimZ = CheckOption('ylimzplot', [], varargin{:});
+            % CheckOption('phase', 'ph', varargin{:});
+            % CheckOption('display', true, varargin{:});
+            % CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
+            % CheckOption('xylim', [], varargin{:});
+            % CheckOption('phresclim', [], varargin{:});
+            % CheckOption('ylimzplot', [], varargin{:});
             % CheckOption('zernikeunits', 'rad', varargin{:}); % 'nm'
             %
             % return:

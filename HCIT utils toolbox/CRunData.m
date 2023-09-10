@@ -262,7 +262,8 @@ classdef CRunData < handle & CConstants
 
                 case 100 % PIAA
                     S.Results_pn = '/proj/piaacmc/EFC/data/run100/';
-                    S.S383temp_pn= '/home/dmarx/HCIT/PIAA/hcim_testbed_run100/results/';
+                    %S.S383temp_pn= '/home/dmarx/HCIT/PIAA/hcim_testbed_run100/results/';
+                    S.S383temp_pn= '/proj/piaacmc/Final_Report/data/hcim_testbed_run100/results/';
                     
                     S.XlimDefault = 12 * [-1 1];
                     S.YlimDefault = 12 * [-1 1];

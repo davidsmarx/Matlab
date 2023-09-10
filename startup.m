@@ -17,7 +17,8 @@ unitsdefinitions;
 if isunix,
     try
         % for all hcit and aftac machines:
-        PYENV = pyenv('Version', '/usr/local/bin/python3.7')
+        PYENV = pyenv('Version', '/usr/local/bin/python3.7', "ExecutionMode", "InProcess")
+        %PYENV = pyenv('Version', '/bin/python3.8', "ExecutionMode", "InProcess")
         py_path = py.sys.path;
         py_path.append('/home/dmarx/HCIT/hcim_mkland3/hcim')
         py_path.append('/home/dmarx/HCIT/hcim_mkland3/hcim/extern')
