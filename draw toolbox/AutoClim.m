@@ -5,6 +5,7 @@ function clim = AutoClim(A, varargin)
 %   'one-sided' [false] or true
 %   'two-sided' [true] or false
 %   'symmetric' [false] or true (i.e. two-sided and symmetric)
+%   'pctscale', 100
 %
 % A can be any dimensions, only A(:) is used
 % A can be an axes handle
