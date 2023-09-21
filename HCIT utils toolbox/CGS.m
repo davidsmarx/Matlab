@@ -286,7 +286,7 @@ classdef CGS < handle
             S.wavelength = FitsGetKeywordVal(S.amp_keys, wavelength_kwd)*wavelength_units;
 
             try
-                S.params = yaml.loadFile([S.bn 'parms.yml']);
+                S.params = yaml.loadFile(PathTranslator([S.bn 'parms.yml']));
             catch ME
                 disp(ME.message);
             end
@@ -1107,9 +1107,9 @@ classdef CGS < handle
                 Im = funPlot(S.cAmpPlanes{ii});
 
                 if bLog,
-                    Imlog = log10(Im);
+                    Imlog = logImage(Im);
                     imageschcit(Imlog)
-                    set(gca,'clim',[-4 0] + max(Imlog(:)))
+                    %set(gca,'clim',[-4 0] + max(Imlog(:)))
                     
                 else
                     imageschcit(Im)
