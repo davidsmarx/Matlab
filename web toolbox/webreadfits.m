@@ -1,7 +1,11 @@
 function [img, finfo] = webreadfits(webaddr, varargin)
 % [img, finfo] = webreadfits(webaddr, varargin)
+%
+% CheckOption('display', true, varargin{:});
+% CheckOption('displayscale', 'log', varargin{:});
 
 bDisplay = CheckOption('display', true, varargin{:});
+scaleDisplay = CheckOption('displayscale', 'log', varargin{:});
 
 %
 options_info = weboptions('ContentType', 'image', 'ContentReader', @fitsinfo);
@@ -13,5 +17,12 @@ img = webread(webaddr, options_read);
 
 %
 if bDisplay,
-    figure, imageschcit(img), colormap gray
+    switch scaleDisplay,
+        case 'log'
+            fScale = @(img) logImage(img);
+        otherwise
+            fScale = @(img) img;
+    end
+
+    figure, imageschcit(fScale(img)), colormap gray
 end
