@@ -7,9 +7,13 @@ function [img, finfo] = webreadfits(webaddr, varargin)
 bDisplay = CheckOption('display', true, varargin{:});
 scaleDisplay = CheckOption('displayscale', 'log', varargin{:});
 
+fFitsread = @(a) fitsread(a, 'image');
 %
-options_info = weboptions('ContentType', 'image', 'ContentReader', @fitsinfo);
-options_read = weboptions('ContentType', 'image', 'ContentReader', @fitsread);
+% options_info = weboptions('ContentType', 'image', 'ContentReader', @fitsinfo);
+% options_read = weboptions('ContentType', 'image', 'ContentReader', @fitsread);
+
+options_info = weboptions('ContentType', 'text', 'ContentReader', @fitsinfo);
+options_read = weboptions('ContentType', 'text', 'ContentReader', @fFitsread);
 
 %
 finfo = webread(webaddr, options_info);
