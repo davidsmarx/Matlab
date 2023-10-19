@@ -9,7 +9,7 @@ alpha = CheckOption('alpha', 1000, varargin{:});
 
 % img must be scaled 0 to 1
 img_sc = (img - min(img(:)))./range(img(:));
-imgout = log10(alpha*img_sc+1)./log(alpha);
+imgout = log10(alpha*img_sc+1)./log10(alpha);
 
 end
 
