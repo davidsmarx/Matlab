@@ -129,7 +129,9 @@ function [bMask, thresh] = AutoThresholdPupil(Im, sOptions)
     
 
     % use histogram to choose threshold
-    [cnts, xbin] = hist(abs(Im(:)), sOptions.AutoThreshold_Nbins);
+    [cnts, edges] = histcounts(abs(Im(:)));
+    xbin = mean([edges(1:end-1); edges(2:end)]);
+
     [minima, xmin] = findpeaks(-cnts, xbin);
 
     function [amax, xmax] = findpeaks(y, x)
