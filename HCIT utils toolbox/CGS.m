@@ -767,7 +767,7 @@ classdef CGS < handle
             % [ZZ, rz, pharesidual, sFitParms] = ZernikeFit(S, nz, varargin)
             %
             % zernike fit using bMask pixels
-            % nz = array of zernike modes to fit
+            % nz = array of zernike modes to fit (default = 1:11)
             %
             % phase = CheckOption('phase', 'ph', varargin{:});
             % bDisplay = CheckOption('display', true, varargin{:});
@@ -783,6 +783,11 @@ classdef CGS < handle
             % rz = normalization radius (pixels)
             % pharesidual = S.(phase) - zernikeval(ZZout)
 
+            % default nz
+            if ~exist('nz','var')
+                nz = 1:11;
+            end
+            
             phasefieldname = CheckOption('phase', 'ph', varargin{:});
             bDisplay = CheckOption('display', true, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
