@@ -106,10 +106,12 @@ classdef CGS < handle
             wavelength_kwd = 'lam'; % default value
             wavelength_units = 1; % default = m
 
+            % default value for bn
             if ~exist('bn','var') || isempty(bn),
                 %bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
                 %bn = '/proj/dst/data/dB_PR/gsdst_';
-                bn = 'omc_mswc';
+                %bn = 'omc_mswc';
+                bn = 'cgi_fft';
             end
             
             switch lower(bn),
@@ -254,6 +256,22 @@ classdef CGS < handle
                     
                     wavelength_kwd = 'lam';
                     
+                case 'cgi_fft'
+                    
+                    % Note: add check to see if data already exists
+                    % locally, then skip scp
+
+                    % scp reduced files from yzma to local
+                    % first make local folder
+                    base_name = ['prnum_' num2str(gsnum, '%06d')];
+                    local_path = PathTranslator(['~/WFIRST/CGI_FFT/pr/' base_name '/']);
+                    mkdir(local_path);
+                    system(['scp dmarx@yzma.jpl.nasa.gov:/export/vol1/ctc-gsw/ws-1.2.2/data/archive/pr/' base_name '/* ' local_path]);
+                    
+                    bn = local_path;
+                    
+                    wavelength_kwd = 'lam';
+
                 otherwise
                     % do nothing, bn is explicit, check that it is
                     % valid path
@@ -466,7 +484,7 @@ classdef CGS < handle
             pMask = CheckOption('pMask', S.bMask, varargin{:});
             xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             climph = CheckOption('climph', [], varargin{:});
-            phplot = CheckOption('phplot', 'phw_ptt', varargin{:}); % or S.(phplot), e.g. 'angleE'
+            phplot = CheckOption('phplot', 'ph', varargin{:}); % or S.(phplot), e.g. 'angleE'
             ampplot = CheckOption('ampplot', 'absE', varargin{:});
             stitle = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             bRemoveTipTilt = CheckOption('removetiptilt', true, varargin{:});

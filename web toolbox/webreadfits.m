@@ -10,8 +10,8 @@ scaleDisplay = CheckOption('displayscale', 'log', varargin{:});
 fFitsread = @(a) fitsread(a, 'image');
 %
 options_info = weboptions('ContentType', 'image', 'ContentReader', @fitsinfo);
-%options_read = weboptions('ContentType', 'image', 'ContentReader', @fitsread);
-options_read = weboptions('ContentType', 'image', 'ContentReader', @ReadFitsImage);
+options_read = weboptions('ContentType', 'image', 'ContentReader', @fitsread);
+%options_read = weboptions('ContentType', 'image', 'ContentReader', @ReadFitsImage);
 
 %
 finfo = webread(webaddr, options_info);
