@@ -6,12 +6,12 @@ function [img, finfo] = webreadfits(webaddr, varargin)
 
 bDisplay = CheckOption('display', true, varargin{:});
 scaleDisplay = CheckOption('displayscale', 'log', varargin{:});
+extname = CheckOption('extname', 'image', varargin{:}); % 'primary', 'image', 
 
-fFitsread = @(a) fitsread(a, 'image');
 %
 options_info = weboptions('ContentType', 'image', 'ContentReader', @fitsinfo);
-options_read = weboptions('ContentType', 'image', 'ContentReader', @fitsread);
-%options_read = weboptions('ContentType', 'image', 'ContentReader', @ReadFitsImage);
+%options_read = weboptions('ContentType', 'image', 'ContentReader', @fitsread);
+options_read = weboptions('ContentType', 'image', 'ContentReader', @ReadFitsImage);
 
 %
 finfo = webread(webaddr, options_info);
@@ -29,8 +29,10 @@ if bDisplay,
     figure, imageschcit(fScale(img)), colormap gray
 end
 
-function img = ReadFitsImage(fn)
+    function img = ReadFitsImage(fn)
+        
+        img = fitsread(fn, extname);
+        
+    end
 
-img = fitsread(fn, 'image');
-
-return
+end

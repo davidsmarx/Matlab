@@ -264,9 +264,13 @@ classdef CGS < handle
                     % scp reduced files from yzma to local
                     % first make local folder
                     base_name = ['prnum_' num2str(gsnum, '%06d')];
-                    local_path = PathTranslator(['~/WFIRST/CGI_FFT/pr/' base_name '/']);
-                    mkdir(local_path);
-                    system(['scp dmarx@yzma.jpl.nasa.gov:/export/vol1/ctc-gsw/ws-1.2.2/data/archive/pr/' base_name '/* ' local_path]);
+                    local_path = PathTranslator(['~/WFIRST/VA_FFT_activities/FFT/pr/FFT_reduced/' base_name '/']);
+                    if ~exist(local_path, 'dir')
+                        mkdir(local_path);
+                        system(['scp dmarx@yzma.jpl.nasa.gov:/export/vol1/ctc-gsw/ws-1.2.2/data/archive/pr/' base_name '/* ' local_path]);
+                    end
+                    % else
+                    % apparently this reduced data already transferred
                     
                     bn = local_path;
                     
@@ -344,16 +348,17 @@ classdef CGS < handle
             % then use zernikes to remove remaining PTT
             [S.x, S.y, S.X, S.Y, S.R, S.T] = CreateGrid(S.amp);
             S.RemovePTTfft; % creates first estimate of S.phw_ptt using FFT
-            S.phw_ptt = RemovePTTZ(S.phw_ptt, S.bMask); % fine-tune using Zernike
             %             S.phunwrap = RemovePTTZ(S.phunwrap, S.bMask);
             %             S.phw_ptt  = mod2pi(S.phunwrap);
 
-            %             % unwrap phase using better unwrap routine, but requires mask
-            %             %phw = S.phw;
-            %             phw = S.phw_ptt + 1 - 1;
-            %             phw(~S.bMask) = NaN;
-            %             S.phunwrap = unwrap_phase(phw);
-            %             S.phunwrap(~S.bMask) = 0;
+            % unwrap phase using better unwrap routine, but requires mask
+            %phw = S.phw;
+            phw = S.phw_ptt + 1 - 1;
+            phw(~S.bMask) = NaN;
+            S.phunwrap = unwrap_phase(phw);
+            S.phunwrap(~S.bMask) = 0;
+            S.phw_ptt = RemovePTTZ(S.phw_ptt, S.bMask); % fine-tune using Zernike
+
             S.phunwrap = S.phw_ptt;
 
             % S.E
@@ -793,7 +798,7 @@ classdef CGS < handle
             % xylim = CheckOption('xylim', [], varargin{:});
             % phresclim = CheckOption('phresclim', [], varargin{:});
             % ylimZ = CheckOption('ylimzplot', [], varargin{:});
-            % CheckOption('zernikeunits', 'rad', varargin{:}); % 'nm'
+            % CheckOption('zernikeunits', 'nm', varargin{:}); % 'nm', 'rad'
             %
             % return:
             % ZZout = zernike coefficients, ZZout(1:3) are always piston,
@@ -813,7 +818,7 @@ classdef CGS < handle
             xylim = CheckOption('xylim', [], varargin{:});
             phresclim = CheckOption('phresclim', [], varargin{:});
             ylimZ = CheckOption('ylimzplot', [], varargin{:});
-            zzunits = CheckOption('zernikeunits', 'rad', varargin{:}); % 'nm'
+            zzunits = CheckOption('zernikeunits', 'nm', varargin{:}); % 'nm' or 'rad'
             
             % fit should always include piston, tip, tilt, even if not
             % included in requested nz
