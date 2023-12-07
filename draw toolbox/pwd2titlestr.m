@@ -5,7 +5,7 @@ function varargout = pwd2titlestr(varargin)
 % convert a directory and/or filename string for use as a string in a
 % figure.
 % replace '\' with '\\'
-% replace '_' with ' '
+% replace '_' with '\_'
 %
 % n (optional, default = 0) titstr returns only the trailing part of pwdstr that 
 % contains n number of '\'
@@ -24,36 +24,21 @@ for ii = 1:nin,
     titstr = varargin{ii};
     
     % trim off path
-    %ns = findstr(titstr,'\');
-    ns = regexp(titstr,'[\\/]');
-    if ~isempty(ns),
-        if n < 0,
-            error('n must be >= 0');
-        elseif n >= length(ns),
-            % use the whole thing, do nothing
-        else % n >= 0,
-            titstr = titstr(ns(end-n)+1:end);
-        end
+    [titpath, titname, titext] = fileparts(titstr);
+    if n == 0
+        titpath = {''};
+    else
+        titpath = split(titpath, filesep);
+        n = min(n, length(titpath)-1);
+        titpath = titpath(end-n:end);
     end
-
+    titstr = fullfile(titpath{:}, [titname titext]);
+    
     % search for '\' and replace with '\\'
-    ns = findstr(titstr,'\');
-    if ~isempty(ns),
-        tmpstr = [];
-        ic = 1;
-        for in = 1:length(ns),
-            tmpstr = [tmpstr titstr(ic:ns(in)) '\'];
-            ic = ns(in) + 1;
-        end
-        tmpstr = [tmpstr titstr(ic:end)];
-        
-        titstr = tmpstr;
-    end
-
+    titstr = replace(titstr, '\', '\\');
     
     % search for '_' and replace
-    nu = findstr(titstr,'_');
-    titstr(nu) = ' ';
+    titstr = replace(titstr, '_', '\_');
     
     % output
     varargout{ii} = titstr;
