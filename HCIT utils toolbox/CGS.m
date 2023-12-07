@@ -365,6 +365,10 @@ classdef CGS < handle
             %S.E = S.amp .* exp(1i*S.phw_ptt);
             S.E = S.amp .* exp(1i*S.phw);
         
+            % remove tip/tilt from the given phase unwrapped
+            [~, phaimg, ~, ~] = ZernikeAnalysis(S.ph, 'modes', 1:3, 'bMask', S.bMask, 'isphase', true);
+            S.ph = phaimg;
+            
             % load the radial mapping
             % should be part of the bn switch
             % see email from Dan Sirbu "RE double check r2 r1 definition"
@@ -581,8 +585,9 @@ classdef CGS < handle
             %    ('usebMask', true, varargin{:});
             %    ('pMask', S.bMask, varargin{:}); % bMask only for phase display
             %    ('removeDefocus', false, varargin{:});
+            %    ('removeZ2Z3', true, varargin{:});
             %    ('doRegister', false, varargin{:}); % (false), true
-            %    ('phplot', 'phw_ptt', (default) 'phw_ptt', 'phunwrap', 'angleE' S.(phplot)
+            %    ('phplot', 'ph', (default) 'phw_ptt', 'phunwrap', 'angleE' S.(phplot)
             %    ('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             %    ('dphclim', [], varargin{:});
             %    ('climph', [], varargin{:});
@@ -603,8 +608,9 @@ classdef CGS < handle
             usebMask = CheckOption('usebMask', true, varargin{:});
             pMask = CheckOption('pMask', S.bMask, varargin{:}); % bMask only for phase display
             removeDefocus = CheckOption('removeDefocus', false, varargin{:});
+            removeZ2Z3 = CheckOption('removeZ2Z3', true, varargin{:});
             doRegister = CheckOption('doRegister', false, varargin{:});
-            phplot = CheckOption('phplot', 'phw_ptt', varargin{:}); % S.(phplot)
+            phplot = CheckOption('phplot', 'ph', varargin{:}); % S.(phplot)
             xylim = CheckOption('xylim', [], varargin{:});
             climdph = CheckOption('dphclim', [], varargin{:});
             climph = CheckOption('climph', [], varargin{:});
@@ -711,6 +717,15 @@ classdef CGS < handle
 
                 Ediff = S.E .* Sreftmp.amp.*exp(-1j*Sreftmp.phplot);
                 [ZZ, phaimg, dpha, sOptions] = ZernikeAnalysis(Ediff, 'modes', 1:4, 'bMask', S.bMask);
+                dphaResult = struct(...
+                    'ZZ', ZZ ...
+                    ,'phaimg', phaimg ...
+                    ,'dpha', dpha ...
+                    ,'sOptions', sOptions ...
+                    );
+            elseif removeZ2Z3
+                [ZZ, phaimg, dpha, sOptions] = ZernikeAnalysis(funPhPl(S) - Sreftmp.phplot, ...
+                    'modes', 1:3, 'bMask', S.bMask, 'isphase', true);
                 dphaResult = struct(...
                     'ZZ', ZZ ...
                     ,'phaimg', phaimg ...
@@ -879,7 +894,7 @@ classdef CGS < handle
                 subplot(2,3,2), imageschcit(S.x, S.y, phaimg_1_3.*S.bMask) % mod2pi(S.phunwrap).*S.bMask)
                 colorbartitle('Phase (rad)')
                 %set(gca,'clim',pi*[-1 1])
-                title([titlestr '; Phase rms\phi = ' num2str(S.rmsPha,'%.3f')])               
+                title([titlestr '; Phase rms\phi = ' num2str(rms(phaimg_1_3(S.bMask)),'%.3f')])               
                 set(gca,'xlim',xylim,'ylim',xylim);
                 
                 % residual phase
