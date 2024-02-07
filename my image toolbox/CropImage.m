@@ -31,6 +31,10 @@ if isempty(xycent), xycent = [0 0]; end
 % y = round(nimy/2+1 + xycent(2)) + (-ww/2:ww/2-1)';
 if isempty(x) || isempty(y),
     [x, y] = CreateGrid(Im); % origin at center
+elseif isscalar(x)
+    [nr, nc] = size(Im);
+    x = x + (1:nc)' - 1;
+    y = y + (1:nr)' - 1;
 end
 
 x = x - xycent(1);
