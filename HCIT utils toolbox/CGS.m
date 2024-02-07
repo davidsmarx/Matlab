@@ -264,15 +264,17 @@ classdef CGS < handle
                     % scp reduced files from yzma to local
                     % first make local folder
                     base_name = ['prnum_' num2str(gsnum, '%06d')];
-                    local_path = PathTranslator(['~/WFIRST/VA_FFT_activities/FFT/pr/FFT_reduced/' base_name '/']);
-                    if ~exist(local_path, 'dir')
-                        mkdir(local_path);
-                        system(['scp dmarx@yzma.jpl.nasa.gov:/export/vol1/ctc-gsw/ws-1.2.2/data/archive/pr/' base_name '/* ' local_path]);
+                    local_path = PathTranslator('~/WFIRST/VA_FFT_activities/FFT/pr/FFT_reduced/');
+                    if ~exist(fullfile(local_path, base_name), 'dir')
+                        % get the pr data package from kronk
+                        url = ['https://kronk.jpl.nasa.gov:8000/flight/pr/' num2str(gsnum, '%06d') '.zip'];
+                        zip_fn = websave(fullfile(local_path, [base_name '.zip']), url);
+                        list_fn = unzip(zip_fn, local_path);
                     end
                     % else
                     % apparently this reduced data already transferred
                     
-                    bn = local_path;
+                    bn = fullfile(local_path, base_name, filesep);
                     
                     wavelength_kwd = 'lam';
 
@@ -808,6 +810,7 @@ classdef CGS < handle
             % nz = array of zernike modes to fit (default = 1:11)
             %
             % phase = CheckOption('phase', 'ph', varargin{:});
+            % bmask = CheckOption('bmask', S.bMask, varargin{:});
             % bDisplay = CheckOption('display', true, varargin{:});
             % titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             % xylim = CheckOption('xylim', [], varargin{:});
@@ -827,6 +830,7 @@ classdef CGS < handle
             end
             
             phasefieldname = CheckOption('phase', 'ph', varargin{:});
+            bmask = CheckOption('bmask', S.bMask, varargin{:});
             bDisplay = CheckOption('display', true, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
@@ -843,16 +847,16 @@ classdef CGS < handle
             if ~any(nzfit == 1), nzfit = [1; nzfit]; end
             
             %
-            rz = max(S.R(S.bMask));
-            %             ZZ = zernikefit(S.X(S.bMask), S.Y(S.bMask), S.(phasefieldname)(S.bMask), nzfit, rz, 'noll');
+            rz = max(S.R(bmask));
+            %             ZZ = zernikefit(S.X(bmask), S.Y(bmask), S.(phasefieldname)(bmask), nzfit, rz, 'noll');
             %             phwfit = nan(size(S.X));
-            %             phwfit(S.bMask) = zernikeval(ZZ, S.X(S.bMask), S.Y(S.bMask), rz, 'noll', 'nz', nzfit);
+            %             phwfit(bmask) = zernikeval(ZZ, S.X(bmask), S.Y(bmask), rz, 'noll', 'nz', nzfit);
             %             pharesidual = nan(size(S.X));
-            %             pharesidual(S.bMask) = mod2pi(S.(phasefieldname)(S.bMask) - phwfit(S.bMask));
+            %             pharesidual(bmask) = mod2pi(S.(phasefieldname)(bmask) - phwfit(bmask));
             [ZZ, phaimg_1_3, pharesidual, sFitParms] = ZernikeAnalysis(S.(phasefieldname),...
-                'isphase', true, 'bMask', S.bMask, 'Rnorm', rz, 'modes', nzfit, 'polyorder', 'Noll',...
+                'isphase', true, 'bMask', bmask, 'Rnorm', rz, 'modes', nzfit, 'polyorder', 'Noll',...
                 'do_phaseunwrap', false);
-            phwfit = S.bMask.*sFitParms.phafit_ptt;
+            phwfit = bmask.*sFitParms.phafit_ptt;
             
             % return zernike coeffs in requested units
             switch zzunits
@@ -875,7 +879,7 @@ classdef CGS < handle
 
                 % determine plot width
                 if isempty(xylim),
-                    xylim = 1.1*max(S.R(S.bMask));
+                    xylim = 1.1*max(S.R(bmask));
                     xylim = 5*ceil(xylim/5.0); % to the nearest multiple of 5
                     xylim = xylim*[-1 1];
                 end
@@ -891,16 +895,16 @@ classdef CGS < handle
                 set(gca,'xlim',xylim,'ylim',xylim);
 
                 % phase, remove 1 to 3
-                subplot(2,3,2), imageschcit(S.x, S.y, phaimg_1_3.*S.bMask) % mod2pi(S.phunwrap).*S.bMask)
+                subplot(2,3,2), imageschcit(S.x, S.y, phaimg_1_3.*bmask) % mod2pi(S.phunwrap).*bmask)
                 colorbartitle('Phase (rad)')
                 %set(gca,'clim',pi*[-1 1])
-                title([titlestr '; Phase rms\phi = ' num2str(rms(phaimg_1_3(S.bMask)),'%.3f')])               
+                title([titlestr '; Phase rms\phi = ' num2str(rms(phaimg_1_3(bmask)),'%.3f')])               
                 set(gca,'xlim',xylim,'ylim',xylim);
                 
                 % residual phase
                 subplot(2,3,3), imageschcit(S.x, S.y, pharesidual),
                 colorbartitle('Phase (rad)')
-                rmse = rms(pharesidual(S.bMask));
+                rmse = rms(pharesidual(bmask));
                 title(['Residual Fit, rms error = ' num2str(rmse,'%.3f') 'rad'])
                 set(gca,'xlim',xylim,'ylim',xylim);
                 if ~isempty(phresclim), set(gca,'clim',phresclim); end
