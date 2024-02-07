@@ -80,6 +80,7 @@ if ischar(hdrkwd), hdrkwd = {hdrkwd}; end
 
 % allocate
 hdrkwdval = zeros(Nf,length(hdrkwd));
+texp = zeros(Nf, 1);
 [nr_ii, nc_ii] = deal(zeros(Nf,1));
 img_ii = cell(Nf,1);
 list_ii_skip = [];
@@ -106,6 +107,11 @@ for ii = 1:Nf
     %     end
     hdrkwdval(ii,:) = [ctmp{:}];
     %hdrkwdval(ii,:) = 1;
+    
+    texptmp = FitsGetKeywordVal(finfo.PrimaryData.Keywords, 'EXPTIME');
+    if ~isempty(texptmp)
+        texp(ii) = texptmp;
+    end
     
 end
 % remove skipped
@@ -193,6 +199,7 @@ else
         'hfig', hfig ...
         ,'hax', hax ...
         ,'listfn', listfn ...
+        ,'texp', texp ...
         );
     for ikwd = 1:length(hdrkwd) % hdrkwd is a cell array
         sParms.(hdrkwd{ikwd}) = hdrkwdval(:,ikwd);

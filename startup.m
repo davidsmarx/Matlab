@@ -14,7 +14,7 @@ constants;
 unitsdefinitions;
 
 % % python path
-if isunix,
+if isunix %&& strcmp(char(java.lang.System.getProperty('user.name')), 'dmarx')
     try
         % for all hcit and aftac machines:
         PYENV = pyenv('Version', '/usr/local/bin/python3.7', "ExecutionMode", "InProcess")
