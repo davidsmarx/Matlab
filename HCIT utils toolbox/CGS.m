@@ -111,7 +111,7 @@ classdef CGS < handle
                 %bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
                 %bn = '/proj/dst/data/dB_PR/gsdst_';
                 %bn = 'omc_mswc';
-                bn = 'cgi_fft';
+                bn = 'omc_mswc';
             end
             
             switch lower(bn),
