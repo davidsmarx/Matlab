@@ -309,8 +309,19 @@ classdef CGS < handle
             S.amp_keys = ampinfo.PrimaryData.Keywords;
             S.wavelength = FitsGetKeywordVal(S.amp_keys, wavelength_kwd)*wavelength_units;
 
+            % real parms yaml file
             try
-                S.params = yaml.loadFile(PathTranslator([S.bn 'parms.yml']));
+                list_fn = {PathTranslator([S.bn 'parms.yml']), PathTranslator([S.bn 'parms.yaml'])};
+                if ~any(isfile(list_fn))
+                    error('No parameter yaml file found');
+                end
+                for ifn = 1:length(list_fn)
+                    if isfile(list_fn{ifn})
+                        S.params = yaml.loadFile(list_fn{ifn});
+                        break;
+                    end
+                end
+                
             catch ME
                 disp(ME.message);
             end
