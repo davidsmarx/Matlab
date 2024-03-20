@@ -39,6 +39,7 @@ elseif nargin > 3,
     
     % option 'scale'
     [scale, cProperties] = CheckOptionPop('scale', 'linear', cProperties{:});
+    [cmap, cProperties] = CheckOptionPop('cmap', 'jet', cProperties{:});
 
 else,
     error('usage: hh = imageschcit(x, y, Im);');
@@ -103,7 +104,16 @@ else
     
     axis image
     set(gca,'ydir','normal')
-    colormap(jet)
+    switch lower(scale)
+        case 'linear'
+            colormap(cmap)
+        case 'log'
+            cmap = logColormap('cmap', colormap(cmap));
+            colormap(cmap)
+        otherwise
+            error(['unknown scale: ' scale]);
+    end
+
     hax = gca;
 end
 

@@ -111,7 +111,8 @@ classdef CGS < handle
                 %bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
                 %bn = '/proj/dst/data/dB_PR/gsdst_';
                 %bn = 'omc_mswc';
-                bn = 'cgi_fft';
+                %bn = 'cgi_fft';
+                bn = 'cgi_tvac';
             end
             
             switch lower(bn),
@@ -278,6 +279,25 @@ classdef CGS < handle
                     
                     wavelength_kwd = 'lam';
 
+                case 'cgi_tvac'
+                    
+                    % scp reduced files from yzma to local
+                    % first make local folder
+                    base_name = ['prnum_' num2str(gsnum, '%06d')];
+                    local_path = PathTranslator('~/WFIRST/VA_FFT_activities/TVAC/pr/reduced/');
+                    if ~exist(fullfile(local_path, base_name), 'dir')
+                        % get the pr data package from kronk
+                        url = ['https://kronk.jpl.nasa.gov:8000/flight/pr/' num2str(gsnum, '%06d') '.zip'];
+                        zip_fn = websave(fullfile(local_path, [base_name '.zip']), url);
+                        list_fn = unzip(zip_fn, local_path);
+                    end
+                    % else
+                    % apparently this reduced data already transferred
+                    
+                    bn = fullfile(local_path, base_name, filesep);
+                    
+                    wavelength_kwd = 'lam';
+                    
                 otherwise
                     % do nothing, bn is explicit, check that it is
                     % valid path
@@ -1109,6 +1129,37 @@ classdef CGS < handle
             
         end % DisplayAmpPlane
         
+        function DisplayAmpPlanesAsImcube(S, varargin)
+
+            scale = CheckOption('scale', 'linear', varargin{:});
+
+            switch scale
+                case 'linear'
+                    pl = @(a) a;
+                case 'log'
+                    pl = @(a) logImage(a);
+                otherwise
+                    error(['Invalid scale: ' scale]);
+            end
+
+            if isempty(S.cAmpPlanes), S.ReadAmpImages; end
+
+            Nim = length(S.cAmpPlanes);
+            for ii = 1:Nim
+                nar(ii) = max(size(S.cAmpPlanes{ii}));
+            end
+            Nar = max(nar);
+            imcube = zeros(2*Nim, Nar, Nar);
+
+            for ii = 1:Nim
+                imcube(2*ii-1, :, :) = pad_crop(squeeze(S.cAmpPlanes{ii}(:,:,1)), Nar);
+                imcube(2*ii, :, :) = pad_crop(squeeze(S.cAmpPlanes{ii}(:,:,2)), Nar);
+            end
+
+            figure, ImageCube(pl(imcube));
+
+        end % DisplayAmpPlanesAsImcube
+
         function [hax, Imgs, ha] = DisplayAllPlanes(S, varargin)
             % hax = DisplayAllPlanes(S, options)
             % options:

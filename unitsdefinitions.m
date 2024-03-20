@@ -10,6 +10,7 @@ PM = 1e-12; % picometers
 IN = 0.0254; % inches
 MIL = 1e-3*IN; % mils
 UIN = 1e-6*IN;
+KM = 1e3; % kilometers
 
 FS = 1e-15; % femto seconds
 PS = 1e-12; %
