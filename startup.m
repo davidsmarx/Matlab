@@ -27,6 +27,13 @@ if isunix %&& strcmp(char(java.lang.System.getProperty('user.name')), 'dmarx')
         warning('failed to start python');
         disp(ME.getReport);
     end
+else
+    try
+        PYENV = pyenv('Version', 'C:\Users\dmarx\AppData\Local\conda\conda\envs\py310\python.exe', "ExecutionMode", "InProcess")
+    catch ME
+        warning('failed to start python');
+        disp(ME.getReport);
+    end
 end
 
 % graphics

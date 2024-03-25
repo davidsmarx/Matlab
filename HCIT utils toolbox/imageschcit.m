@@ -15,8 +15,11 @@ function hout = imageschcit(varargin)
 %    'hax', hax % axes handle to put image (default = new axes)
 %    'scale', 'linear' or 'log', % default = 'linear'
 
+% init options
 cProperties = {};
 hax = [];
+scale = 'linear';
+cmap = 'jet';
    
 x = []; y = [];
 if nargin == 1,

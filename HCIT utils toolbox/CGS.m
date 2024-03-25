@@ -52,6 +52,7 @@ classdef CGS < handle
         gsnum 
         listPupImDir
         listSrcImDir
+        list_lenses
         bn 
         amp
         ph         % unwrapped phase
@@ -485,6 +486,15 @@ classdef CGS < handle
                 S.zAmpPlanes(ii) = FitsGetKeywordVal(finfo.Image(ii-1).Keywords, 'Z')*S.zunits;
             end
             
+            % if available, make list of lenses, special to CGI
+            % aggregate the list of lenses
+            S.list_lenses = cell(1,length(S.cAmpPlanes));
+            if isfield(S.params, 'list_lens_gs') && isfield(S.params, 'list_lens_par')
+                S.list_lenses = [S.params.list_lens_gs(:)', S.params.list_lens_par(:)'];
+            else
+                [S.list_lenses{:}] = deal('');
+            end
+
         end % ReadAmpImages
         
         function rmsP = rmsPha(S)
@@ -1130,33 +1140,44 @@ classdef CGS < handle
         end % DisplayAmpPlane
         
         function DisplayAmpPlanesAsImcube(S, varargin)
-
-            scale = CheckOption('scale', 'linear', varargin{:});
-
-            switch scale
-                case 'linear'
-                    pl = @(a) a;
-                case 'log'
-                    pl = @(a) logImage(a);
-                otherwise
-                    error(['Invalid scale: ' scale]);
-            end
+            % DisplayAmpPlanesAsImcube(S, varargin)
+            % CheckOption('scale', 'linear', varargin{:}); % 'linear' 'log'
+            % CheckOption('plane', 1:length(S.cAmpPlanes), varargin{:}); % list of 1:length(cAmpPlanes)
 
             if isempty(S.cAmpPlanes), S.ReadAmpImages; end
 
+            % check options
+            scale = CheckOption('scale', 'linear', varargin{:});
+            list_planes = CheckOption('plane', 1:length(S.cAmpPlanes), varargin{:});
+
+            %
             Nim = length(S.cAmpPlanes);
             for ii = 1:Nim
                 nar(ii) = max(size(S.cAmpPlanes{ii}));
             end
             Nar = max(nar);
-            imcube = zeros(2*Nim, Nar, Nar);
-
-            for ii = 1:Nim
-                imcube(2*ii-1, :, :) = pad_crop(squeeze(S.cAmpPlanes{ii}(:,:,1)), Nar);
-                imcube(2*ii, :, :) = pad_crop(squeeze(S.cAmpPlanes{ii}(:,:,2)), Nar);
+            
+            %
+            imcube = zeros(2*length(list_planes), Nar, Nar);
+            list_titlestr = cell(1, 2*length(list_planes));
+            for ii = 1:length(list_planes)
+                ipl = list_planes(ii);
+                imcube(2*ii-1, :, :) = pad_crop(squeeze(S.cAmpPlanes{ipl}(:,:,1)), Nar);
+                list_titlestr{2*ii-1} = strcat('#', num2str(ipl), " ", S.list_lenses{ipl}, ', measured');
+                imcube(2*ii, :, :) = pad_crop(squeeze(S.cAmpPlanes{ipl}(:,:,2)), Nar);
+                list_titlestr{2*ii} = strcat('#', num2str(ipl), " ", S.list_lenses{ipl}, ', calculated');
             end
 
-            figure, ImageCube(pl(imcube));
+            figure, ImageCube(imcube, 1:2*length(list_planes), 'fTitleStr', list_titlestr);
+            switch scale
+                case 'linear'
+                    % do nothing
+                case 'log'
+                    colormap(logColormap);
+                otherwise
+                    error(['Invalid scale: ' scale]);
+            end
+                    
 
         end % DisplayAmpPlanesAsImcube
 
