@@ -52,6 +52,7 @@ classdef CGS < handle
         gsnum 
         listPupImDir
         listSrcImDir
+        list_lenses
         bn 
         amp
         ph         % unwrapped phase
@@ -278,6 +279,25 @@ classdef CGS < handle
                     
                     wavelength_kwd = 'lam';
 
+                case 'cgi_tvac'
+                    
+                    % scp reduced files from yzma to local
+                    % first make local folder
+                    base_name = ['prnum_' num2str(gsnum, '%06d')];
+                    local_path = PathTranslator('~/WFIRST/VA_FFT_activities/TVAC/pr/reduced/');
+                    if ~exist(fullfile(local_path, base_name), 'dir')
+                        % get the pr data package from kronk
+                        url = ['https://kronk.jpl.nasa.gov:8000/flight/pr/' num2str(gsnum, '%06d') '.zip'];
+                        zip_fn = websave(fullfile(local_path, [base_name '.zip']), url);
+                        list_fn = unzip(zip_fn, local_path);
+                    end
+                    % else
+                    % apparently this reduced data already transferred
+                    
+                    bn = fullfile(local_path, base_name, filesep);
+                    
+                    wavelength_kwd = 'lam';
+                    
                 otherwise
                     % do nothing, bn is explicit, check that it is
                     % valid path
@@ -465,6 +485,15 @@ classdef CGS < handle
                 S.zAmpPlanes(ii) = FitsGetKeywordVal(finfo.Image(ii-1).Keywords, 'Z')*S.zunits;
             end
             
+            % if available, make list of lenses, special to CGI
+            % aggregate the list of lenses
+            S.list_lenses = cell(1,length(S.cAmpPlanes));
+            if isfield(S.params, 'list_lens_gs') && isfield(S.params, 'list_lens_par')
+                S.list_lenses = [S.params.list_lens_gs(:)', S.params.list_lens_par(:)'];
+            else
+                [S.list_lenses{:}] = deal('');
+            end
+
         end % ReadAmpImages
         
         function rmsP = rmsPha(S)
@@ -1109,6 +1138,48 @@ classdef CGS < handle
             
         end % DisplayAmpPlane
         
+        function DisplayAmpPlanesAsImcube(S, varargin)
+            % DisplayAmpPlanesAsImcube(S, varargin)
+            % CheckOption('scale', 'linear', varargin{:}); % 'linear' 'log'
+            % CheckOption('plane', 1:length(S.cAmpPlanes), varargin{:}); % list of 1:length(cAmpPlanes)
+
+            if isempty(S.cAmpPlanes), S.ReadAmpImages; end
+
+            % check options
+            scale = CheckOption('scale', 'linear', varargin{:});
+            list_planes = CheckOption('plane', 1:length(S.cAmpPlanes), varargin{:});
+
+            %
+            Nim = length(S.cAmpPlanes);
+            for ii = 1:Nim
+                nar(ii) = max(size(S.cAmpPlanes{ii}));
+            end
+            Nar = max(nar);
+            
+            %
+            imcube = zeros(2*length(list_planes), Nar, Nar);
+            list_titlestr = cell(1, 2*length(list_planes));
+            for ii = 1:length(list_planes)
+                ipl = list_planes(ii);
+                imcube(2*ii-1, :, :) = pad_crop(squeeze(S.cAmpPlanes{ipl}(:,:,1)), Nar);
+                list_titlestr{2*ii-1} = strcat('#', num2str(ipl), " ", S.list_lenses{ipl}, ', measured');
+                imcube(2*ii, :, :) = pad_crop(squeeze(S.cAmpPlanes{ipl}(:,:,2)), Nar);
+                list_titlestr{2*ii} = strcat('#', num2str(ipl), " ", S.list_lenses{ipl}, ', calculated');
+            end
+
+            figure, ImageCube(imcube, 1:2*length(list_planes), 'fTitleStr', list_titlestr);
+            switch scale
+                case 'linear'
+                    % do nothing
+                case 'log'
+                    colormap(logColormap);
+                otherwise
+                    error(['Invalid scale: ' scale]);
+            end
+                    
+
+        end % DisplayAmpPlanesAsImcube
+
         function [hax, Imgs, ha] = DisplayAllPlanes(S, varargin)
             % hax = DisplayAllPlanes(S, options)
             % options:

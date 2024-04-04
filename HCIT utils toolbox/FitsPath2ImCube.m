@@ -140,19 +140,20 @@ if ~isempty(refImg),
     ImCube = ImCube - shiftdim(repmat(refImg, [1 1 Nf]));
 end
 
-% apply scale (stretch)
-switch lower(scale),
-    case 'linear',
-        % do nothing
-        ImCube_disp = ImCube;
-    case 'log'
-        %ImCube = log10(ImCube);
-        % scale to 0..1
-        ImCube_disp = logImage(ImCube);
-        
-    otherwise,
-        error(['unknown scale: ' scale]);
-end
+% % apply scale (stretch)
+% switch lower(scale),
+%     case 'linear',
+%         % do nothing
+%         ImCube_disp = ImCube;
+%     case 'log'
+%         %ImCube = log10(ImCube);
+%         % scale to 0..1
+%         ImCube_disp = logImage(ImCube);
+% 
+%     otherwise,
+%         error(['unknown scale: ' scale]);
+% end
+ImCube_disp = ImCube;
 
 % title strings
 if ~isempty(hdrkwd)
@@ -189,6 +190,19 @@ if isempty(clim),
     clim = AutoClim(ImCube_disp(:), 'one-sided', true);
 end
 set(hax,'clim',clim)
+
+% apply scale (stretch)
+switch lower(scale),
+    case 'linear',
+        % do nothing
+    case 'log'
+        %ImCube = log10(ImCube);
+        % scale to 0..1
+        colormap(logColormap)
+        
+    otherwise,
+        error(['unknown scale: ' scale]);
+end
 
 % return values, depends on options
 if nargout == 0,
