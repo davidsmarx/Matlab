@@ -535,7 +535,7 @@ classdef CGS < handle
             pMask = CheckOption('pMask', S.bMask, varargin{:});
             xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             climph = CheckOption('climph', [], varargin{:});
-            phplot = CheckOption('phplot', 'ph', varargin{:}); % or S.(phplot), e.g. 'angleE'
+            phplot = CheckOption('phplot', 'phw_ptt', varargin{:}); % or S.(phplot), e.g. 'angleE'
             ampplot = CheckOption('ampplot', 'absE', varargin{:});
             stitle = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             bRemoveTipTilt = CheckOption('removetiptilt', true, varargin{:});
@@ -652,7 +652,7 @@ classdef CGS < handle
             removeDefocus = CheckOption('removeDefocus', false, varargin{:});
             removeZ2Z3 = CheckOption('removeZ2Z3', true, varargin{:});
             doRegister = CheckOption('doRegister', false, varargin{:});
-            phplot = CheckOption('phplot', 'ph', varargin{:}); % S.(phplot)
+            phplot = CheckOption('phplot', 'phw_ptt', varargin{:}); % S.(phplot)
             xylim = CheckOption('xylim', [], varargin{:});
             climdph = CheckOption('dphclim', [], varargin{:});
             climph = CheckOption('climph', [], varargin{:});
@@ -817,28 +817,54 @@ classdef CGS < handle
             
         end % DisplayGSrefGS
 
-        function phw_ptt = RemovePTTfft(S)
+        function phw_ptt = RemovePTTfft(S, varargin)
             % remove large scale piston, tip, tilt by translating the fft
             % s.t. the fft peak is at the center
             
-            Zs = S.amp.*exp(1i*S.phw);
+            Es = S.amp.*exp(1i*S.phw);
 
-            %ZZ = fftshift(fft2(fftshift(S.bMask.*Zs)));
-            ZZ = fftshift(fft2(fftshift(Zs)));
-            
-            %figure, imagescampphase(ZZ, x, y)
-            
-            [fm, xm, ym] = findpeak2(abs(ZZ));
-            apha = angle(ZZ(round(ym),round(xm)));
-            
-            ZZs = circshift( circshift(ZZ, -S.y(round(ym)), 1), -S.x(round(xm)), 2);
-            %figure, imageschcit(S.x, S.y, abs(ZZs))
-            
-            % remove piston
-            Zss = exp(-1i*apha).*fftshift(ifft2(fftshift(ZZs)));
-            %figure, imagescampphase(Sspin.amp .* Zspinss)
+            %             % to focus
+            %             Ef = fftshift(fft2(fftshift(Es)));
+            %
+            %             % coarse ptt removal
+            %             [fm, xm, ym] = findpeak2(abs(Ef));
+            %             alpha = angle(Ef(round(ym),round(xm)));
+            %
+            %             % exact shift
+            %             Es = circshift( circshift(Ef, -S.y(round(ym)), 1), -S.x(round(xm)), 2);
+            %             %figure, imageschcit(S.x, S.y, abs(ZZs))
+            %
+            %             % remove piston
+            %             Es = exp(-1i*alpha).*fftshift(ifft2(fftshift(Es)));
+            %             %figure, imagescampphase(Sspin.amp .* Zspinss)
 
-            phw_ptt = angle(Zss);
+            % use centroid for fine ptt
+            % to focus
+            Ef = fftshift(fft2(fftshift(Es)));
+            Imf = abs(Ef).^2;
+            % rough pupil diameter
+            % hack for now
+            [nr nc] = size(Es);
+            DD = max(S.X(S.bMask)) - min(S.X(S.bMask));
+            ppl0 = nr/DD;
+            ww = ceil(5*ppl0);
+            Imf_cr = pad_crop(Imf, 2*ww+1);
+            [xc, yc, Xc, Yc, Rc] = CreateGrid(Imf_cr);
+            iuse = Rc < ww;
+            com = [sum(Imf_cr(iuse).*Xc(iuse)) sum(Imf_cr(iuse).*Yc(iuse))]./sum(Imf_cr(iuse));
+            Ess = Es .* exp(-1i*(com(1)*S.X/nc + com(2)*S.Y/nr));
+
+            while max(abs(com)) > 0.1
+                Es = Ess;
+                Ef = fftshift(fft2(fftshift(Es)));
+                Imf = abs(Ef).^2;
+                Imf_cr = pad_crop(Imf, 2*ww+1);
+                com = [sum(Imf_cr(iuse).*Xc(iuse)) sum(Imf_cr(iuse).*Yc(iuse))]./sum(Imf_cr(iuse));
+                fprintf('com: %.2f, %.2f\n',com);
+                Ess = Es .* exp(-1i*(com(1)*S.X/nc + com(2)*S.Y/nr));
+            end
+            %
+            phw_ptt = angle(Ess);
             S.phw_ptt = phw_ptt;
             
         end % RemovePTTfft
