@@ -10,6 +10,7 @@ function [hfig_out, hax_out, sUserData_out] = ImageCube(imgCube, listI, varargin
 %   '1' first slice
 %   'e' last slice
 %   'm' make a movie stepping through the slices and save as .avi
+%   'G' make a gif stepping through the slices and save as .gif
 %
 % options:
 % fImageDisplay = CheckOption('fImageDisplay', @imageschcit, varargin{:});

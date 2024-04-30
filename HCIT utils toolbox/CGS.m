@@ -1012,6 +1012,17 @@ classdef CGS < handle
             if nw == 4,
                 MF = [MF length(cc(:,3))-sum(cc(:,3))];
             end
+
+            if ~isempty(S.list_lenses)
+                % print out table
+                if length(S.list_lenses) ~= NIm,
+                    error('length list_lenses does not match number images');
+                end
+
+                for ii = 1:NIm,
+                    fprintf('%10s %.4f\n', S.list_lenses{ii}, cc(ii,2));
+                end
+            end
             
         end % AmpCorrMetric
         
@@ -1076,8 +1087,11 @@ classdef CGS < handle
             switch scale
                 case 'linear'
                     fScale = @(a) a;
+                    cmap = colormap(gray);
                 case {'log', 'log10'},
-                    fScale = @(a) real(log10(a));
+                    %fScale = @(a) real(log10(a));
+                    fScale = @(a) a;
+                    cmap = logColormap(gray);
                 otherwise
                     error('unknown scale');
             end
@@ -1102,6 +1116,8 @@ classdef CGS < handle
                     end
                     
                     [hfig, hax] = ImageCube(imcube, 1:2*Nplanes); % 'fTitleStr', @(isl) {['Camera, ipl = ' num2str(ipl(ceil(isl/2)))]
+                    colormap(cmap);
+
                     %set(hax,'clim',get(gca,'clim'))
                     if ~isempty(xylim)
                         set(hax, 'xlim', xylim, 'ylim', xylim)
@@ -1121,7 +1137,8 @@ classdef CGS < handle
                         imageschcit(funPlot(S.cAmpPlanes{ipl(iipl)},2)), title(['Estimated, ipl = ' num2str(ipl(iipl))])
                         colorbar
                     end
-                    
+                    colormap(cmap);
+
                     cclim = get(hax,'clim');
                     if isempty(clim),
                         set(hax,'clim', [max([cclim{1}(1) cclim{2}(1)]) max([cclim{:}])]);
@@ -1141,6 +1158,7 @@ classdef CGS < handle
         
         function DisplayAmpPlanesAsImcube(S, varargin)
             % DisplayAmpPlanesAsImcube(S, varargin)
+            %
             % CheckOption('scale', 'linear', varargin{:}); % 'linear' 'log'
             % CheckOption('plane', 1:length(S.cAmpPlanes), varargin{:}); % list of 1:length(cAmpPlanes)
 
@@ -1149,6 +1167,7 @@ classdef CGS < handle
             % check options
             scale = CheckOption('scale', 'linear', varargin{:});
             list_planes = CheckOption('plane', 1:length(S.cAmpPlanes), varargin{:});
+            label = CheckOption('label', '', varargin{:}); % label to add to each title str
 
             %
             Nim = length(S.cAmpPlanes);
@@ -1163,9 +1182,9 @@ classdef CGS < handle
             for ii = 1:length(list_planes)
                 ipl = list_planes(ii);
                 imcube(2*ii-1, :, :) = pad_crop(squeeze(S.cAmpPlanes{ipl}(:,:,1)), Nar);
-                list_titlestr{2*ii-1} = strcat('#', num2str(ipl), " ", S.list_lenses{ipl}, ', measured');
+                list_titlestr{2*ii-1} = strcat(label, ', #', num2str(ipl), " ", S.list_lenses{ipl}, ', meas');
                 imcube(2*ii, :, :) = pad_crop(squeeze(S.cAmpPlanes{ipl}(:,:,2)), Nar);
-                list_titlestr{2*ii} = strcat('#', num2str(ipl), " ", S.list_lenses{ipl}, ', calculated');
+                list_titlestr{2*ii} = strcat(label, ', #', num2str(ipl), " ", S.list_lenses{ipl}, ', calc');
             end
 
             figure, ImageCube(imcube, 1:2*length(list_planes), 'fTitleStr', list_titlestr);
