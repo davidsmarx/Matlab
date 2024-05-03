@@ -22,6 +22,7 @@ function varargout = FitsPath2ImCube(pn, varargin)
 % hdrkwdvalfmt = CheckOption('hdrkwdvalfmt', '%.1f', varargin{:});
 % scale = CheckOption('scale', 'linear', varargin{:}); or 'log'
 % refImg = CheckOption('refimg', [], varargin{:}); ImCube = ImCube - refImg
+% ImageHDU = CheckOption('imagehdu', 0, varargin{:}); % default is PrimaryHDU
 % comTitlestr = CheckOption('comtitlestr', '', varargin{:}); % common title to start each titlestr
 % clim = CheckOption('clim', [], varargin{:});
 % hifg = CheckOption('hfig', [], varargin{:}); % if empty, and plottype ~= 'none', FitsPath2ImCube creates a new figure
@@ -45,6 +46,7 @@ scale = CheckOption('scale', 'linear', varargin{:});
 hdrkwd = CheckOption('hdrkwd', {'camz'}, varargin{:});
 hdrkwdvalfmt = CheckOption('hdrkwdvalfmt', '%.3f ', varargin{:});
 refImg = CheckOption('refimg', [], varargin{:}); % ImCube = ImCube - refImg
+ImageHDU = CheckOption('imagehdu', 0, varargin{:}); % default is PrimaryHDU
 comTitlestr = CheckOption('comtitlestr', '', varargin{:}); % common title to start each titlestr
 clim = CheckOption('clim', [], varargin{:});
 hfig = CheckOption('hfig', [], varargin{:}); % if empty, and plottype ~= 'none', FitsPath2ImCube creates a new figure
@@ -70,10 +72,18 @@ Nf = length(listfn);
 finfo = fitsinfo(PathTranslator([pn '/' listfn(1).name]));
 if isempty(finfo.PrimaryData.Size),
     sExtension = 'image';
+    n_hdu = 1;
 else
     sExtension = 'primary';
+    n_hdu = 1;
 end
 %imtmp = fitsread(PathTranslator([pn '/' listfn(1).name]),sExtension);
+
+% over-ride extenstion with option, if specified
+if ImageHDU > 0
+    sExtension = 'image';
+    n_hdu = ImageHDU;
+end
 
 % check header keyword, make sure it's cell
 if ischar(hdrkwd), hdrkwd = {hdrkwd}; end
@@ -85,7 +95,7 @@ img_ii = cell(Nf,1);
 list_ii_skip = [];
 for ii = 1:Nf
 
-    img_tmp = fitsread(PathTranslator([pn '/' listfn(ii).name]),sExtension);
+    img_tmp = fitsread(PathTranslator([pn '/' listfn(ii).name]), sExtension, n_hdu);
     finfo = fitsinfo(PathTranslator([pn '/' listfn(ii).name]));
     
     % can only handle 2-d images
