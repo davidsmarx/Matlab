@@ -12,7 +12,10 @@ function [val, return_list] = CheckOptionPop(varstring, defaultval, varargin)
 %
 % example:
 % RminSc = CheckOption('RminSc', S.RminSc, varargin{:});
+
+% init return values
 val = defaultval;
+return_list = {};
 
 if isempty(varargin)
     return

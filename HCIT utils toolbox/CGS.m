@@ -52,6 +52,7 @@ classdef CGS < handle
         gsnum 
         listPupImDir
         listSrcImDir
+        list_lenses
         bn 
         amp
         ph         % unwrapped phase
@@ -111,7 +112,7 @@ classdef CGS < handle
                 %bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
                 %bn = '/proj/dst/data/dB_PR/gsdst_';
                 %bn = 'omc_mswc';
-                bn = 'cgi_fft';
+                bn = 'cgi_tvac';
             end
             
             switch lower(bn),
@@ -264,18 +265,39 @@ classdef CGS < handle
                     % scp reduced files from yzma to local
                     % first make local folder
                     base_name = ['prnum_' num2str(gsnum, '%06d')];
-                    local_path = PathTranslator(['~/WFIRST/VA_FFT_activities/FFT/pr/FFT_reduced/' base_name '/']);
-                    if ~exist(local_path, 'dir')
-                        mkdir(local_path);
-                        system(['scp dmarx@yzma.jpl.nasa.gov:/export/vol1/ctc-gsw/ws-1.2.2/data/archive/pr/' base_name '/* ' local_path]);
+                    local_path = PathTranslator('~/WFIRST/VA_FFT_activities/FFT/pr/FFT_reduced/');
+                    if ~exist(fullfile(local_path, base_name), 'dir')
+                        % get the pr data package from kronk
+                        url = ['https://kronk.jpl.nasa.gov:8000/flight/pr/' num2str(gsnum, '%06d') '.zip'];
+                        zip_fn = websave(fullfile(local_path, [base_name '.zip']), url);
+                        list_fn = unzip(zip_fn, local_path);
                     end
                     % else
                     % apparently this reduced data already transferred
                     
-                    bn = local_path;
+                    bn = fullfile(local_path, base_name, filesep);
                     
                     wavelength_kwd = 'lam';
 
+                case 'cgi_tvac'
+                    
+                    % scp reduced files from yzma to local
+                    % first make local folder
+                    base_name = ['prnum_' num2str(gsnum, '%06d')];
+                    local_path = PathTranslator('~/WFIRST/VA_FFT_activities/TVAC/pr/reduced/');
+                    if ~exist(fullfile(local_path, base_name), 'dir')
+                        % get the pr data package from kronk
+                        url = ['https://kronk.jpl.nasa.gov:8000/flight/pr/' num2str(gsnum, '%06d') '.zip'];
+                        zip_fn = websave(fullfile(local_path, [base_name '.zip']), url);
+                        list_fn = unzip(zip_fn, local_path);
+                    end
+                    % else
+                    % apparently this reduced data already transferred
+                    
+                    bn = fullfile(local_path, base_name, filesep);
+                    
+                    wavelength_kwd = 'lam';
+                    
                 otherwise
                     % do nothing, bn is explicit, check that it is
                     % valid path
@@ -463,6 +485,15 @@ classdef CGS < handle
                 S.zAmpPlanes(ii) = FitsGetKeywordVal(finfo.Image(ii-1).Keywords, 'Z')*S.zunits;
             end
             
+            % if available, make list of lenses, special to CGI
+            % aggregate the list of lenses
+            S.list_lenses = cell(1,length(S.cAmpPlanes));
+            if isfield(S.params, 'list_lens_gs') && isfield(S.params, 'list_lens_par')
+                S.list_lenses = [S.params.list_lens_gs(:)', S.params.list_lens_par(:)'];
+            else
+                [S.list_lenses{:}] = deal('');
+            end
+
         end % ReadAmpImages
         
         function rmsP = rmsPha(S)
@@ -504,7 +535,7 @@ classdef CGS < handle
             pMask = CheckOption('pMask', S.bMask, varargin{:});
             xylim = CheckOption('xylim', 1.1*max(S.R(S.bMask)), varargin{:});
             climph = CheckOption('climph', [], varargin{:});
-            phplot = CheckOption('phplot', 'ph', varargin{:}); % or S.(phplot), e.g. 'angleE'
+            phplot = CheckOption('phplot', 'phw_ptt', varargin{:}); % or S.(phplot), e.g. 'angleE'
             ampplot = CheckOption('ampplot', 'absE', varargin{:});
             stitle = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
             bRemoveTipTilt = CheckOption('removetiptilt', true, varargin{:});
@@ -621,7 +652,7 @@ classdef CGS < handle
             removeDefocus = CheckOption('removeDefocus', false, varargin{:});
             removeZ2Z3 = CheckOption('removeZ2Z3', true, varargin{:});
             doRegister = CheckOption('doRegister', false, varargin{:});
-            phplot = CheckOption('phplot', 'ph', varargin{:}); % S.(phplot)
+            phplot = CheckOption('phplot', 'phw_ptt', varargin{:}); % S.(phplot)
             xylim = CheckOption('xylim', [], varargin{:});
             climdph = CheckOption('dphclim', [], varargin{:});
             climph = CheckOption('climph', [], varargin{:});
@@ -786,28 +817,54 @@ classdef CGS < handle
             
         end % DisplayGSrefGS
 
-        function phw_ptt = RemovePTTfft(S)
+        function phw_ptt = RemovePTTfft(S, varargin)
             % remove large scale piston, tip, tilt by translating the fft
             % s.t. the fft peak is at the center
             
-            Zs = S.amp.*exp(1i*S.phw);
+            Es = S.amp.*exp(1i*S.phw);
 
-            %ZZ = fftshift(fft2(fftshift(S.bMask.*Zs)));
-            ZZ = fftshift(fft2(fftshift(Zs)));
-            
-            %figure, imagescampphase(ZZ, x, y)
-            
-            [fm, xm, ym] = findpeak2(abs(ZZ));
-            apha = angle(ZZ(round(ym),round(xm)));
-            
-            ZZs = circshift( circshift(ZZ, -S.y(round(ym)), 1), -S.x(round(xm)), 2);
-            %figure, imageschcit(S.x, S.y, abs(ZZs))
-            
-            % remove piston
-            Zss = exp(-1i*apha).*fftshift(ifft2(fftshift(ZZs)));
-            %figure, imagescampphase(Sspin.amp .* Zspinss)
+            %             % to focus
+            %             Ef = fftshift(fft2(fftshift(Es)));
+            %
+            %             % coarse ptt removal
+            %             [fm, xm, ym] = findpeak2(abs(Ef));
+            %             alpha = angle(Ef(round(ym),round(xm)));
+            %
+            %             % exact shift
+            %             Es = circshift( circshift(Ef, -S.y(round(ym)), 1), -S.x(round(xm)), 2);
+            %             %figure, imageschcit(S.x, S.y, abs(ZZs))
+            %
+            %             % remove piston
+            %             Es = exp(-1i*alpha).*fftshift(ifft2(fftshift(Es)));
+            %             %figure, imagescampphase(Sspin.amp .* Zspinss)
 
-            phw_ptt = angle(Zss);
+            % use centroid for fine ptt
+            % to focus
+            Ef = fftshift(fft2(fftshift(Es)));
+            Imf = abs(Ef).^2;
+            % rough pupil diameter
+            % hack for now
+            [nr nc] = size(Es);
+            DD = max(S.X(S.bMask)) - min(S.X(S.bMask));
+            ppl0 = nr/DD;
+            ww = ceil(5*ppl0);
+            Imf_cr = pad_crop(Imf, 2*ww+1);
+            [xc, yc, Xc, Yc, Rc] = CreateGrid(Imf_cr);
+            iuse = Rc < ww;
+            com = [sum(Imf_cr(iuse).*Xc(iuse)) sum(Imf_cr(iuse).*Yc(iuse))]./sum(Imf_cr(iuse));
+            Ess = Es .* exp(-1i*(com(1)*S.X/nc + com(2)*S.Y/nr));
+
+            while max(abs(com)) > 0.1
+                Es = Ess;
+                Ef = fftshift(fft2(fftshift(Es)));
+                Imf = abs(Ef).^2;
+                Imf_cr = pad_crop(Imf, 2*ww+1);
+                com = [sum(Imf_cr(iuse).*Xc(iuse)) sum(Imf_cr(iuse).*Yc(iuse))]./sum(Imf_cr(iuse));
+                fprintf('com: %.2f, %.2f\n',com);
+                Ess = Es .* exp(-1i*(com(1)*S.X/nc + com(2)*S.Y/nr));
+            end
+            %
+            phw_ptt = angle(Ess);
             S.phw_ptt = phw_ptt;
             
         end % RemovePTTfft
@@ -818,13 +875,15 @@ classdef CGS < handle
             % zernike fit using bMask pixels
             % nz = array of zernike modes to fit (default = 1:11)
             %
-            % phase = CheckOption('phase', 'ph', varargin{:});
-            % bDisplay = CheckOption('display', true, varargin{:});
-            % titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
-            % xylim = CheckOption('xylim', [], varargin{:});
-            % phresclim = CheckOption('phresclim', [], varargin{:});
-            % ylimZ = CheckOption('ylimzplot', [], varargin{:});
-            % CheckOption('zernikeunits', 'nm', varargin{:}); % 'nm', 'rad'
+            % CheckOption('phase', 'ph', varargin{:});
+            % CheckOption('bmask', S.bMask, varargin{:});
+            % CheckOption('display', true, varargin{:});
+            % CheckOption('hfig', [], varargin{:});
+            % CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
+            % CheckOption('xylim', [], varargin{:});
+            % CheckOption('phresclim', [], varargin{:});
+            % CheckOption('ylimzplot', [], varargin{:});
+            % CheckOption('zernikeunits', 'nm', varargin{:}); % 'nm' or 'rad'
             %
             % return:
             % ZZout = zernike coefficients, ZZout(1:3) are always piston,
@@ -838,6 +897,7 @@ classdef CGS < handle
             end
             
             phasefieldname = CheckOption('phase', 'ph', varargin{:});
+            bmask = CheckOption('bmask', S.bMask, varargin{:});
             bDisplay = CheckOption('display', true, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             titlestr = CheckOption('title', ['gsnum ' num2str(S.gsnum)], varargin{:});
@@ -854,16 +914,16 @@ classdef CGS < handle
             if ~any(nzfit == 1), nzfit = [1; nzfit]; end
             
             %
-            rz = max(S.R(S.bMask));
-            %             ZZ = zernikefit(S.X(S.bMask), S.Y(S.bMask), S.(phasefieldname)(S.bMask), nzfit, rz, 'noll');
+            rz = max(S.R(bmask));
+            %             ZZ = zernikefit(S.X(bmask), S.Y(bmask), S.(phasefieldname)(bmask), nzfit, rz, 'noll');
             %             phwfit = nan(size(S.X));
-            %             phwfit(S.bMask) = zernikeval(ZZ, S.X(S.bMask), S.Y(S.bMask), rz, 'noll', 'nz', nzfit);
+            %             phwfit(bmask) = zernikeval(ZZ, S.X(bmask), S.Y(bmask), rz, 'noll', 'nz', nzfit);
             %             pharesidual = nan(size(S.X));
-            %             pharesidual(S.bMask) = mod2pi(S.(phasefieldname)(S.bMask) - phwfit(S.bMask));
+            %             pharesidual(bmask) = mod2pi(S.(phasefieldname)(bmask) - phwfit(bmask));
             [ZZ, phaimg_1_3, pharesidual, sFitParms] = ZernikeAnalysis(S.(phasefieldname),...
-                'isphase', true, 'bMask', S.bMask, 'Rnorm', rz, 'modes', nzfit, 'polyorder', 'Noll',...
+                'isphase', true, 'bMask', bmask, 'Rnorm', rz, 'modes', nzfit, 'polyorder', 'Noll',...
                 'do_phaseunwrap', false);
-            phwfit = S.bMask.*sFitParms.phafit_ptt;
+            phwfit = bmask.*sFitParms.phafit_ptt;
             
             % return zernike coeffs in requested units
             switch zzunits
@@ -886,7 +946,7 @@ classdef CGS < handle
 
                 % determine plot width
                 if isempty(xylim),
-                    xylim = 1.1*max(S.R(S.bMask));
+                    xylim = 1.1*max(S.R(bmask));
                     xylim = 5*ceil(xylim/5.0); % to the nearest multiple of 5
                     xylim = xylim*[-1 1];
                 end
@@ -902,16 +962,16 @@ classdef CGS < handle
                 set(gca,'xlim',xylim,'ylim',xylim);
 
                 % phase, remove 1 to 3
-                subplot(2,3,2), imageschcit(S.x, S.y, phaimg_1_3.*S.bMask) % mod2pi(S.phunwrap).*S.bMask)
+                subplot(2,3,2), imageschcit(S.x, S.y, phaimg_1_3.*bmask) % mod2pi(S.phunwrap).*bmask)
                 colorbartitle('Phase (rad)')
                 %set(gca,'clim',pi*[-1 1])
-                title([titlestr '; Phase rms\phi = ' num2str(rms(phaimg_1_3(S.bMask)),'%.3f')])               
+                title([titlestr '; Phase rms\phi = ' num2str(rms(phaimg_1_3(bmask)),'%.3f')])               
                 set(gca,'xlim',xylim,'ylim',xylim);
                 
                 % residual phase
                 subplot(2,3,3), imageschcit(S.x, S.y, pharesidual),
                 colorbartitle('Phase (rad)')
-                rmse = rms(pharesidual(S.bMask));
+                rmse = rms(pharesidual(bmask));
                 title(['Residual Fit, rms error = ' num2str(rmse,'%.3f') 'rad'])
                 set(gca,'xlim',xylim,'ylim',xylim);
                 if ~isempty(phresclim), set(gca,'clim',phresclim); end
@@ -977,6 +1037,17 @@ classdef CGS < handle
             if nw == 4,
                 MF = [MF length(cc(:,3))-sum(cc(:,3))];
             end
+
+            if ~isempty(S.list_lenses)
+                % print out table
+                if length(S.list_lenses) ~= NIm,
+                    error('length list_lenses does not match number images');
+                end
+
+                for ii = 1:NIm,
+                    fprintf('%10s %.4f\n', S.list_lenses{ii}, cc(ii,2));
+                end
+            end
             
         end % AmpCorrMetric
         
@@ -1041,8 +1112,11 @@ classdef CGS < handle
             switch scale
                 case 'linear'
                     fScale = @(a) a;
+                    cmap = colormap(gray);
                 case {'log', 'log10'},
-                    fScale = @(a) real(log10(a));
+                    %fScale = @(a) real(log10(a));
+                    fScale = @(a) a;
+                    cmap = logColormap(gray);
                 otherwise
                     error('unknown scale');
             end
@@ -1067,6 +1141,8 @@ classdef CGS < handle
                     end
                     
                     [hfig, hax] = ImageCube(imcube, 1:2*Nplanes); % 'fTitleStr', @(isl) {['Camera, ipl = ' num2str(ipl(ceil(isl/2)))]
+                    colormap(cmap);
+
                     %set(hax,'clim',get(gca,'clim'))
                     if ~isempty(xylim)
                         set(hax, 'xlim', xylim, 'ylim', xylim)
@@ -1086,7 +1162,8 @@ classdef CGS < handle
                         imageschcit(funPlot(S.cAmpPlanes{ipl(iipl)},2)), title(['Estimated, ipl = ' num2str(ipl(iipl))])
                         colorbar
                     end
-                    
+                    colormap(cmap);
+
                     cclim = get(hax,'clim');
                     if isempty(clim),
                         set(hax,'clim', [max([cclim{1}(1) cclim{2}(1)]) max([cclim{:}])]);
@@ -1104,6 +1181,50 @@ classdef CGS < handle
             
         end % DisplayAmpPlane
         
+        function DisplayAmpPlanesAsImcube(S, varargin)
+            % DisplayAmpPlanesAsImcube(S, varargin)
+            %
+            % CheckOption('scale', 'linear', varargin{:}); % 'linear' 'log'
+            % CheckOption('plane', 1:length(S.cAmpPlanes), varargin{:}); % list of 1:length(cAmpPlanes)
+
+            if isempty(S.cAmpPlanes), S.ReadAmpImages; end
+
+            % check options
+            scale = CheckOption('scale', 'linear', varargin{:});
+            list_planes = CheckOption('plane', 1:length(S.cAmpPlanes), varargin{:});
+            label = CheckOption('label', '', varargin{:}); % label to add to each title str
+
+            %
+            Nim = length(S.cAmpPlanes);
+            for ii = 1:Nim
+                nar(ii) = max(size(S.cAmpPlanes{ii}));
+            end
+            Nar = max(nar);
+            
+            %
+            imcube = zeros(2*length(list_planes), Nar, Nar);
+            list_titlestr = cell(1, 2*length(list_planes));
+            for ii = 1:length(list_planes)
+                ipl = list_planes(ii);
+                imcube(2*ii-1, :, :) = pad_crop(squeeze(S.cAmpPlanes{ipl}(:,:,1)), Nar);
+                list_titlestr{2*ii-1} = strcat(label, ', #', num2str(ipl), " ", S.list_lenses{ipl}, ', meas');
+                imcube(2*ii, :, :) = pad_crop(squeeze(S.cAmpPlanes{ipl}(:,:,2)), Nar);
+                list_titlestr{2*ii} = strcat(label, ', #', num2str(ipl), " ", S.list_lenses{ipl}, ', calc');
+            end
+
+            figure, ImageCube(imcube, 1:2*length(list_planes), 'fTitleStr', list_titlestr);
+            switch scale
+                case 'linear'
+                    % do nothing
+                case 'log'
+                    colormap(logColormap);
+                otherwise
+                    error(['Invalid scale: ' scale]);
+            end
+                    
+
+        end % DisplayAmpPlanesAsImcube
+
         function [hax, Imgs, ha] = DisplayAllPlanes(S, varargin)
             % hax = DisplayAllPlanes(S, options)
             % options:

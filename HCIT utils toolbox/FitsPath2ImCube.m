@@ -13,6 +13,7 @@ function varargout = FitsPath2ImCube(pn, varargin)
 %      
 %
 % options:
+% fn_filter = CheckOption('fn_filter', [], varargin{:}); % search 'pn/fn_filter*.fits'
 % plottype = CheckOption('plottype', 'cube', varargin{:}); % 'spread', 'cube', 'none'
 % plotx = CheckOption('x', 0, varargin{:}); % default = 0-offset
 % ploty = CheckOption('y', 0, varargin{:}); % default = 0-offset
@@ -37,6 +38,7 @@ function varargout = FitsPath2ImCube(pn, varargin)
 %         ,(more hdrkwds)
 %         )
 
+fn_filter = CheckOption('fn_filter', [], varargin{:}); % search 'pn/fn_filter*.fits'
 plottype = CheckOption('plottype', 'cube', varargin{:}); % 'spread'
 plotx = CheckOption('x', 0, varargin{:});
 ploty = CheckOption('y', 0, varargin{:});
@@ -58,7 +60,7 @@ hax = [];
  
 switch class(pn)
     case 'char'
-        listfn = dir(PathTranslator([pn '/*.fits']));
+        listfn = dir(PathTranslator([pn '/' fn_filter '*.fits']));
     case 'struct'
         listfn = pn; % assumes pn is return value from dir()
         pn = listfn(1).folder;
@@ -90,6 +92,7 @@ if ischar(hdrkwd), hdrkwd = {hdrkwd}; end
 
 % allocate
 hdrkwdval = zeros(Nf,length(hdrkwd));
+texp = zeros(Nf, 1);
 [nr_ii, nc_ii] = deal(zeros(Nf,1));
 img_ii = cell(Nf,1);
 list_ii_skip = [];
@@ -116,6 +119,11 @@ for ii = 1:Nf
     %     end
     hdrkwdval(ii,:) = [ctmp{:}];
     %hdrkwdval(ii,:) = 1;
+    
+    texptmp = FitsGetKeywordVal(finfo.PrimaryData.Keywords, 'EXPTIME');
+    if ~isempty(texptmp)
+        texp(ii) = texptmp;
+    end
     
 end
 % remove skipped
@@ -144,19 +152,20 @@ if ~isempty(refImg),
     ImCube = ImCube - shiftdim(repmat(refImg, [1 1 Nf]));
 end
 
-% apply scale (stretch)
-switch lower(scale),
-    case 'linear',
-        % do nothing
-        ImCube_disp = ImCube;
-    case 'log'
-        %ImCube = log10(ImCube);
-        % scale to 0..1
-        ImCube_disp = logImage(ImCube);
-        
-    otherwise,
-        error(['unknown scale: ' scale]);
-end
+% % apply scale (stretch)
+% switch lower(scale),
+%     case 'linear',
+%         % do nothing
+%         ImCube_disp = ImCube;
+%     case 'log'
+%         %ImCube = log10(ImCube);
+%         % scale to 0..1
+%         ImCube_disp = logImage(ImCube);
+% 
+%     otherwise,
+%         error(['unknown scale: ' scale]);
+% end
+ImCube_disp = ImCube;
 
 % title strings
 if ~isempty(hdrkwd)
@@ -194,6 +203,19 @@ if isempty(clim),
 end
 set(hax,'clim',clim)
 
+% apply scale (stretch)
+switch lower(scale),
+    case 'linear',
+        % do nothing
+    case 'log'
+        %ImCube = log10(ImCube);
+        % scale to 0..1
+        colormap(logColormap)
+        
+    otherwise,
+        error(['unknown scale: ' scale]);
+end
+
 % return values, depends on options
 if nargout == 0,
     varargout = {};
@@ -203,6 +225,7 @@ else
         'hfig', hfig ...
         ,'hax', hax ...
         ,'listfn', listfn ...
+        ,'texp', texp ...
         );
     for ikwd = 1:length(hdrkwd) % hdrkwd is a cell array
         sParms.(hdrkwd{ikwd}) = hdrkwdval(:,ikwd);

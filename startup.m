@@ -14,14 +14,30 @@ constants;
 unitsdefinitions;
 
 % % python path
-if isunix,
+if isunix %&& strcmp(char(java.lang.System.getProperty('user.name')), 'dmarx')
     try
         % for all hcit and aftac machines:
-        PYENV = pyenv('Version', '/usr/local/bin/python3.11')
-        py_path = py.sys.path;
-        py_path.append('/home/dmarx/HCIT/hcim_mkland3/hcim')
-        py_path.append('/home/dmarx/HCIT/hcim_mkland3/hcim/extern')
-        %ds9 = @py.ly.util.ds9bdk.ds9fits;
+        [ret, user] = system('echo $USER');
+
+        if strcmp(strip(user), 'hcit')
+            PYENV = pyenv('Version', '/usr/local/bin/python3.7', "ExecutionMode", "InProcess")
+            %PYENV = pyenv('Version', '/bin/python3.8', "ExecutionMode", "InProcess")
+
+        else
+            PYENV = pyenv('Version', '/usr/local/bin/python3.11')
+            py_path = py.sys.path;
+            py_path.append('/home/dmarx/HCIT/hcim_mkland3/hcim')
+            py_path.append('/home/dmarx/HCIT/hcim_mkland3/hcim/extern')
+            ds9 = @py.ly.util.ds9bdk.ds9fits;
+        end
+
+    catch ME
+        warning('failed to start python');
+        disp(ME.getReport);
+    end
+else
+    try
+        PYENV = pyenv('Version', 'C:\Users\dmarx\AppData\Local\conda\conda\envs\py310\python.exe', "ExecutionMode", "InProcess")
     catch ME
         warning('failed to start python');
         disp(ME.getReport);

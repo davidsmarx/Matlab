@@ -10,6 +10,7 @@ function [hfig_out, hax_out, sUserData_out] = ImageCube(imgCube, listI, varargin
 %   '1' first slice
 %   'e' last slice
 %   'm' make a movie stepping through the slices and save as .avi
+%   'G' make a gif stepping through the slices and save as .gif
 %
 % options:
 % fImageDisplay = CheckOption('fImageDisplay', @imageschcit, varargin{:});
@@ -215,6 +216,38 @@ else
             % playback and save as movie
             hfigm = figure; movie(hfigm, F, 2);
                         
+        case 'a' % animated gif
+            % save as animated gif?
+            [fn, pn] = uiputfile({'*.gif'});
+            if isequal(fn, 0)
+                % user pressed Cancel
+                return
+            end
+
+            % if file already exists, delete it to start over
+            if isfile(fullfile(pn, fn))
+                delete(fullfile(pn, fn));
+            end
+
+            %a = inputdlg('enter frames per sec');
+            %fps = str2double(a{1});
+            % if ~isequal(fn,0),
+            %     v = VideoWriter([pn fn]);
+            %     v.FrameRate = fps; % frames/sec
+            %     open(v);
+            % end
+            
+            % make a movie
+            loops = S.Nsl;
+            for isl = 1:loops,
+                Img = squeeze(S.imgCube(isl,:,:));
+                S.himage.CData = Img;
+                S.htitle.String = S.fTitleStr(isl);
+                drawnow;
+
+                exportgraphics(gca, fullfile(pn, fn), "Append", true);
+            end
+            
         otherwise
             
     end % switch event.Key

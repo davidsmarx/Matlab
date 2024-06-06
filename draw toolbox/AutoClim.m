@@ -27,6 +27,8 @@ switch class(A)
         A = double(A);
 end
 
+A = A(~isnan(A));
+
 % options
 bOnesided = CheckOption('one-sided',false,varargin{:});
 bSymmetric = CheckOption('symmetric',false,varargin{:});

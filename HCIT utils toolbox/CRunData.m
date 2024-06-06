@@ -262,7 +262,8 @@ classdef CRunData < handle & CConstants
 
                 case 100 % PIAA
                     S.Results_pn = '/proj/piaacmc/EFC/data/run100/';
-                    S.S383temp_pn= '/home/dmarx/HCIT/PIAA/hcim_testbed_run100/results/';
+                    %S.S383temp_pn= '/home/dmarx/HCIT/PIAA/hcim_testbed_run100/results/';
+                    S.S383temp_pn= '/proj/piaacmc/Final_Report/data/hcim_testbed_run100/results/';
                     
                     S.XlimDefault = 12 * [-1 1];
                     S.YlimDefault = 12 * [-1 1];
@@ -412,6 +413,7 @@ classdef CRunData < handle & CConstants
                     S.Sthpt = load(PathTranslator(ThptCal_fn));
                     S.Sthpt.ThptCal_fn = ThptCal_fn;
                     
+
                 otherwise
                     error('unrecognized runnum');
             end
@@ -1583,7 +1585,7 @@ classdef CRunData < handle & CConstants
             drawYlimLines = CheckOption('drawylimlines', [], varargin{:});
             clim = CheckOption('clim', [], varargin{:});
             haxuse = CheckOption('hax', [], varargin{:}); % put image on this axes
-            IncIntType = CheckOption('type', 'est', varargin{:});
+            IncIntType = CheckOption('type', 'normal', varargin{:});
             xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
             ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
             
@@ -1923,7 +1925,7 @@ classdef CRunData < handle & CConstants
             %    CheckOption('clim', [-9 -6.5], varargin{:});
             %    CheckOption('hfig', [], varargin{:});
             
-            bPlotRadialIntensity = CheckOption('DisplayRadialIntensity', true, varargin{:});
+            bPlotRadialIntensity = CheckOption('DisplayRadialIntensity', false, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             
             % defaults that might be different

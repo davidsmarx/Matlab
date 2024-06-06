@@ -17,7 +17,7 @@ if length(A) <= 2,
 end
 
 if strcmp(A{1}, '~'),
-    winpath = ['Y:\' A{2} '\' A{3:end}];
+    winpath = fullfile('Y:\', A{2:end});
     
 elseif ~strcmp(s383path(1), '/')
     winpath = s383path; % it's a relative path
@@ -43,18 +43,18 @@ elseif isequal([A{2} '/' A{3}],'proj/afta-im')
     winpath = '\\s383-nfs\afta-im'; %
 
 elseif isequal([A{2} '/' A{3} '/' A{4}],'proj/hcit/data')
-    winpath = strjoin({'Y:\links\ln_hcit_data', A{5:end}}, '\');
+    winpath = strjoin({'Y:\links\ln_hcit_data', A{5:end}});
 
 elseif isequal([A{2} '/' A{3} '/' A{4}],'proj/mcb/data')
     % \\s383-nfs = /proj
     %winpath = strjoin({'\\muscle5.jpl.nasa.gov\mcb', A{4:end}}, '\');
-    winpath = strjoin({'Y:\links\ln_mcb_data', A{5:end}}, '\');
+    winpath = strjoin({'Y:\links\ln_mcb_data', A{5:end}});
 
 elseif isequal([A{2} '/' A{3} '/' A{4}],'home/hcit/OMC')
-    winpath = strjoin({'Y:\links\ln_hcit_omc', A{5:end}}, '\');
+    winpath = fullfile('Y:\links\ln_hcit_omc', A{5:end});
     
 elseif isequal([A{2} '/' A{3}], 'proj/lowfs')
-    winpath = strjoin({'Y:\links\ln_lowfs', A{4:end}}, '\');
+    winpath = strjoin({'Y:\links\ln_lowfs', A{4:end}});
     
 elseif isequal([A{2} '/' A{3}],'net/spud-data')
     % mcb camera data

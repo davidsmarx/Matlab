@@ -4,6 +4,7 @@ function [img, finfo] = webreadfits(webaddr, varargin)
 % CheckOption('display', true, varargin{:});
 % CheckOption('displayscale', 'log', varargin{:});
 
+
 bDisplay = CheckOption('display', true, varargin{:});
 scaleDisplay = CheckOption('displayscale', 'log', varargin{:});
 extname = CheckOption('extname', 'image', varargin{:}); % 'primary', 'image', 

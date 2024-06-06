@@ -383,6 +383,7 @@
             bDebug = CheckOption('debug', false, varargin{:});
             useObjects = CheckOption('useobjects', [], varargin{:});
             strutlengthfactor = CheckOption('strutlengthfactor', 1, varargin{:}); % how much of the strut to use
+            hfig = CheckOption('hfig', 90, varargin{:}); % 
             %S.sDims = S.CalcDimensions;
             
             % first manipulate mask so that struts are 1, everywhere else 0
@@ -438,7 +439,7 @@
             end % for each strut
             
             % show strut IDs for reference
-            figure, imageschcit(S.x/S.U.MM, S.y/S.U.MM, L), colorbar
+            figure(hfig), imageschcit(S.x/S.U.MM, S.y/S.U.MM, L), colorbar
             for ii = 1:N,
                 text(strutxy1(ii,1)/S.U.MM, strutxy1(ii,2)/S.U.MM, ['strut #' num2str(ii)], 'FontSize', 10, 'Color', 'w');
             end
