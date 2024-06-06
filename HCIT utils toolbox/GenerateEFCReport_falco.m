@@ -239,23 +239,31 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
         case 'DisplayCEfields'
 
             for ii = 1:N-1,
-                
-                [hfig, hax, sCtmp] = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
+                try
+                    [hfig, hax, sCtmp] = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
+                catch ME
+                    hfig = [];                    
+                    disp(ME.message);
+                    disp(ME.stack);
+                end
+
                 if ~isempty(sCtmp),
                     sCmetrics(ii) = sCtmp;
                 end
                 
-                if ~isempty(hfig),
-                    figscale = CalcFigscale(hfig, figheight);
-                    set(hfig, 'Position', figscale*get(hfig,'position'));
-                    if ispc,
-                        htmp = Sppt.CopyFigNewSlide(hfig);
-                        %set(htmp,'Height',figheight);
-                    else
-                        fSaveas(hfig, save_pn, sDisplayFun, 'it', S(ii).iter);
-                    end % if ispc
+                if isempty(hfig)
+                    continue
+                end
+
+                figscale = CalcFigscale(hfig, figheight);
+                set(hfig, 'Position', figscale*get(hfig,'position'));
+                if ispc,
+                    htmp = Sppt.CopyFigNewSlide(hfig);
+                    %set(htmp,'Height',figheight);
+                else
+                    fSaveas(hfig, save_pn, sDisplayFun, 'it', S(ii).iter);
+                end % if ispc
                     
-                end % if hfig
             end % for ii iter
 
             hfig_ce = figure;
@@ -272,7 +280,13 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
         otherwise, % one call per iteration
             sCmetrics = struct;
             for ii = 1:N,
-                hfig = S(ii).(sDisplayFun)(varargin{:},'hfig',hfig);
+                try
+                    hfig = S(ii).(sDisplayFun)(varargin{:},'hfig',hfig);
+                catch ME
+                    hfig = [];
+                    disp(ME.message);
+                    disp(ME.stack);
+                end
                 
                 % check for valid figure
                 if isempty(hfig),
