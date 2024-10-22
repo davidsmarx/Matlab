@@ -117,12 +117,12 @@ figures_pn = [S(1).Rundir_pn '/figures'];
 if exist(PathTranslator(figures_pn), 'dir')
     %listPng = dir(PathTranslator([figures_pn '/*.png']));
     for ii = 1:length(list_fignum_to_copy) %length(listPng)
+        slide = Sppt.NewSlide(1+ii);
         fn = fullfile(PathTranslator(figures_pn), ['figure_' num2str(list_fignum_to_copy(ii)) '.png']);
         if ~exist(fn, 'file')
             continue
         end
         if ~isempty(Sppt)
-            slide = Sppt.NewSlide(1+ii);
             hh = invoke(slide.Shapes, 'AddPicture', fn, true, true, 100, 100);
             % hh.Left, hh.Top, hh.Width
         end
@@ -466,10 +466,10 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
     %
     %     end % ii
 
-    NInt_co = listS(1).falcoData.normIntModScore(itnum, :);
-    NInt_inco = listS(1).falcoData.normIntUnmodScore(itnum, :);
-    NInt_total = listS(1).falcoData.normIntMeasScore(itnum, :);
-    NInt_mean = mean(NInt_total, 2); % mean across the band
+    NInt_co = listS(1).falcoData.normIntModScore(itnum, :); % column per band*star = listS(1).NofW
+    NInt_inco = listS(1).falcoData.normIntUnmodScore(itnum, :); % column per band*star = listS(1).NofW
+    NInt_total = listS(1).falcoData.normIntMeasScore(itnum, :); % one column
+    NInt_mean = mean(NInt_total, 2); % mean across the band ???
     
     if isempty(hfig),
         hfig = figure;
@@ -482,8 +482,8 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
     ylabel('Normalized Intensity')
     set(hl,'linewidth', 2)
     
-    for ilam = 1:length(listS(1).lambda)
-        legstr_total{ilam} = ['Total ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
+    legstr_total{1} = ['Total '];
+    for ilam = 1:length(listS(1).lambda) % check length of .lambda always equals Nsbd * Nstar ???
         legstr_unmod{ilam} = ['Unmodulated ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
         legstr_mod{ilam}   = ['Modulated ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
     end

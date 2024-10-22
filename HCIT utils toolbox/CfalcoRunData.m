@@ -13,8 +13,17 @@ classdef CfalcoRunData < CRunData
         
         % mp
         mp
+
+        % multi star parameters
+        Nstar
+        Nmodes % = Nstar * Nsbnd
+
     end % properties
     
+    % list of things to fix after next trial with changes in falco:
+    % loadRunData : get mp from .mat file
+    % line 133 : get Nstar from mp
+    % line 321 : Esim for each iMode
     
     methods
         
@@ -64,18 +73,20 @@ classdef CfalcoRunData < CRunData
             % Get fits keywords
             finfo = fitsinfo(PathTranslator([S.Reduced_pn '/normI_it' num2str(S.iter) '.fits']));
             S.ReducedKeys = finfo.PrimaryData.Keywords;
-            iwv = 1;
-            
-            try
-                S.NKTlower(iwv) = FitsGetKeywordVal(S.ReducedKeys,'NKTLOWER')*S.NM;
-                S.NKTupper(iwv) = FitsGetKeywordVal(S.ReducedKeys,'NKTUPPER')*S.NM;
-                S.NKTcenter(iwv) = mean([S.NKTlower(iwv) S.NKTupper(iwv)]);
-                S.lambda = S.NKTcenter;
-            catch
-                S.NKTlower(iwv) = 0;
-                S.NKTupper(iwv) = 0;
-                S.NKTcenter(iwv) = 0;
-                S.lambda = 0;
+
+            % for now, this is per star mode
+            for iwv = 1:S.NofW
+                try
+                    S.NKTlower(iwv) = FitsGetKeywordVal(S.ReducedKeys,'NKTLOWER')*S.NM;
+                    S.NKTupper(iwv) = FitsGetKeywordVal(S.ReducedKeys,'NKTUPPER')*S.NM;
+                    S.NKTcenter(iwv) = mean([S.NKTlower(iwv) S.NKTupper(iwv)]);
+                    S.lambda = S.NKTcenter;
+                catch
+                    S.NKTlower(iwv) = 0;
+                    S.NKTupper(iwv) = 0;
+                    S.NKTcenter(iwv) = 0;
+                    S.lambda = 0;
+                end
             end
 
         end % init
@@ -121,8 +132,9 @@ classdef CfalcoRunData < CRunData
             
             S.ppl0 = mp.Fend.res;
             %S.Nppair = mp.est.probe.Npairs;
-            S.NofW = mp.Nsbp;
-            S.Nlamcorr = mp.Nsbp;
+            S.Nstar = 2; % hard code for now
+            S.NofW = S.Nstar * mp.Nsbp; % use NofW as all to fool CRunData
+            S.Nlamcorr = S.NofW;
             
             %                 S.RminSc = mp.Fend.score.Rin;
             %                 S.RmaxSc = mp.Fend.score.Rout;
@@ -233,21 +245,23 @@ classdef CfalcoRunData < CRunData
                 fn = [S.Reduced_pn '/probing_data_' num2str(S.iter) '.mat'];
                 if exist(PathTranslator(fn),'file')
                     load(PathTranslator(fn), 'ev');
-                    %       imageArray: [134×134×7 double]
+                    %       imageArray: [134×134×7xNbnds double]
                     %               dm1: [1×1 struct]
-                    %              Eest: [9428×1 double]
-                    %          IincoEst: [9428×1 double]
+                    %              Eest: [9428×Nsbnds double] % columns = subbands and stars
+                    %          IincoEst: [9428×Nsbnds double]
                     %       IprobedMean: 4.6198e-05
                     %                Im: [134×134 double]
                     %             score: [1×1 struct]
                     %              corr: [1×1 struct]
                     %     InormProbeMax: 1.0000e-04
-                    %             iStar: 1
-                    %         ampSqMean: 4.2476e-06
-                    %           ampNorm: [9428×3 double]
-                    %        InormProbe: 5.0000e-05
-                    %          maskBool: [120×120 logical]
-                    %         amp_model: [7240×3 double]
+                    %             iStar: 2
+                    %         ampSqMean: [1936×2×2 double]
+                    %           ampNorm: [1936×2×2 double]
+                    %        InormProbe: [1936×2×2 double]
+                    %         amp_model: [1936×2×2 double]
+                    %          maskBool: [360×360 logical]
+                    %           condnum: [1.2730 1.0788 1.0747 2.1099 1.3300 1.1550 1.0561 1.1046 1.1847 1.0527 … ] (1×1936 double)
+                    %              Esim: [1936×1 double]
                     
                 else
                     warning(['cannot find probe data, iter#' num2str(S.iter)]);
@@ -278,31 +292,40 @@ classdef CfalcoRunData < CRunData
                 warning('ev.maskBool is not same as corr maskBool');
             end
             
-            [Npx_tmp, S.Nppair] = size(ev.amp_model);
+            [Npx_tmp, S.Nppair, S.Nmodes] = size(ev.amp_model);
+            % check: Nmodes = S.Nstar * S.Nlamcorr = S.NofW
+            for iMode = 1:S.NofW % really Nmodes
             for ip = 1:S.Nppair,
-                S.ProbeModel{1,ip} = zeros(size(ev.maskBool));
-                S.ProbeModel{1,ip}(ev.maskBool) = ev.amp_model(:,ip); % amplitude
-                S.ProbeMeasAmp{1,ip} = zeros(size(ev.maskBool));
-                S.ProbeMeasAmp{1,ip}(ev.maskBool) = ev.ampNorm(:,ip)*sqrt(ev.InormProbe);
+                S.ProbeModel{iMode,ip} = zeros(size(ev.maskBool));
+                S.ProbeModel{iMode,ip}(ev.maskBool) = ev.amp_model(:,ip, iMode); % amplitude
+                S.ProbeMeasAmp{iMode,ip} = zeros(size(ev.maskBool));
+                S.ProbeMeasAmp{iMode,ip}(ev.maskBool) = ev.ampNorm(:,ip, iMode) .* sqrt(ev.InormProbe(:, ip, iMode));
+            end
             end
             
             % probe data ev includes normalized image data
-            % image cube (:,:,2*Nppair+1)
-            S.ImCube = ev.imageArray;
-            S.imgindex = 1; % slice of ImCube of unprobed image for each subband
+            % image cube (:,:, Nlamcorr * (2*Nppair+1)) % imageArray: [360×360×5×2 double]
+            [ny, nx, nPrtmp, nModetmp] = size(ev.imageArray);
+            if ~isequal(nPrtmp, 2*S.Nppair+1), error('ev.imageArray size inconsistent'); end
+            if ~isequal(nModetmp, S.Nmodes), error('ev.imageArray size inconsistent'); end
+            S.ImCube = reshape(ev.imageArray, ny, nx, []);
+            %S.imgindex = 1; % slice of ImCube of unprobed image for each subband
             
             % replaces bMask defined in loadRunData, need to reconcile
             S.bMask = ev.maskBool;
             
             % E-fields, S.E_t(iwl,:,:)
-            S.E_t(1,:,:) = zeros(size(S.bMask));
-            S.E_t(1,S.bMask) = ev.Eest;
+            for iMode = 1:S.Nmodes
+                S.E_t(iMode,:,:) = zeros(size(S.bMask));
+                S.E_t(iMode,S.bMask) = ev.Eest(:,iMode);
             
-            if isfield(ev, 'Esim')
-                S.E_m(1,:,:) = zeros(size(S.bMask));
-                S.E_m(1,S.bMask) = ev.Esim;
-            end
-            
+                if isfield(ev, 'Esim')
+                    S.E_m(iMode,:,:) = zeros(size(S.bMask));
+                    S.E_m(iMode, S.bMask) = ev.Esim(:, 1); % iMode);
+                end
+        
+            end % for each Mode (subband, star)
+
         end % loadProbeData
         
         function ReadImageCube(S)
@@ -319,16 +342,19 @@ classdef CfalcoRunData < CRunData
             end
             
             % for each wavelength subband
-            iwl = 1;
-            S.IncInt{iwl} = Iinc;
-            S.IncIntEst{iwl} = Iinc; S.IncIntEst{iwl}(Iinc < 0) = eps; % IncInt(IncInt < 0) = eps
-            S.CohInt{iwl} = Icoh;
-            S.ImCubeUnProb{iwl} = Iunpr;
+            for iMode = 1:S.Nmodes
+                S.IncInt{iMode} = Iinc(:,:,iMode);
+                S.CohInt{iMode} = Icoh(:,:,iMode);
+                S.IncIntEst{iMode} = Iinc(:,:,iMode); S.IncIntEst{iMode}(Iinc(:,:,iMode) < 0) = eps; % IncInt(IncInt < 0) = eps
+                S.CohIntEst{iMode} = Icoh(:,:,iMode);
+                S.ImCubeUnProb{iMode} = Iunpr;
 
-            % where inc int < 0, make coh int = un probed (i.e. the whole thing            
-            S.CohIntEst{iwl} = S.CohInt{iwl};
-            S.CohIntEst{iwl}(S.IncInt{iwl} <= 0) = S.ImCubeUnProb{iwl}(S.IncInt{iwl} <= 0);
-            
+                %%%%% revisit:
+                % % where inc int < 0, make coh int = un probed (i.e. the whole thing
+                % S.CohIntEst{iMode} = S.CohInt{iMode};
+                % S.CohIntEst{iMode}(S.IncInt{iMode} <= 0) = S.ImCubeUnProb{iMode}(S.IncInt{iMode} <= 0);
+            end
+
             % full band = average of subbands
             S.ImCubeUnProbFullBand = mean(cat(3, S.ImCubeUnProb{:}), 3);
             S.CohIntFullBand = mean(cat(3, S.CohIntEst{:}), 3);

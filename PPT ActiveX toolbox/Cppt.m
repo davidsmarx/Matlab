@@ -59,8 +59,8 @@ classdef Cppt
             figure(hfig); drawnow;
             set(hfig,'invertHardcopy','off')
             
-            options.Format = 'jpg';
-            hgexport(hfig,'-clipboard', options);
+            %options.Format = 'jpg';
+            copygraphics(hfig, 'ContentType', 'image'); %,'-clipboard', options);
             hPic = invoke(new_slide.Shapes,'Paste');
 
             %             % Set picture to width of slide, justify left, and 90% from the top, then close figure

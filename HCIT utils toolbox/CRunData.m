@@ -1933,7 +1933,7 @@ classdef CRunData < handle & CConstants
             varargin{end+1} = 'clim'; varargin{end+1} = [-9 -6.5];
             
             % check that this instance is not empty
-            if isempty(S.Nlamcorr)
+            if isempty(S.NofW)
                 hfig = [];
                 haxlist = [];
                 return
@@ -1948,18 +1948,18 @@ classdef CRunData < handle & CConstants
             end
             
             %haxlist = zeros(3,S.Nlamcorr);
-            if S.Nlamcorr == 1,
+            if S.NofW == 1,
                 nrow_ax = 1;
                 ncol_ax = 3;
             else
-                ncol_ax = S.Nlamcorr;
+                ncol_ax = S.NofW;
                 nrow_ax = 3;
             end
             hfig = figure_mxn(hfig, nrow_ax, ncol_ax);
             
             % unprobed images
             figure(hfig);
-            for ii = 1:S.Nlamcorr,
+            for ii = 1:S.NofW,
                 haxlist(1,ii) = subplot(nrow_ax,ncol_ax,ii);
             end
             S.DisplayImCubeUnProb('hax',haxlist(1,:),varargin{:});
@@ -1967,16 +1967,16 @@ classdef CRunData < handle & CConstants
             
             % Coh Int
             figure(hfig);            
-            for ii = 1:S.Nlamcorr,
-                haxlist(2,ii) = subplot(nrow_ax, ncol_ax,ii+S.Nlamcorr);
+            for ii = 1:S.NofW,
+                haxlist(2,ii) = subplot(nrow_ax, ncol_ax,ii+S.NofW);
             end
             S.DisplayCohInt('hax',haxlist(2,:), varargin{:});
             % S.CohInt{iwv}
             
             % Inc Int
             figure(hfig);            
-            for ii = 1:S.Nlamcorr,
-                haxlist(3,ii) = subplot(nrow_ax, ncol_ax,ii+2*S.Nlamcorr);
+            for ii = 1:S.NofW,
+                haxlist(3,ii) = subplot(nrow_ax, ncol_ax,ii+2*S.NofW);
             end
             S.DisplayIncInt('hax',haxlist(3,:), varargin{:});
             % S.IncIntEst{iwv}
@@ -2837,23 +2837,43 @@ classdef CRunData < handle & CConstants
             end
             
             idm = CheckOption('idm', 1, varargin{:}); % which DM is probing?
+            hfig = CheckOption('hfig', [], varargin{:});
             
             % probed DM:
             DMv = S.DMvCube{idm};
             
-            [nacty, nactx, nsli] = size(DMv);
-            npr = nsli-1;
+            % normal (no multi-star)
+            if ~isprop(S, 'Nstar') || S.Nstar == 1,
+                [nacty, nactx, nsli] = size(DMv);
+                npr = S.Nppair;
+                if ~isequal(nsli, 2*npr+1), error('size of DM probe not consistent'); end
+                DMv0 = DMv(:,:,1);
+                DMv = DMv(:,:,2:end);
+            else
+                [nacty, nactx, nsli, nstartmp] = size(DMv); % = (48, 48, 5, 2)
+                npr = nstartmp*S.Nppair;
+                if ~isequal(nstartmp, S.Nstar), error('number of DM probe stars not consistent'); end
+                if ~isequal(npr+1, nsli), error('size of DM probe not consistent'); end
+                DMv0 = DMv(:,:,1,1);
+                DMv = DMv(:,:,2:end,:);
+            end % if multi-star
             
-            hfig = figure_mxn(2,npr/2);
-            for ii = 1:npr/2,
-                isl = 2*ii; % slice into dmv cube
-                hax(ii) = subplot(2,npr/2,ii);
-                imageschcit(0,0,squeeze(DMv(:,:,isl)-DMv(:,:,1)))
+            if isempty(hfig)
+                hfig = figure_mxn(2,npr);
+            else
+                figure(hfig);
+            end
+
+            for ii = 1:npr,
+                isl = 2*ii-1; % slice into dmv cube
+
+                hax(ii) = subplot(2,npr,ii);
+                imageschcit(0,0,squeeze(DMv(:,:,isl)-DMv0))
                 title(['iter #' num2str(S.iter) '; Probe #' num2str(ii) '; +ve'])
                 colorbartitle('Vmu')
                 
-                hax(ii+npr/2) = subplot(2,npr/2,ii+npr/2);
-                imageschcit(0,0,squeeze(DMv(:,:,isl+1)-DMv(:,:,1)))
+                hax(ii+npr) = subplot(2, npr, ii+npr);
+                imageschcit(0,0,squeeze(DMv(:,:,isl+1)-DMv0))
                 title(['iter #' num2str(S.iter) '; Probe #' num2str(ii) '; -ve'])
                 colorbartitle('Vmu')
                                     

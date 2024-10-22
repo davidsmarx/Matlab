@@ -1,7 +1,7 @@
 function U = blackbodyspectrum(lam,tt)
 % U = blackbodyspectrum(lam,T)
 %
-% Spectral energy density, U(?,T) = 8?hc?^-5 /  ( e^(hc/?kT)-1 ) 
+% Spectral energy density, U(lam,T) = 8 pi h c lam^-5 /  ( e^(h c/lam k T) - 1 ) 
 %
 % lam = wavelength, (m)
 % T is black body temperature (Kelvin)

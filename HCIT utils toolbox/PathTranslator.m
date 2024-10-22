@@ -54,7 +54,7 @@ elseif isequal([A{2} '/' A{3} '/' A{4}],'home/hcit/OMC')
     winpath = fullfile('Y:\links\ln_hcit_omc', A{5:end});
     
 elseif isequal([A{2} '/' A{3}], 'proj/lowfs')
-    winpath = strjoin({'Y:\links\ln_lowfs', A{4:end}});
+    winpath = fullfile('Y:\links\ln_lowfs', A{4:end});
     
 elseif isequal([A{2} '/' A{3}],'net/spud-data')
     % mcb camera data
