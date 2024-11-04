@@ -75,9 +75,9 @@ switch lower(coords),
             @(r,t) sqrt(3).*(2.*r.^2 - 1) % 5 zemax term 4
             @(r,t) sqrt(6).*r.^2.*sin(2*t)  % zemax term 5
             @(r,t) sqrt(6).*r.^2.*cos(2*t) % 6 zemax term 6
-            @(r,t) sqrt(8).*(3*r.^3 - 2*r).*sin(t) % 8, zemax term 7
-            @(r,t) sqrt(8).*(3*r.^3 - 2*r).*cos(t) % 9, zemax term 8
-            @(r,t) sqrt(8).*r.^3.*sin(3*t) % 7 coma in y, zemax term 9
+            @(r,t) sqrt(8).*(3*r.^3 - 2*r).*sin(t) % 8, zemax term 7, coma y
+            @(r,t) sqrt(8).*(3*r.^3 - 2*r).*cos(t) % 9, zemax term 8, coma x
+            @(r,t) sqrt(8).*r.^3.*sin(3*t) % 7, zemax term 9
             @(r,t) sqrt(8).*r.^3.*cos(3*t)  % 10, zemax term 10
             @(r,t) sqrt(5).*(6*r.^4 - 6*r.^2 + 1) %6 13, zemax term 11
             @(r,t) sqrt(10).*(4*r.^4 - 3*r.^2).*cos(2*t) % 14, zemax term 12
