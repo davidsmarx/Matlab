@@ -1792,7 +1792,7 @@ classdef CRunData < handle & CConstants
             end
                 
             if isempty(hfig),
-                hfig = figure_mxn(2,S.Nppair+1);
+                hfig = figure_mxn(2,S.Nppair+1); % row 1 = model, row 2 = measure
             else
                 figure(hfig)
             end
@@ -2851,7 +2851,7 @@ classdef CRunData < handle & CConstants
                 DMv = DMv(:,:,2:end);
             else
                 [nacty, nactx, nsli, nstartmp] = size(DMv); % = (48, 48, 5, 2)
-                npr = nstartmp*S.Nppair;
+                npr = nstartmp*S.Nppair; % total # of probe pairs
                 if ~isequal(nstartmp, S.Nstar), error('number of DM probe stars not consistent'); end
                 if ~isequal(npr+1, nsli), error('size of DM probe not consistent'); end
                 DMv0 = DMv(:,:,1,1);
@@ -2865,23 +2865,25 @@ classdef CRunData < handle & CConstants
             end
 
             for ii = 1:npr,
-                isl = 2*ii-1; % slice into dmv cube
+                isl_p = 2*ii-1; % slice into dmv cube for + probe
+                isl_m = 2*ii;   % slice into dmv cube for - probe
 
                 hax(ii) = subplot(2,npr,ii);
-                imageschcit(0,0,squeeze(DMv(:,:,isl)-DMv0))
+                imageschcit(0,0,squeeze(DMv(:,:,isl_p)-DMv0))
                 title(['iter #' num2str(S.iter) '; Probe #' num2str(ii) '; +ve'])
                 colorbartitle('Vmu')
                 
                 hax(ii+npr) = subplot(2, npr, ii+npr);
-                imageschcit(0,0,squeeze(DMv(:,:,isl+1)-DMv0))
+                imageschcit(0,0,squeeze(DMv(:,:,isl_m)-DMv0))
                 title(['iter #' num2str(S.iter) '; Probe #' num2str(ii) '; -ve'])
                 colorbartitle('Vmu')
                                     
             end % for each pair
             
-            % make uniform clim
-            clim = get(hax,'clim'); % a cell array
-            set(hax,'clim', max(abs([max([clim{:}]) min([clim{:}])]))*[-1 1])
+            % make each clim symmetric
+            for ii = 1:length(hax),
+                set(hax(ii), 'clim', max(get(hax(ii), 'clim'))*[-1 1]),
+            end
             
         end % DisplayDMvProbes
         

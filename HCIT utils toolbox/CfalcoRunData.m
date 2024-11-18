@@ -298,8 +298,10 @@ classdef CfalcoRunData < CRunData
             for ip = 1:S.Nppair,
                 S.ProbeModel{iMode,ip} = zeros(size(ev.maskBool));
                 S.ProbeModel{iMode,ip}(ev.maskBool) = ev.amp_model(:,ip, iMode); % amplitude
-                S.ProbeMeasAmp{iMode,ip} = zeros(size(ev.maskBool));
-                S.ProbeMeasAmp{iMode,ip}(ev.maskBool) = ev.ampNorm(:,ip, iMode) .* sqrt(ev.InormProbe(:, ip, iMode));
+                S.ProbeAmp{iMode,ip} = zeros(size(ev.maskBool));
+                S.ProbeAmp{iMode,ip}(ev.maskBool) = ev.ampNorm(:,ip, iMode) .* sqrt(ev.InormProbe(:, ip, iMode));
+                % until we get ProbeMeasAmp from images:
+                S.ProbeMeasAmp{iMode, ip} = S.ProbeAmp{iMode, ip};
             end
             end
             
@@ -325,6 +327,15 @@ classdef CfalcoRunData < CRunData
                 end
         
             end % for each Mode (subband, star)
+
+            % get probe cube directly from images
+            for iMode = 1:S.NofW % really Nmodes
+                for ip = 1:S.Nppair,
+                    % %       imageArray: [134×134×7xNbnds double]
+                    %S.ProbeAmp{iMode, ip} = 
+
+                end
+            end
 
         end % loadProbeData
         
