@@ -344,9 +344,9 @@ classdef CfalcoRunData < CRunData
             
             % Load FITS image data
             if exist(PathTranslator([S.Reduced_pn '/normI_Esens_it' num2str(S.iter) '.fits']),'file')
-                Icoh = fitsread(PathTranslator([S.Reduced_pn '/normI_Esens_it' num2str(S.iter) '.fits']));
-                Iinc = fitsread(PathTranslator([S.Reduced_pn '/normI_inco_it' num2str(S.iter) '.fits']));
-                Iunpr = fitsread(PathTranslator([S.Reduced_pn '/normI_it' num2str(S.iter) '.fits']));
+                Icoh = fitsread(PathTranslator([S.Reduced_pn '/normI_Esens_it' num2str(S.iter) '.fits'])); % image cube slices = subbands
+                Iinc = fitsread(PathTranslator([S.Reduced_pn '/normI_inco_it' num2str(S.iter) '.fits'])); % image cube slices = subbands
+                Iunpr = fitsread(PathTranslator([S.Reduced_pn '/normI_it' num2str(S.iter) '.fits'])); % total summed intensity across subbands
             else
                 warning('cannot find normI image cube');
                 return
@@ -358,8 +358,8 @@ classdef CfalcoRunData < CRunData
                 S.CohInt{iMode} = Icoh(:,:,iMode);
                 S.IncIntEst{iMode} = Iinc(:,:,iMode); S.IncIntEst{iMode}(Iinc(:,:,iMode) < 0) = eps; % IncInt(IncInt < 0) = eps
                 S.CohIntEst{iMode} = Icoh(:,:,iMode);
-                S.ImCubeUnProb{iMode} = Iunpr;
-
+                S.ImCubeUnProb{iMode} = S.ImCube(:, :, (iMode - 1)*(2*S.Nmodes + 1) + 1);
+                
                 %%%%% revisit:
                 % % where inc int < 0, make coh int = un probed (i.e. the whole thing
                 % S.CohIntEst{iMode} = S.CohInt{iMode};
@@ -367,10 +367,11 @@ classdef CfalcoRunData < CRunData
             end
 
             % full band = average of subbands
-            S.ImCubeUnProbFullBand = mean(cat(3, S.ImCubeUnProb{:}), 3);
+            % = mean(cat(3, S.ImCubeUnProb{:}), 3);
             S.CohIntFullBand = mean(cat(3, S.CohIntEst{:}), 3);
             S.IncIntFullBand = mean(cat(3, S.IncInt{:}), 3);
-            
+            S.ImCubeUnProbFullBand = Iunpr;
+
         end % ReadImageCube
         
         function ReadDMvCube(S, whichdm)
