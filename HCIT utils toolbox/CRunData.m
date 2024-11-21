@@ -2361,9 +2361,9 @@ classdef CRunData < handle & CConstants
                 clim = AutoClim([real(dEuse) imag(dEuse)],'symmetric',true);
                 %set(ha,'clim',median(climE))
             else
-                %set(ha,'clim',clim)
+                set(ha,'clim',clim)
             end
-            set(ha,'clim',clim)
+            %set(ha,'clim',clim)
 
             % put colorbars on the right-most axes
             for ii = 1:4,
