@@ -117,7 +117,7 @@ figures_pn = [S(1).Rundir_pn '/figures'];
 if exist(PathTranslator(figures_pn), 'dir')
     %listPng = dir(PathTranslator([figures_pn '/*.png']));
     for ii = 1:length(list_fignum_to_copy) %length(listPng)
-        slide = Sppt.NewSlide(1+ii);
+        if ~isempty(Sppt), slide = Sppt.NewSlide(1+ii); end
         fn = fullfile(PathTranslator(figures_pn), ['figure_' num2str(list_fignum_to_copy(ii)) '.png']);
         if ~exist(fn, 'file')
             continue
