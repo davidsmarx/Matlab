@@ -468,7 +468,7 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
 
     NInt_co = listS(1).falcoData.normIntModScore(itnum, :); % column per band*star = listS(1).NofW
     NInt_inco = listS(1).falcoData.normIntUnmodScore(itnum, :); % column per band*star = listS(1).NofW
-    NInt_total = listS(1).falcoData.normIntMeasScore(itnum, :); % one column
+    NInt_total = listS(1).falcoData.normIntMeasScore(itnum, :); % column per band*star
     NInt_mean = mean(NInt_total, 2); % mean across the band ???
     
     if isempty(hfig),
@@ -482,10 +482,23 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
     ylabel('Normalized Intensity')
     set(hl,'linewidth', 2)
     
-    legstr_total{1} = ['Total '];
-    for ilam = 1:length(listS(1).lambda) % check length of .lambda always equals Nsbd * Nstar ???
-        legstr_unmod{ilam} = ['Unmodulated ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
-        legstr_mod{ilam}   = ['Modulated ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
+    % S.Nlamcorr = mp.Nsbp;
+    % S.NofW = S.Nlamcorr * S.Nstar
+    strStar = {'On-axis', 'Off-axis'};
+    for ibnd = 1:listS(1).NofW % check length of .lambda always equals Nsbd * Nstar ???
+        % when there are multiple subbands with multiple stars, order will
+        % be determined in falco routine. For now, one subband, two stars
+        if listS(1).NofW == listS(1).Nstar,
+            istar = ibnd;
+            ilam = 1;
+        else
+            istar = 1;
+            ilam = ibnd;
+        end
+
+        legstr_total{ibnd} = ['Total ' strStar{istar} ' ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
+        legstr_unmod{ibnd} = ['Unmodulated ' strStar{istar} ' ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
+        legstr_mod{ibnd}   = ['Modulated ' strStar{istar} ' ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
     end
     %legend('Total', 'Unmodulated', 'Modulated')
     legend(legstr_total{:},legstr_unmod{:},legstr_mod{:})

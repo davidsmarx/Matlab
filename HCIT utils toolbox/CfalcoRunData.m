@@ -133,8 +133,8 @@ classdef CfalcoRunData < CRunData
             S.ppl0 = mp.Fend.res;
             %S.Nppair = mp.est.probe.Npairs;
             S.Nstar = 2; % hard code for now
-            S.NofW = S.Nstar * mp.Nsbp; % use NofW as all to fool CRunData
-            S.Nlamcorr = S.NofW;
+            S.Nlamcorr = mp.Nsbp; % 
+            S.NofW = S.Nstar * S.Nlamcorr; % use NofW as all to fool CRunData
             
             %                 S.RminSc = mp.Fend.score.Rin;
             %                 S.RmaxSc = mp.Fend.score.Rout;
