@@ -1277,6 +1277,8 @@ classdef CRunData < handle & CConstants
             %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             %             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
             %             drawylimlines = CheckOption('drawylimlines', [], varargin{:})
+            %             drawRectXminmax = CheckOption('drawrectxminmax', [], varargin{:});
+            %             drawRectYminmax = CheckOption('drawrectyminmax', [], varargin{:});
             %             climopt = CheckOption('clim', [], varargin{:});
             %             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             %             haxuse = CheckOption('hax', [], varargin{:});
@@ -1304,6 +1306,8 @@ classdef CRunData < handle & CConstants
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
             drawYlimLines = CheckOption('drawylimlines', [], varargin{:});
+            drawRectXminmax = CheckOption('drawrectxminmax', [S.XminSc S.XmaxSc], varargin{:});
+            drawRectYminmax = CheckOption('drawrectyminmax', [S.YminSc S.YmaxSc], varargin{:});
             climopt = CheckOption('clim', [], varargin{:});
             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             haxuse = CheckOption('hax', [], varargin{:});
@@ -1348,6 +1352,8 @@ classdef CRunData < handle & CConstants
             DrawCircles(ha, drawRadii);
             DrawThetaLines(ha, drawTheta, drawRadii);
             DrawYlimLines(ha, drawYlimLines, drawRadii);
+            DrawRectLines(ha, drawRectXminmax, drawRectYminmax);
+
             % DrawYlimLines                        CheckOption('drawylimlines', [], varargin{:})
             % set each image plot to the same clim
             % auto-clim, unless specific clim requested
@@ -1612,7 +1618,7 @@ classdef CRunData < handle & CConstants
                 cbartitle = 'Norm Intensity';
             end
             
-            if isempty(haxuse), hfig = figure_mxn(1,S.Nlamcorr); else hfig = gcf; end
+            if isempty(haxuse), hfig = figure_mxn(1,S.NofW); else hfig = gcf; end
             
             if isempty(clim),
                 clim = pClim(pFun([plIncInt{:}]));
@@ -1621,10 +1627,10 @@ classdef CRunData < handle & CConstants
             [x, y] = CreateGrid(plIncInt{1}, 1./S.ppl0);
             % auto-scale
             %Agg = [
-            for iwv = 1:S.Nlamcorr,
+            for iwv = 1:S.NofW,
 
                 if isempty(haxuse),
-                    hax(iwv) = subplot(1, S.Nlamcorr, iwv);
+                    hax(iwv) = subplot(1, S.NofW, iwv);
                     colormap(gray)
                 else
                     hax(iwv) = haxuse(iwv);
@@ -1879,7 +1885,7 @@ classdef CRunData < handle & CConstants
                 cbartitle = 'Norm Intensity';
             end
             
-            if isempty(haxuse), hfig = figure_mxn(1,S.Nlamcorr); else hfig = gcf; end
+            if isempty(haxuse), hfig = figure_mxn(1,S.NofW); else hfig = gcf; end
             
             if isempty(clim),
                 clim = pClim(pFun([S.CohInt{:}]));
@@ -1887,9 +1893,9 @@ classdef CRunData < handle & CConstants
             
             [x, y] = CreateGrid(S.CohInt{1}, 1./S.ppl0);
 
-            for iwv = 1:S.Nlamcorr,
+            for iwv = 1:S.NofW,
                 if isempty(haxuse),
-                    hax(iwv) = subplot(1, S.Nlamcorr, iwv);
+                    hax(iwv) = subplot(1, S.NofW, iwv);
                 else
                     hax(iwv) =  haxuse(iwv);
                     axes(haxuse(iwv));
@@ -3082,3 +3088,25 @@ for iax = 1:length(hax),
 end % for each axes
 
 end % DrawThetaLines
+
+function DrawRectLines(hax, xminmax, yminmax)
+% DrawRectLines(hax, xminmax, yminmax)
+
+if isempty(xminmax) || isempty(yminmax)
+    return
+end
+
+hax = hax(:); % make 1-d
+
+x0 = mean(xminmax);
+lenx = abs(diff(xminmax));
+y0 = mean(xminmax);
+leny = abs(diff(yminmax));
+
+for iax = 1:length(hax)
+    axes(hax(iax));
+    h = drawrect(hax(iax),lenx,leny,x0,y0);
+
+end % for each hax
+
+end % DrawRectLines
