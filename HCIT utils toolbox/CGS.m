@@ -257,7 +257,7 @@ classdef CGS < handle
                     
                     wavelength_kwd = 'lam';
                     
-                case 'omc'
+                case 'omc_epic'
                     trialname = CheckOption('trialname', '', varargin{:});
                   
                     DIR_PR      = getenv("DIR_PR");
