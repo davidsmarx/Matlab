@@ -341,14 +341,17 @@ function [probeh, hfig, hax] = PlotProbeh(S, varargin)
          [hfig, hax, itnum_texp, texp] = PlotTexp(S);
      end
 
-     [itnum, probeh] = deal(zeros(size(S)));
+     itnum = zeros(size(S));
+     probeh = zeros(length(S), S(1).NofW);
      for ii = 1:length(S)
-         for ip = 1:S(ii).Nppair
-             Itmp(:,ip) = S(ii).ProbeMeasAmp{ip}(S(ii).bMask).^2;
-         end
+         for iw = 1:S(ii).NofW
+             for ip = 1:S(ii).Nppair
+                 Itmp(:,ip) = S(ii).ProbeMeasAmp{iw, ip}(S(ii).bMask).^2;
+             end % each probe
+             probeh(ii, iw) = mean(Itmp(:));
+         end % each subband
          itnum(ii) = S(ii).iter;
-         probeh(ii) = mean(Itmp(:));
-     end
+     end % each iteration
 
      figure(hfig);
      if ~isempty(hax), axes(hax); else, hax = gca; end

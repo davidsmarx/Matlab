@@ -1232,6 +1232,7 @@ classdef CRunData < handle & CConstants
             end %
             
             grid on
+            hold off
             
             % ylimits on semilogy plot
             if ~isempty(ylim), set(gca, 'ylim', ylim); end
@@ -1801,6 +1802,7 @@ classdef CRunData < handle & CConstants
                 hfig = figure_mxn(2,S.Nppair+1); % row 1 = model, row 2 = measure
             else
                 figure(hfig)
+                %clf(hfig) % the radial plots will accumulate if you don't do this
             end
             for ip = 1:S.Nppair,
                 ha(ip) = subplot(2,S.Nppair+1,ip);
@@ -1837,7 +1839,7 @@ classdef CRunData < handle & CConstants
             harad(1) = subplot(2,S.Nppair+1,S.Nppair+1);
             S.DisplayRadialPlot(ProbeModelPlot, 'dispradlim', radlim, 'nr', nr, 'hax', harad(1),'title', ['Iter #' num2str(S.iter) ', Model'], 'legstr', legstr);
             harad(2) = subplot(2,S.Nppair+1,2*(S.Nppair+1));
-            S.DisplayRadialPlot(ProbeMeasPlot, 'dispradlim', radlim, 'nr', nr, 'hax',harad(2),'title', ['Iter #' num2str(S.iter) ', Measure'], 'legstr', legstr);
+            S.DisplayRadialPlot(ProbeMeasPlot, 'dispradlim', radlim, 'nr', nr, 'hax', harad(2),'title', ['Iter #' num2str(S.iter) ', Measure'], 'legstr', legstr);
             
             ylim = get(harad,'ylim');
             set(harad,'ylim',[min([ylim{:}]), max([ylim{:}])])
@@ -2364,12 +2366,16 @@ classdef CRunData < handle & CConstants
             if isempty(clim),
                 dEtmp = [dE_t dE_m];
                 dEuse = dEtmp(abs(dEtmp(:)) > 0);
-                clim = AutoClim([real(dEuse) imag(dEuse)],'symmetric',true);
+                if ~isempty(dEuse)
+                    clim = AutoClim([real(dEuse) imag(dEuse)],'symmetric',true, 'removeoutliers', true);
+                else
+                    clim = [-1 1];
+                end
                 %set(ha,'clim',median(climE))
             else
                 set(ha,'clim',clim)
             end
-            %set(ha,'clim',clim)
+            set(ha,'clim',clim)
 
             % put colorbars on the right-most axes
             for ii = 1:4,
@@ -2431,7 +2437,9 @@ classdef CRunData < handle & CConstants
             end
 
             [nw, nr, nc] = size(S.E_t);
-            if nw ~= S.NofW, error(['number of wavelengths inconsistent']); end
+            if nw ~= S.NofW, 
+                error(['number of wavelengths inconsistent']); 
+            end
 
             % check that S.E_t and Sref.E_t are same size
             % also catches if one is no data

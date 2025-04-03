@@ -40,10 +40,21 @@ classdef CfalcoRunData < CRunData
             S.iter = iter;
             
             % paths to data
-            S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
-            S.Rundir_pn = ['/home/hcit/OMC/OMC_MSWC/' run_pn num2str(seriesNum) '/data/' S.runLabel]; % for snippet file
-            S.Reduced_pn = [S.Rundir_pn '/' S.runLabel];
-            
+            switch S.runnum
+                case {200, 201, 202}
+                    S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
+                    S.Rundir_pn = ['/home/hcit/OMC/OMC_MSWC/' run_pn num2str(seriesNum) '/data/' S.runLabel]; % for snippet file
+                    S.Reduced_pn = [S.Rundir_pn '/' S.runLabel];
+                
+                case 250
+                    S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
+                    S.Rundir_pn = PathTranslator(['/proj/mcb/data/EPIC/' run_pn num2str(seriesNum) '/data/' S.runLabel]); % for snippet file
+                    S.Reduced_pn = [S.Rundir_pn '/' S.runLabel];
+
+                otherwise
+                    error(['unknown seriesNum ' num2str(S.runnum)]);
+            end
+
             % if given mp, perhaps read in another iteration of this trial
             if ~isempty(mp)
                 S.mp = mp;
@@ -74,20 +85,12 @@ classdef CfalcoRunData < CRunData
             finfo = fitsinfo(PathTranslator([S.Reduced_pn '/normI_it' num2str(S.iter) '.fits']));
             S.ReducedKeys = finfo.PrimaryData.Keywords;
 
-            % for now, this is per star mode
-            for iwv = 1:S.NofW
-                try
-                    S.NKTlower(iwv) = FitsGetKeywordVal(S.ReducedKeys,'NKTLOWER')*S.NM;
-                    S.NKTupper(iwv) = FitsGetKeywordVal(S.ReducedKeys,'NKTUPPER')*S.NM;
-                    S.NKTcenter(iwv) = mean([S.NKTlower(iwv) S.NKTupper(iwv)]);
-                    S.lambda = S.NKTcenter;
-                catch
-                    S.NKTlower(iwv) = 0;
-                    S.NKTupper(iwv) = 0;
-                    S.NKTcenter(iwv) = 0;
-                    S.lambda = 0;
-                end
+            % fits headers only contain NKT values at the time the fits is
+            % created, get subband centers from mp
+            for iwv = 1:S.NofW                
+                S.NKTcenter(iwv) = S.mp.sbp_centers(iwv);
             end
+            S.lambda = S.NKTcenter;
 
         end % init
         
@@ -132,7 +135,7 @@ classdef CfalcoRunData < CRunData
             
             S.ppl0 = mp.Fend.res;
             %S.Nppair = mp.est.probe.Npairs;
-            S.Nstar = 2; % hard code for now
+            S.Nstar = 1; %2; % hard code for now
             S.Nlamcorr = mp.Nsbp; % 
             S.NofW = S.Nstar * S.Nlamcorr; % use NofW as all to fool CRunData
             

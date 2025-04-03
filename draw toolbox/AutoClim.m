@@ -6,6 +6,7 @@ function clim = AutoClim(A, varargin)
 %   'two-sided' [true] or false
 %   'symmetric' [false] or true (i.e. two-sided and symmetric)
 %   'pctscale', 100
+%   'removeoutliers', [false] or true
 %
 % A can be any dimensions, only A(:) is used
 % A can be an axes handle
@@ -33,6 +34,7 @@ A = A(~isnan(A));
 bOnesided = CheckOption('one-sided',false,varargin{:});
 bSymmetric = CheckOption('symmetric',false,varargin{:});
 pctscale = CheckOption('pctscale', 100, varargin{:});
+removeoutliers = CheckOption('removeoutliers', false, varargin{:});
 
 if bOnesided && bSymmetric,
     % doesn't make sense
@@ -42,10 +44,19 @@ end
 
 % check
 if isempty(A),
-    error('AutoClim: input is empty');
+    warning('AutoClim: input is empty');
+    return
 end
 if range(A(:)) <= eps*mean(abs(A(:))),
-    error('AutoClim: range is 0');
+    warning('AutoClim: range is 0');
+    return
+end
+
+% remove outliers?
+if removeoutliers
+    % this works if A is complex
+    [B, ~, listrm] = rmoutliers(abs(A(:)));
+    A = A(~listrm);
 end
 
 % for complex numbers, sort sorts the abs()

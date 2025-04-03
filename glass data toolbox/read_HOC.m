@@ -6,9 +6,9 @@ function [A, unitstr] = read_HOC(fname)
 %HOCDIR = 'C:\Tamar\Matlab\glass data toolbox\Handbook of Optical Constants\ascii tables\';
 %HOCDIR = 'C:\Users\dmarx\OneDrive\Matlab\glass data toolbox\Handbook of Optical Constants\ascii tables\';
 pn = regexp(userpath,'\','split');
-HOCDIR = [pn{1} '\' pn{2} '\' pn{3} '\OneDrive\Matlab\glass data toolbox\Handbook of Optical Constants\ascii tables\'];
+HOCDIR = fullfile(pn{:}, '\glass data toolbox\Handbook of Optical Constants\ascii tables\');
 
-fid = fopen([HOCDIR fname],'rt');
+fid = fopen(fullfile(HOCDIR, fname),'rt');
 if fid == -1, error(['cannot open file: ' HOCDIR fname]); end
 
 lcnt = 1;
@@ -19,18 +19,19 @@ while ~strncmp(strtrim(tline),'eV',2),
 end
 
 unitstr = textscan(tline,'%s');
-unitstr = unitstr{1};
-Nunits = length(unitstr);
+unitstr = unitstr{1}; % cell of cells
+% Nunits = length(unitstr);
 
 % next line is '-----------'
 tline = fgetl(fid);
 lcnt = lcnt + 2; 
 
-A = textscan(fid,'%f','delimiter',':');
-
-A = reshape(A{1},Nunits,length(A{1})/Nunits).';
+A = textscan(fid,'%f %f %f %f %f %f','delimiter',':', 'EmptyValue', -Inf);
 
 fclose(fid);
+
+%A = reshape(A{1},Nunits,length(A{1})/Nunits).';
+
 
 % %A = textread([HOCDIR fname],'','headerlines',lcnt,'delimiter',':');
 % A = dlmread([HOCDIR fname],':',lcnt,1);

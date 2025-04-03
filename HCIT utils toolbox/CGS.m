@@ -112,7 +112,8 @@ classdef CGS < handle
                 %bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
                 %bn = '/proj/dst/data/dB_PR/gsdst_';
                 %bn = 'omc_mswc';
-                bn = 'cgi_tvac';
+                %bn = 'cgi_tvac';
+                bn = 'omc_epic';
             end
             
             switch lower(bn),
@@ -243,6 +244,21 @@ classdef CGS < handle
                     wavelength_kwd = 'lam';
                     
                 case 'omc_mswc'
+                    trialname = CheckOption('trialname', '', varargin{:});
+                    
+                    bn = ['/home/hcit/OMC/phaseretrieval/reduced/prout_' trialname num2str(gsnum,'%03d')];
+                    
+                    % get dir listing of raw camera images
+                    S.listPupImDir = dir(PathTranslator(...
+                        ['/proj/mcb/data/excam/*/pr_gs_' num2str(gsnum,'%04d') '/emccd.*.fits']...
+                        ));
+                    S.listSrcImDir = dir(PathTranslator(...
+                        ['/proj/mcb/data/excam/*/pr_par_' num2str(gsnum,'%04d') '/emccd.*.fits']...
+                        ));
+                    
+                    wavelength_kwd = 'lam';
+
+                case 'omc_epic'
                     trialname = CheckOption('trialname', '', varargin{:});
                     
                     bn = ['/home/hcit/OMC/phaseretrieval/reduced/prout_' trialname num2str(gsnum,'%03d')];
