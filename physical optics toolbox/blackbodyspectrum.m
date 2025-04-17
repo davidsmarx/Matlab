@@ -8,8 +8,6 @@ function U = blackbodyspectrum(lam,tt)
 % lam = wavelength, (m)
 % T is black body temperature (Kelvin)
 
-
-
 global C HPLANCK KBOLTZMANN;
 
 % spectral energy density:

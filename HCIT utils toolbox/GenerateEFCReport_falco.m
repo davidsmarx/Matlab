@@ -117,12 +117,12 @@ figures_pn = [S(1).Rundir_pn '/figures'];
 if exist(PathTranslator(figures_pn), 'dir')
     %listPng = dir(PathTranslator([figures_pn '/*.png']));
     for ii = 1:length(list_fignum_to_copy) %length(listPng)
+        if ~isempty(Sppt), slide = Sppt.NewSlide(1+ii); end
         fn = fullfile(PathTranslator(figures_pn), ['figure_' num2str(list_fignum_to_copy(ii)) '.png']);
         if ~exist(fn, 'file')
             continue
         end
         if ~isempty(Sppt)
-            slide = Sppt.NewSlide(1+ii);
             hh = invoke(slide.Shapes, 'AddPicture', fn, true, true, 100, 100);
             % hh.Left, hh.Top, hh.Width
         end
@@ -239,23 +239,31 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
         case 'DisplayCEfields'
 
             for ii = 1:N-1,
-                
-                [hfig, hax, sCtmp] = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
+                try
+                    [hfig, hax, sCtmp] = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
+                catch ME
+                    hfig = [];                    
+                    disp(ME.message);
+                    disp(ME.stack);
+                end
+
                 if ~isempty(sCtmp),
                     sCmetrics(ii) = sCtmp;
                 end
                 
-                if ~isempty(hfig),
-                    figscale = CalcFigscale(hfig, figheight);
-                    set(hfig, 'Position', figscale*get(hfig,'position'));
-                    if ispc,
-                        htmp = Sppt.CopyFigNewSlide(hfig);
-                        %set(htmp,'Height',figheight);
-                    else
-                        fSaveas(hfig, save_pn, sDisplayFun, 'it', S(ii).iter);
-                    end % if ispc
+                if isempty(hfig)
+                    continue
+                end
+
+                figscale = CalcFigscale(hfig, figheight);
+                set(hfig, 'Position', figscale*get(hfig,'position'));
+                if ispc,
+                    htmp = Sppt.CopyFigNewSlide(hfig);
+                    %set(htmp,'Height',figheight);
+                else
+                    fSaveas(hfig, save_pn, sDisplayFun, 'it', S(ii).iter);
+                end % if ispc
                     
-                end % if hfig
             end % for ii iter
 
             hfig_ce = figure;
@@ -272,7 +280,13 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
         otherwise, % one call per iteration
             sCmetrics = struct;
             for ii = 1:N,
-                hfig = S(ii).(sDisplayFun)(varargin{:},'hfig',hfig);
+                try
+                    hfig = S(ii).(sDisplayFun)(varargin{:},'hfig',hfig);
+                catch ME
+                    hfig = [];
+                    disp(ME.message);
+                    disp(ME.stack);
+                end
                 
                 % check for valid figure
                 if isempty(hfig),
@@ -327,14 +341,17 @@ function [probeh, hfig, hax] = PlotProbeh(S, varargin)
          [hfig, hax, itnum_texp, texp] = PlotTexp(S);
      end
 
-     [itnum, probeh] = deal(zeros(size(S)));
+     itnum = zeros(size(S));
+     probeh = zeros(length(S), S(1).NofW);
      for ii = 1:length(S)
-         for ip = 1:S(ii).Nppair
-             Itmp(:,ip) = S(ii).ProbeMeasAmp{ip}(S(ii).bMask).^2;
-         end
+         for iw = 1:S(ii).NofW
+             for ip = 1:S(ii).Nppair
+                 Itmp(:,ip) = S(ii).ProbeMeasAmp{iw, ip}(S(ii).bMask).^2;
+             end % each probe
+             probeh(ii, iw) = mean(Itmp(:));
+         end % each subband
          itnum(ii) = S(ii).iter;
-         probeh(ii) = mean(Itmp(:));
-     end
+     end % each iteration
 
      figure(hfig);
      if ~isempty(hax), axes(hax); else, hax = gca; end
@@ -452,10 +469,10 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
     %
     %     end % ii
 
-    NInt_co = listS(1).falcoData.normIntModScore(itnum, :);
-    NInt_inco = listS(1).falcoData.normIntUnmodScore(itnum, :);
-    NInt_total = listS(1).falcoData.normIntMeasScore(itnum, :);
-    NInt_mean = mean(NInt_total, 2); % mean across the band
+    NInt_co = listS(1).falcoData.normIntModScore(itnum, :); % column per band*star = listS(1).NofW
+    NInt_inco = listS(1).falcoData.normIntUnmodScore(itnum, :); % column per band*star = listS(1).NofW
+    NInt_total = listS(1).falcoData.normIntMeasScore(itnum, :); % column per band*star
+    NInt_mean = mean(NInt_total, 2); % mean across the band ???
     
     if isempty(hfig),
         hfig = figure;
@@ -468,10 +485,23 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
     ylabel('Normalized Intensity')
     set(hl,'linewidth', 2)
     
-    for ilam = 1:length(listS(1).lambda)
-        legstr_total{ilam} = ['Total ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
-        legstr_unmod{ilam} = ['Unmodulated ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
-        legstr_mod{ilam}   = ['Modulated ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
+    % S.Nlamcorr = mp.Nsbp;
+    % S.NofW = S.Nlamcorr * S.Nstar
+    strStar = {'On-axis', 'Off-axis'};
+    for ibnd = 1:listS(1).NofW % check length of .lambda always equals Nsbd * Nstar ???
+        % when there are multiple subbands with multiple stars, order will
+        % be determined in falco routine. For now, one subband, two stars
+        if listS(1).NofW == listS(1).Nstar,
+            istar = ibnd;
+            ilam = 1;
+        else
+            istar = 1;
+            ilam = ibnd;
+        end
+
+        legstr_total{ibnd} = ['Total ' strStar{istar} ' ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
+        legstr_unmod{ibnd} = ['Unmodulated ' strStar{istar} ' ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
+        legstr_mod{ibnd}   = ['Modulated ' strStar{istar} ' ' num2str(listS(1).lambda(ilam)/listS(1).NM, '%.0f') 'nm'];
     end
     %legend('Total', 'Unmodulated', 'Modulated')
     legend(legstr_total{:},legstr_unmod{:},legstr_mod{:})

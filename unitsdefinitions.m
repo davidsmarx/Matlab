@@ -27,6 +27,7 @@ MHZ = 1e6; % megahertz
 GHZ = 1e9;
 THZ = 1e12;
 WAVENUMBER = 100*2.99792458e8; % wavenumber in 1/cm
+EV = ECHARGE/HPLANCK; % [Hz] = the frequency of radiation of 1 eV
 
 V = 1;
 MV = 1e-3; % mV

@@ -1232,6 +1232,7 @@ classdef CRunData < handle & CConstants
             end %
             
             grid on
+            hold off
             
             % ylimits on semilogy plot
             if ~isempty(ylim), set(gca, 'ylim', ylim); end
@@ -1277,6 +1278,8 @@ classdef CRunData < handle & CConstants
             %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             %             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
             %             drawylimlines = CheckOption('drawylimlines', [], varargin{:})
+            %             drawRectXminmax = CheckOption('drawrectxminmax', [], varargin{:});
+            %             drawRectYminmax = CheckOption('drawrectyminmax', [], varargin{:});
             %             climopt = CheckOption('clim', [], varargin{:});
             %             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             %             haxuse = CheckOption('hax', [], varargin{:});
@@ -1304,6 +1307,8 @@ classdef CRunData < handle & CConstants
             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
             drawTheta = CheckOption('drawtheta', S.DrawthetaDefault, varargin{:});
             drawYlimLines = CheckOption('drawylimlines', [], varargin{:});
+            drawRectXminmax = CheckOption('drawrectxminmax', [S.XminSc S.XmaxSc], varargin{:});
+            drawRectYminmax = CheckOption('drawrectyminmax', [S.YminSc S.YmaxSc], varargin{:});
             climopt = CheckOption('clim', [], varargin{:});
             ilam = CheckOption('ilam', 1:S.NofW, varargin{:});
             haxuse = CheckOption('hax', [], varargin{:});
@@ -1348,6 +1353,8 @@ classdef CRunData < handle & CConstants
             DrawCircles(ha, drawRadii);
             DrawThetaLines(ha, drawTheta, drawRadii);
             DrawYlimLines(ha, drawYlimLines, drawRadii);
+            DrawRectLines(ha, drawRectXminmax, drawRectYminmax);
+
             % DrawYlimLines                        CheckOption('drawylimlines', [], varargin{:})
             % set each image plot to the same clim
             % auto-clim, unless specific clim requested
@@ -1612,7 +1619,7 @@ classdef CRunData < handle & CConstants
                 cbartitle = 'Norm Intensity';
             end
             
-            if isempty(haxuse), hfig = figure_mxn(1,S.Nlamcorr); else hfig = gcf; end
+            if isempty(haxuse), hfig = figure_mxn(1,S.NofW); else hfig = gcf; end
             
             if isempty(clim),
                 clim = pClim(pFun([plIncInt{:}]));
@@ -1621,10 +1628,10 @@ classdef CRunData < handle & CConstants
             [x, y] = CreateGrid(plIncInt{1}, 1./S.ppl0);
             % auto-scale
             %Agg = [
-            for iwv = 1:S.Nlamcorr,
+            for iwv = 1:S.NofW,
 
                 if isempty(haxuse),
-                    hax(iwv) = subplot(1, S.Nlamcorr, iwv);
+                    hax(iwv) = subplot(1, S.NofW, iwv);
                     colormap(gray)
                 else
                     hax(iwv) = haxuse(iwv);
@@ -1792,9 +1799,10 @@ classdef CRunData < handle & CConstants
             end
                 
             if isempty(hfig),
-                hfig = figure_mxn(2,S.Nppair+1);
+                hfig = figure_mxn(2,S.Nppair+1); % row 1 = model, row 2 = measure
             else
                 figure(hfig)
+                %clf(hfig) % the radial plots will accumulate if you don't do this
             end
             for ip = 1:S.Nppair,
                 ha(ip) = subplot(2,S.Nppair+1,ip);
@@ -1831,7 +1839,7 @@ classdef CRunData < handle & CConstants
             harad(1) = subplot(2,S.Nppair+1,S.Nppair+1);
             S.DisplayRadialPlot(ProbeModelPlot, 'dispradlim', radlim, 'nr', nr, 'hax', harad(1),'title', ['Iter #' num2str(S.iter) ', Model'], 'legstr', legstr);
             harad(2) = subplot(2,S.Nppair+1,2*(S.Nppair+1));
-            S.DisplayRadialPlot(ProbeMeasPlot, 'dispradlim', radlim, 'nr', nr, 'hax',harad(2),'title', ['Iter #' num2str(S.iter) ', Measure'], 'legstr', legstr);
+            S.DisplayRadialPlot(ProbeMeasPlot, 'dispradlim', radlim, 'nr', nr, 'hax', harad(2),'title', ['Iter #' num2str(S.iter) ', Measure'], 'legstr', legstr);
             
             ylim = get(harad,'ylim');
             set(harad,'ylim',[min([ylim{:}]), max([ylim{:}])])
@@ -1879,7 +1887,7 @@ classdef CRunData < handle & CConstants
                 cbartitle = 'Norm Intensity';
             end
             
-            if isempty(haxuse), hfig = figure_mxn(1,S.Nlamcorr); else hfig = gcf; end
+            if isempty(haxuse), hfig = figure_mxn(1,S.NofW); else hfig = gcf; end
             
             if isempty(clim),
                 clim = pClim(pFun([S.CohInt{:}]));
@@ -1887,9 +1895,9 @@ classdef CRunData < handle & CConstants
             
             [x, y] = CreateGrid(S.CohInt{1}, 1./S.ppl0);
 
-            for iwv = 1:S.Nlamcorr,
+            for iwv = 1:S.NofW,
                 if isempty(haxuse),
-                    hax(iwv) = subplot(1, S.Nlamcorr, iwv);
+                    hax(iwv) = subplot(1, S.NofW, iwv);
                 else
                     hax(iwv) =  haxuse(iwv);
                     axes(haxuse(iwv));
@@ -1933,7 +1941,7 @@ classdef CRunData < handle & CConstants
             varargin{end+1} = 'clim'; varargin{end+1} = [-9 -6.5];
             
             % check that this instance is not empty
-            if isempty(S.Nlamcorr)
+            if isempty(S.NofW)
                 hfig = [];
                 haxlist = [];
                 return
@@ -1948,18 +1956,18 @@ classdef CRunData < handle & CConstants
             end
             
             %haxlist = zeros(3,S.Nlamcorr);
-            if S.Nlamcorr == 1,
+            if S.NofW == 1,
                 nrow_ax = 1;
                 ncol_ax = 3;
             else
-                ncol_ax = S.Nlamcorr;
+                ncol_ax = S.NofW;
                 nrow_ax = 3;
             end
             hfig = figure_mxn(hfig, nrow_ax, ncol_ax);
             
             % unprobed images
             figure(hfig);
-            for ii = 1:S.Nlamcorr,
+            for ii = 1:S.NofW,
                 haxlist(1,ii) = subplot(nrow_ax,ncol_ax,ii);
             end
             S.DisplayImCubeUnProb('hax',haxlist(1,:),varargin{:});
@@ -1967,16 +1975,16 @@ classdef CRunData < handle & CConstants
             
             % Coh Int
             figure(hfig);            
-            for ii = 1:S.Nlamcorr,
-                haxlist(2,ii) = subplot(nrow_ax, ncol_ax,ii+S.Nlamcorr);
+            for ii = 1:S.NofW,
+                haxlist(2,ii) = subplot(nrow_ax, ncol_ax,ii+S.NofW);
             end
             S.DisplayCohInt('hax',haxlist(2,:), varargin{:});
             % S.CohInt{iwv}
             
             % Inc Int
             figure(hfig);            
-            for ii = 1:S.Nlamcorr,
-                haxlist(3,ii) = subplot(nrow_ax, ncol_ax,ii+2*S.Nlamcorr);
+            for ii = 1:S.NofW,
+                haxlist(3,ii) = subplot(nrow_ax, ncol_ax,ii+2*S.NofW);
             end
             S.DisplayIncInt('hax',haxlist(3,:), varargin{:});
             % S.IncIntEst{iwv}
@@ -2358,10 +2366,14 @@ classdef CRunData < handle & CConstants
             if isempty(clim),
                 dEtmp = [dE_t dE_m];
                 dEuse = dEtmp(abs(dEtmp(:)) > 0);
-                clim = AutoClim([real(dEuse) imag(dEuse)],'symmetric',true);
+                if ~isempty(dEuse)
+                    clim = AutoClim([real(dEuse) imag(dEuse)],'symmetric',true, 'removeoutliers', true);
+                else
+                    clim = [-1 1];
+                end
                 %set(ha,'clim',median(climE))
             else
-                %set(ha,'clim',clim)
+                set(ha,'clim',clim)
             end
             set(ha,'clim',clim)
 
@@ -2425,7 +2437,9 @@ classdef CRunData < handle & CConstants
             end
 
             [nw, nr, nc] = size(S.E_t);
-            if nw ~= S.NofW, error(['number of wavelengths inconsistent']); end
+            if nw ~= S.NofW, 
+                error(['number of wavelengths inconsistent']); 
+            end
 
             % check that S.E_t and Sref.E_t are same size
             % also catches if one is no data
@@ -2837,31 +2851,53 @@ classdef CRunData < handle & CConstants
             end
             
             idm = CheckOption('idm', 1, varargin{:}); % which DM is probing?
+            hfig = CheckOption('hfig', [], varargin{:});
             
             % probed DM:
             DMv = S.DMvCube{idm};
             
-            [nacty, nactx, nsli] = size(DMv);
-            npr = nsli-1;
+            % normal (no multi-star)
+            if ~isprop(S, 'Nstar') || S.Nstar == 1,
+                [nacty, nactx, nsli] = size(DMv);
+                npr = S.Nppair;
+                if ~isequal(nsli, 2*npr+1), error('size of DM probe not consistent'); end
+                DMv0 = DMv(:,:,1);
+                DMv = DMv(:,:,2:end);
+            else
+                [nacty, nactx, nsli, nstartmp] = size(DMv); % = (48, 48, 5, 2)
+                npr = nstartmp*S.Nppair; % total # of probe pairs
+                if ~isequal(nstartmp, S.Nstar), error('number of DM probe stars not consistent'); end
+                if ~isequal(npr+1, nsli), error('size of DM probe not consistent'); end
+                DMv0 = DMv(:,:,1,1);
+                DMv = DMv(:,:,2:end,:);
+            end % if multi-star
             
-            hfig = figure_mxn(2,npr/2);
-            for ii = 1:npr/2,
-                isl = 2*ii; % slice into dmv cube
-                hax(ii) = subplot(2,npr/2,ii);
-                imageschcit(0,0,squeeze(DMv(:,:,isl)-DMv(:,:,1)))
+            if isempty(hfig)
+                hfig = figure_mxn(2,npr);
+            else
+                figure(hfig);
+            end
+
+            for ii = 1:npr,
+                isl_p = 2*ii-1; % slice into dmv cube for + probe
+                isl_m = 2*ii;   % slice into dmv cube for - probe
+
+                hax(ii) = subplot(2,npr,ii);
+                imageschcit(0,0,squeeze(DMv(:,:,isl_p)-DMv0))
                 title(['iter #' num2str(S.iter) '; Probe #' num2str(ii) '; +ve'])
                 colorbartitle('Vmu')
                 
-                hax(ii+npr/2) = subplot(2,npr/2,ii+npr/2);
-                imageschcit(0,0,squeeze(DMv(:,:,isl+1)-DMv(:,:,1)))
+                hax(ii+npr) = subplot(2, npr, ii+npr);
+                imageschcit(0,0,squeeze(DMv(:,:,isl_m)-DMv0))
                 title(['iter #' num2str(S.iter) '; Probe #' num2str(ii) '; -ve'])
                 colorbartitle('Vmu')
                                     
             end % for each pair
             
-            % make uniform clim
-            clim = get(hax,'clim'); % a cell array
-            set(hax,'clim', max(abs([max([clim{:}]) min([clim{:}])]))*[-1 1])
+            % make each clim symmetric
+            for ii = 1:length(hax),
+                set(hax(ii), 'clim', max(get(hax(ii), 'clim'))*[-1 1]),
+            end
             
         end % DisplayDMvProbes
         
@@ -3060,3 +3096,25 @@ for iax = 1:length(hax),
 end % for each axes
 
 end % DrawThetaLines
+
+function DrawRectLines(hax, xminmax, yminmax)
+% DrawRectLines(hax, xminmax, yminmax)
+
+if isempty(xminmax) || isempty(yminmax)
+    return
+end
+
+hax = hax(:); % make 1-d
+
+x0 = mean(xminmax);
+lenx = abs(diff(xminmax));
+y0 = mean(xminmax);
+leny = abs(diff(yminmax));
+
+for iax = 1:length(hax)
+    axes(hax(iax));
+    h = drawrect(hax(iax),lenx,leny,x0,y0);
+
+end % for each hax
+
+end % DrawRectLines
