@@ -6,7 +6,7 @@ function [A, unitstr] = read_HOC(fname)
 %HOCDIR = 'C:\Tamar\Matlab\glass data toolbox\Handbook of Optical Constants\ascii tables\';
 %HOCDIR = 'C:\Users\dmarx\OneDrive\Matlab\glass data toolbox\Handbook of Optical Constants\ascii tables\';
 pn = regexp(userpath,'\','split');
-HOCDIR = [pn{1} '\' pn{2} '\' pn{3} '\OneDrive\Matlab\glass data toolbox\Handbook of Optical Constants\ascii tables\'];
+HOCDIR = [pn{1} '\' pn{2} '\' pn{3} '\Documents\Matlab\glass data toolbox\Handbook of Optical Constants\ascii tables\'];
 
 fid = fopen([HOCDIR fname],'rt');
 if fid == -1, error(['cannot open file: ' HOCDIR fname]); end
