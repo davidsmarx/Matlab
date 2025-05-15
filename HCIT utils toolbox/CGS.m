@@ -274,6 +274,23 @@ classdef CGS < handle
                     
                     wavelength_kwd = 'lam';
                     
+                case 'omc_epic'
+                    trialname = CheckOption('trialname', '', varargin{:});
+                  
+                    DIR_PR      = getenv("DIR_PR");
+                    DATA_ROOT   = getenv("DATA_ROOT");
+                    
+                    bn = [DIR_PR '/prout_' trialname num2str(gsnum,'%03d')];
+                    
+                    % get dir listing of raw camera images
+                    S.listPupImDir = dir(PathTranslator(...
+                        [DATA_ROOT '/excam/data/*/pr_gs_' num2str(gsnum,'%04d') '/emccd.*.fits']...
+                        ));
+                    S.listSrcImDir = dir(PathTranslator(...
+                        [DATA_ROOT '/excam/data/*/pr_par_' num2str(gsnum,'%04d') '/emccd.*.fits']...
+                        ));
+                    
+                    wavelength_kwd = 'lam';
                 case 'cgi_fft'
                     
                     % Note: add check to see if data already exists
