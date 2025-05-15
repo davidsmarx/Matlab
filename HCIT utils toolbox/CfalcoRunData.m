@@ -127,7 +127,7 @@ classdef CfalcoRunData < CRunData
                 copyfile(config_fn, './config_tmp.m');
                 eval('config_tmp');
                 mp = falco_flesh_out_workspace(mp);
-                
+                                
             end % if isempty(mp)
             
             S.ppl0 = mp.Fend.res;
@@ -144,6 +144,14 @@ classdef CfalcoRunData < CRunData
             %                 S.YmaxSc = inf;
             %                 S.XminSc = -inf;
             %                 S.XmaxSc = inf;
+
+            % rectangle score region for drawing
+            xminmax = mp.Fend.xiOffset + mp.Fend.score.Rout*[-1 1];
+            yminmax = mp.Fend.etaOffset + mp.Fend.score.Rout*[-1 1];
+            S.YminSc = yminmax(1);
+            S.YmaxSc = yminmax(2);
+            S.XminSc = xminmax(1);
+            S.XmaxSc = xminmax(2);
 
             %             % use falco to generate ctrl and score region masks
             %             score.pixresFP = mp.Fend.res;
@@ -323,7 +331,7 @@ classdef CfalcoRunData < CRunData
             
                 if isfield(ev, 'Esim')
                     S.E_m(iMode,:,:) = zeros(size(S.bMask));
-                    S.E_m(iMode, S.bMask) = ev.Esim(:, 1); % iMode);
+                    S.E_m(iMode, S.bMask) = ev.Esim(:, iMode); % iMode);
                 end
         
             end % for each Mode (subband, star)
