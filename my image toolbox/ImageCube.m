@@ -1,4 +1,4 @@
-function [hfig_out, hax_out, sUserData_out] = ImageCube(imgCube, listI, varargin)
+function [hfig_out, hax_out, hfig_sUserData_out, hax_sUserData_out] = ImageCube(imgCube, listI, varargin)
 % [hfig, hax, sUserData] = ImageCube(imgCube, listI, varargin)
 %
 % imgCube (Nslices, nr, nc)
@@ -73,33 +73,39 @@ if ~isempty(ylim), set(gca,'ylim', ylim), end
 colormap(cmap);
 htitle = title(fTitleStr(islinit));
 
-% store the image cube, etc., with the figure object
-sUserData = struct(...
+% store the image cube, etc., with the figure and axes objects
+hfig_sUserData = struct(...
+    'hfig', hfig ...
+    ,'multi_key_seq', [] ...
+    );
+
+hax_sUserData = struct( ...
     'imgCube', imgCube ...
     ,'Nsl', Nsl ...
-    ,'hfig', hfig ...
     ,'hax', hax ...
     ,'himage', himage ...
     ,'htitle', htitle ...
     ,'isl', islinit ... % current slice in figure
     ,'xplot', xplot ...
     ,'yplot', yplot ...
-    ,'multi_key_seq', [] ...
     );
-sUserData.fTitleStr = fTitleStr; % allows for fTitleStr is a cell array
+hax_sUserData.fTitleStr = fTitleStr; % allows for fTitleStr is a cell array
 
 set(hfig, 'KeyPressFcn', @KeyPressCallback);
-set(hfig, 'UserData', sUserData);
+set(hfig, 'UserData', hfig_sUserData);
+set(hax, 'UserData', hax_sUserData);
 
 if nargout > 0
-    [hfig_out, hax_out, sUserData_out] = deal(hfig, hax, sUserData);
+    [hfig_out, hax_out, hfig_sUserData_out, hax_sUserData_out] = deal(hfig, hax, hfig_sUserData, hax_sUserData);
 end
 
 end % main
 
 function KeyPressCallback(hSrc, event)
 
-S = get(hSrc,'UserData');
+S = get(hSrc, 'UserData');
+Hax = gca;
+Sax = get(Hax, 'UserData');
 
 % are we in the middle of a multi-key sequence?
 if ~isempty(S.multi_key_seq),
@@ -119,11 +125,11 @@ if any(strcmp(event.Modifier,'shift'))
             end
             
             % loop through frames
-            loops = S.Nsl;
+            loops = Sax.Nsl;
             for isl = 1:loops,
-                Img = squeeze(S.imgCube(isl,:,:));
-                S.himage.CData = Img;
-                S.htitle.String = S.fTitleStr(isl);
+                Img = squeeze(Sax.imgCube(isl,:,:));
+                Sax.himage.CData = Img;
+                Sax.htitle.String = Sax.fTitleStr(isl);
                 drawnow;
                 exportgraphics(gcf, fullfile(pn, fn), 'Append', true);
             end
@@ -138,24 +144,22 @@ else
     switch event.Key
         case 'f'
             %disp('forward');
-            %S.isl = min(S.Nsl, S.isl + 1);
-            S.isl = mod(S.isl, S.Nsl) + 1;
+            Sax.isl = mod(Sax.isl, Sax.Nsl) + 1;
             
         case 'b'
             %disp('backward');
-            %S.isl = max(1, S.isl - 1);
-            S.isl = S.isl - 1;
-            if S.isl == 0, S.isl = S.Nsl; end
+            Sax.isl = Sax.isl - 1;
+            if Sax.isl == 0, Sax.isl = Sax.Nsl; end
             
         case '1'
             if isempty(S.multi_key_seq),
                 % go to first slice
-                S.isl = 1;
+                Sax.isl = 1;
             end
             
         case 'e'
             % go to last slice
-            S.isl = S.Nsl;
+            Sax.isl = Sax.Nsl;
             
         case 'g'
             % goto frame number
@@ -170,7 +174,7 @@ else
                     % assumes all keys in the middle are numbers
                     isl = str2double(S.multi_key_seq(2:end-1));
                     if ~isnan(isl),
-                        S.isl = isl;
+                        Sax.isl = isl;
                     end
                 end
                 % reset
@@ -194,12 +198,12 @@ else
             end
             
             % make a movie
-            loops = S.Nsl;
+            loops = Sax.Nsl;
             F(loops) = struct('cdata',[],'colormap',[]);
             for isl = 1:loops,
-                Img = squeeze(S.imgCube(isl,:,:));
-                S.himage.CData = Img;
-                S.htitle.String = S.fTitleStr(isl);
+                Img = squeeze(Sax.imgCube(isl,:,:));
+                Sax.himage.CData = Img;
+                Sax.htitle.String = Sax.fTitleStr(isl);
                 drawnow;
                 F(isl) = getframe(S.hfig);
                 
@@ -238,14 +242,14 @@ else
             % end
             
             % make a movie
-            loops = S.Nsl;
+            loops = Sax.Nsl;
             for isl = 1:loops,
-                Img = squeeze(S.imgCube(isl,:,:));
-                S.himage.CData = Img;
-                S.htitle.String = S.fTitleStr(isl);
+                Img = squeeze(Sax.imgCube(isl,:,:));
+                Sax.himage.CData = Img;
+                Sax.htitle.String = Sax.fTitleStr(isl);
                 drawnow;
 
-                exportgraphics(gca, fullfile(pn, fn), "Append", true);
+                exportgraphics(Sax.hax, fullfile(pn, fn), "Append", true);
             end
             
         otherwise
@@ -254,15 +258,17 @@ else
     
 end % if 'shift', etc
 
-if S.isl >=1 && S.isl <= S.Nsl,
-    Img = squeeze(S.imgCube(S.isl,:,:));
-    S.himage.CData = Img;
-    S.htitle.String = S.fTitleStr(S.isl);
+if Sax.isl >=1 && Sax.isl <= Sax.Nsl,
+    Img = squeeze(Sax.imgCube(Sax.isl,:,:));
+    Sax.himage.CData = Img;
+    Sax.htitle.String = Sax.fTitleStr(Sax.isl);
 end
 
 drawnow;
 
+% update UserData
 set(hSrc, 'UserData', S);
+set(Hax, 'UserData', Sax);
 
 end % KeyPressCallback
 

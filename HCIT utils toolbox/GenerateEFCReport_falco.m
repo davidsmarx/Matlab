@@ -192,7 +192,9 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
             %if any(strcmp(sDisplayFun, listDiff)),
             for ii = 1:N-1,
                 [hfig, hax, sMtmp] = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
-                sCmetrics(ii) = sMtmp;
+                if ~isempty(sMtmp)
+                    sCmetrics(ii) = sMtmp;
+                end
                 
                 if ~isempty(hfig)
                     figscale = CalcFigscale(hfig, figheight);
@@ -207,7 +209,7 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                 
             end % for ii iter
         
-            if strcmp(sMtmp(1).type, 'dEfields'),
+            if any(strcmp({sCmetrics.type}, 'dEfields')),
                 nw = S(1).NofW; % for convenience
                 hfig_de = figure;
                 hh = semilogy([S(2:N).iter], [sCmetrics.rmsdE_t].^2, '-', ...
