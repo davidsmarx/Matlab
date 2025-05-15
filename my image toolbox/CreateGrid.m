@@ -6,10 +6,11 @@ function [x, y, X, Y, R, T] = CreateGrid(Ima, dx, dy, varargin)
 % dx (optional)
 % dy (optional)
 % options:
-%    'origin', 'center' (default), '0-offset', '1-offset',
-%    'center-halfpixel'
+%    'origin', 'center' (default), '0-offset', '1-offset', 'center-halfpixel'
+%    'xy_offset', [xo yo], after origin is set, x => x - xo, y=> y - yo
 
 OriginLoc = CheckOption('origin','center',varargin{:});
+xyo = CheckOption('xy_offset', [0 0], varargin{:});
 
 switch nargin,
     case 1
@@ -56,6 +57,9 @@ switch OriginLoc
     otherwise
         error(['unknown origin option: ' OriginLoc]);
 end
+
+x = x - xyo(1);
+y = y - xyo(2);
 
 [X, Y] = meshgrid(x,y);
 R = sqrt(X.^2 + Y.^2);
