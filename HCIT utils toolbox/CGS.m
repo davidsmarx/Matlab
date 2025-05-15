@@ -16,6 +16,7 @@ classdef CGS < handle
     %                     case 'mcb_twolens'
     %                     case 'piaacmc'
     %                     case 'omc_mswc'
+    %                     case 'omc_epic'
     %
     % read reduced results from gs phase retrieval
     %
@@ -243,7 +244,7 @@ classdef CGS < handle
                     
                     wavelength_kwd = 'lam';
                     
-                case 'omc_mswc'
+                case {'omc_mswc', 'omc_epic'}
                     trialname = CheckOption('trialname', '', varargin{:});
                     
                     bn = ['/home/hcit/OMC/phaseretrieval/reduced/prout_' trialname num2str(gsnum,'%03d')];
