@@ -16,6 +16,8 @@ classdef CGS < handle
     %                     case 'mcb_twolens'
     %                     case 'piaacmc'
     %                     case 'omc_mswc'
+    %                     case 'cgi_fft'
+    %                     case 'cgi_tvac'
     %
     % read reduced results from gs phase retrieval
     %
