@@ -27,10 +27,7 @@ if strcmp(A{1}, '~'),
     
 elseif ~strcmp(s383path(1), '/')
     winpath = s383path; % it's a relative path
-    
-elseif strcmp([A{2} '/' A{3}], 'home/bseo'),
-    winpath = strjoin({'Y:\bseo', A{4:end}}, filesep);
-    
+        
 elseif strcmp([A{2} '/' A{3}], 'home/dmarx'),
     winpath = strjoin({'Y:', A{4:end}}, filesep);
     
@@ -39,19 +36,19 @@ elseif isequal([A{2} '/' A{3}],'proj/hcit2')
     %winpath = '\\s383-nfs\hcit2'; %
     winpath = fullfile('Y:\', A{5:end}); % A{4} = dmarx
     
-elseif isequal([A{2} '/' A{3} '/' A{4} '/' A{5}],'proj/hcit/home/dmarx')
+elseif length(A) >= 6 && isequal(fullfile(A{2:6}), 'proj\hcit\home\dmarx\HCIT')
     % \\s383-nfs = /proj
     %winpath = '\\s383-nfs\hcit'; %
-    winpath = fullfile('Y:\', A{6:end});
+    winpath = fullfile('Y:\links', A{6:end});
     
 elseif isequal([A{2} '/' A{3}],'proj/afta-im')
     % \\s383-nfs = /proj
     winpath = '\\s383-nfs\afta-im'; %
 
-elseif isequal([A{2} '/' A{3} '/' A{4}],'proj/hcit/data')
+elseif length(A) >= 5 && isequal([A{2} '/' A{3} '/' A{4}],'proj/hcit/data')
     winpath = strjoin({'Y:\links\ln_hcit_data', A{5:end}}, filesep);
 
-elseif isequal([A{2} '/' A{3} '/' A{4}],'proj/mcb/data')
+elseif isequal([A{2} '/' A{3} '/' A{4}], 'proj/mcb/data')
     % \\s383-nfs = /proj
     winpath = fullfile('Y:\links\ln_mcb_data', A{5:end});
 

@@ -70,9 +70,6 @@ classdef CfalcoRunData < CRunData
                 return
             end
 
-            % need:
-            %mp.Fend.corr.maskBool;
-            %mp.Fend.score.maskBool;
             
             % Load FITS image data IncInt, IncIntEst, CohInt, ImCubeUnProb
             S.ReadImageCube;
@@ -116,10 +113,10 @@ classdef CfalcoRunData < CRunData
                     %                     S.Nppair = 3;
                     %                     S.NofW = 1;
                     %                     S.Nlamcorr = 1;
-                    %                     S.RminSc = 3; % = mp.Fend.score.Rin
-                    %                     S.RmaxSc = 9; % = mp.Fend.score.Rout
-                    %                     S.ThminSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
-                    %                     S.ThmaxSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
+                    %                     S.RminSc = 3; % = Fend.score.Rin
+                    %                     S.RmaxSc = 9; % = Fend.score.Rout
+                    %                     S.ThminSc = []; % derive from Fend.score.ang & Fend.sides
+                    %                     S.ThmaxSc = []; % derive from Fend.score.ang & Fend.sides
                     %                     S.YminSc = -inf;
                     %                     S.YmaxSc = inf;
                     %                     S.XminSc = -inf;
@@ -133,51 +130,42 @@ classdef CfalcoRunData < CRunData
                                 
             end % if isempty(mp)
             
-            S.ppl0 = mp.Fend.res;
             %S.Nppair = mp.est.probe.Npairs;
             S.Nstar = 1; %2; % hard code for now
             S.Nlamcorr = mp.Nsbp; % 
             S.NofW = S.Nstar * S.Nlamcorr; % use NofW as all to fool CRunData
             
-            %                 S.RminSc = mp.Fend.score.Rin;
-            %                 S.RmaxSc = mp.Fend.score.Rout;
-            %                 S.ThminSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
-            %                 S.ThmaxSc = []; % derive from mp.Fend.score.ang & mp.Fend.sides
+            %                 S.RminSc = Fend.score.Rin;
+            %                 S.RmaxSc = Fend.score.Rout;
+            %                 S.ThminSc = []; % derive from Fend.score.ang & Fend.sides
+            %                 S.ThmaxSc = []; % derive from Fend.score.ang & Fend.sides
             %                 S.YminSc = -inf;
             %                 S.YmaxSc = inf;
             %                 S.XminSc = -inf;
             %                 S.XmaxSc = inf;
 
-            % rectangle score region for drawing
-            xminmax = mp.Fend.xiOffset + mp.Fend.score.Rout*[-1 1];
-            yminmax = mp.Fend.etaOffset + mp.Fend.score.Rout*[-1 1];
-            S.YminSc = yminmax(1);
-            S.YmaxSc = yminmax(2);
-            S.XminSc = xminmax(1);
-            S.XmaxSc = xminmax(2);
-
             %             % use falco to generate ctrl and score region masks
-            %             score.pixresFP = mp.Fend.res;
-            %             score.rhoInner = mp.Fend.score.Rin;
-            %             score.rhoOuter = mp.Fend.score.Rout;
-            %             score.angDeg = mp.Fend.score.ang;
-            %             score.whichSide = mp.Fend.sides;
-            %             score.shape = mp.Fend.shape;
-            %             score.xiOffset = mp.Fend.xiOffset;
-            %             score.etaOffset = mp.Fend.etaOffset;
-            %             score.FOV = mp.Fend.FOV;
+            %             score.pixresFP = Fend.res;
+            %             score.rhoInner = Fend.score.Rin;
+            %             score.rhoOuter = Fend.score.Rout;
+            %             score.angDeg = Fend.score.ang;
+            %             score.whichSide = Fend.sides;
+            %             score.shape = Fend.shape;
+            %             score.xiOffset = Fend.xiOffset;
+            %             score.etaOffset = Fend.etaOffset;
+            %             score.FOV = Fend.FOV;
             %             [S.bMaskSc, xis, etas] = falco_gen_SW_mask(score);
             %             %figure, imageschcit(bMaskSc)
             
-            %             corr.pixresFP = mp.Fend.res;
-            %             corr.rhoInner = mp.Fend.corr.Rin;
-            %             corr.rhoOuter = mp.Fend.corr.Rout;
-            %             corr.angDeg = mp.Fend.corr.ang;
-            %             corr.whichSide = mp.Fend.sides;
-            %             corr.shape = mp.Fend.shape;
-            %             corr.xiOffset = mp.Fend.xiOffset;
-            %             corr.etaOffset = mp.Fend.etaOffset;
-            %             corr.FOV = mp.Fend.FOV;
+            %             corr.pixresFP = Fend.res;
+            %             corr.rhoInner = d.Fend.corr.Rin;
+            %             corr.rhoOuter = Fend.corr.Rout;
+            %             corr.angDeg = Fend.corr.ang;
+            %             corr.whichSide = Fend.sides;
+            %             corr.shape = Fend.shape;
+            %             corr.xiOffset = Fend.xiOffset;
+            %             corr.etaOffset = Fend.etaOffset;
+            %             corr.FOV = Fend.FOV;
             %             [S.bMask] = falco_gen_SW_mask(corr);
             %figure, imageschcit(bMaskSc)
             
@@ -228,13 +216,22 @@ classdef CfalcoRunData < CRunData
             %                     sm: {1×116 cell}
             %                 alpha2: {1×116 cell}
         
+            % rectangle score region for drawing
+            S.ppl0 = S.falcoData.Fend.res;
+            xminmax = S.mp.Fend.xiOffset + S.mp.Fend.score.Rout*[-1 1];
+            yminmax = S.mp.Fend.etaOffset + S.mp.Fend.score.Rout*[-1 1];
+            S.YminSc = yminmax(1);
+            S.YmaxSc = yminmax(2);
+            S.XminSc = xminmax(1);
+            S.XmaxSc = xminmax(2);
+
             S.bMask = S.falcoData.Fend.corr.maskBool;
             S.bMaskSc = S.falcoData.Fend.score.maskBool;
             
             % default XYlim for display dark zone
-            [~, ~, Xld, Yld] = CreateGrid(S.mp.Fend.corr.mask, 1./S.mp.Fend.res);
-            S.XlimDefault = [min(Xld(S.mp.Fend.corr.maskBool)) max(Xld(S.mp.Fend.corr.maskBool))] + 2*[-1 1];
-            S.YlimDefault = [min(Yld(S.mp.Fend.corr.maskBool)) max(Yld(S.mp.Fend.corr.maskBool))] + 2*[-1 1];
+            [~, ~, Xld, Yld] = CreateGrid(S.falcoData.Fend.corr.maskBool, 1./S.falcoData.Fend.res);
+            S.XlimDefault = [min(Xld(S.falcoData.Fend.corr.maskBool)) max(Xld(S.falcoData.Fend.corr.maskBool))] + 2*[-1 1];
+            S.YlimDefault = [min(Yld(S.falcoData.Fend.corr.maskBool)) max(Yld(S.falcoData.Fend.corr.maskBool))] + 2*[-1 1];
             
         end % end loadTBdata
         
@@ -284,9 +281,6 @@ classdef CfalcoRunData < CRunData
             % control region and score region masks
             % were defined in loadRunData
             
-            %S.bMask = ev.maskBool; % =?= mp.Fend.corr.maskBool;
-            %isequal(S.bMask, ev.maskBool)
-
             %             [x, y, X, Y, R, T] = CreateGrid(S.bMask, 1./S.ppl0);
             %             S.bMaskSc = S.bMask & (R >= RminSc & R <= RmaxSc & Y >= YminSc & Y <= YmaxSc & X >= XminSc & X <= XmaxSc);
 
@@ -339,14 +333,6 @@ classdef CfalcoRunData < CRunData
         
             end % for each Mode (subband, star)
 
-            % get probe cube directly from images
-            for iMode = 1:S.NofW % really Nmodes
-                for ip = 1:S.Nppair,
-                    % %       imageArray: [134×134×7xNbnds double]
-                    %S.ProbeAmp{iMode, ip} = 
-
-                end
-            end
 
         end % loadProbeData
         
@@ -369,7 +355,7 @@ classdef CfalcoRunData < CRunData
                 S.CohInt{iMode} = Icoh(:,:,iMode);
                 S.IncIntEst{iMode} = Iinc(:,:,iMode); S.IncIntEst{iMode}(Iinc(:,:,iMode) < 0) = eps; % IncInt(IncInt < 0) = eps
                 S.CohIntEst{iMode} = Icoh(:,:,iMode);
-                S.ImCubeUnProb{iMode} = S.ImCube(:, :, (iMode - 1)*(2*S.Nmodes + 1) + 1);
+                S.ImCubeUnProb{iMode} = S.ImCube(:, :, (iMode - 1)*(2*S.Nppair + 1) + 1);
                 
                 %%%%% revisit:
                 % % where inc int < 0, make coh int = un probed (i.e. the whole thing

@@ -2265,7 +2265,11 @@ classdef CRunData < handle & CConstants
             end
 
             [nw, nr, nc] = size(S.E_t);
-            if nw ~= S.NofW, error(['number of wavelengths inconsistent']); end
+            if nw ~= S.NofW, 
+                warning(['number of wavelengths inconsistent']);
+                [hfig, ha, sMetrics] = deal([]);
+                return
+            end
             
             % check S and Sref match
             % check that S.E_t and Sref.E_t are same size
@@ -2325,42 +2329,63 @@ classdef CRunData < handle & CConstants
             % 4ty row = imag(DE_m)
 
             % prepare figure
-            Nplr = 4;
+            %Nplr = 4;
             if isa(hfig,'matlab.ui.Figure'),
                 figure(hfig)
             else,
-                hfig = figure_mxn(Nplr,S.NofW);
+                hfig = figure_mxn(1,S.NofW);
             end
             [x, y] = CreateGrid([nr nc], 1./S.ppl0);
-            ha = zeros(Nplr,S.NofW);
+            ha = zeros(1,S.NofW);
             for iwv = 1:S.NofW,
                 % subplot #
-                iptr = iwv+0*S.NofW;
-                ipti = iwv+1*S.NofW;
-                ipmr = iwv+2*S.NofW;
-                ipmi = iwv+3*S.NofW;
+                % iptr = iwv+0*S.NofW;
+                % ipti = iwv+1*S.NofW;
+                % ipmr = iwv+2*S.NofW;
+                % ipmi = iwv+3*S.NofW;
                 
-                % change in unprobed image intensity
-                ha(1,iwv) = subplot(Nplr, S.NofW, iptr);
-                imageschcit(x,y,squeeze(real(dE_t(iwv,:,:)))); %colorbar
-                title(['Measure: real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
-                
-                ha(2,iwv) = subplot(Nplr, S.NofW, ipti);
-                imageschcit(x,y,squeeze(imag(dE_t(iwv,:,:)))); %colorbar
-                title(['Measure: imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                ha(iwv) = subplot(1, S.NofW, iwv);
 
-                ha(3,iwv) = subplot(Nplr, S.NofW, ipmr);
-                imageschcit(x,y,squeeze(real(dE_m(iwv,:,:)))); %colorbar
-                title(['Model: real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                imcubetmp = shiftdim(cat(3, ...
+                    squeeze(real(dE_t(iwv,:,:))) ...
+                    , squeeze(real(dE_m(iwv,:,:))) ...
+                    , squeeze(imag(dE_t(iwv,:,:))) ...
+                    , squeeze(imag(dE_m(iwv,:,:))) ...
+                    ), 2);
+
+                [~, ha(iwv), ~] = ImageCube(imcubetmp, 1:4, ...
+                    'hfig', hfig, 'hax', ha(iwv) ...
+                    , 'x', x, 'y', y, 'xlim', xlim, 'ylim', ylim ...
+                    , 'fTitleStr', { ...
+                    ['Measure: real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM, '%.1f') 'nm'] ...
+                    , ['Model: real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM, '%.1f') 'nm'] ...
+                    , ['Measure: imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM, '%.1f') 'nm'] ...
+                    , ['Model: imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM, '%.1f') 'nm']});
+
+                xlabel('X (\lambda/D)')
+                ylabel('Y (\lambda/D)')
                 
-                ha(4,iwv) = subplot(Nplr, S.NofW, ipmi);
-                imageschcit(x,y,squeeze(imag(dE_m(iwv,:,:)))); %colorbar
-                title(['Model: imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                % % change in unprobed image intensity
+                % ha(1,iwv) = subplot(Nplr, S.NofW, iptr);
+                % imageschcit(x,y,squeeze(real(dE_t(iwv,:,:)))); %colorbar
+                % title(['Measure: real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                % 
+                % ha(2,iwv) = subplot(Nplr, S.NofW, ipti);
+                % imageschcit(x,y,squeeze(imag(dE_t(iwv,:,:)))); %colorbar
+                % title(['Measure: imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                % 
+                % ha(3,iwv) = subplot(Nplr, S.NofW, ipmr);
+                % imageschcit(x,y,squeeze(real(dE_m(iwv,:,:)))); %colorbar
+                % title(['Model: real{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                % 
+                % ha(4,iwv) = subplot(Nplr, S.NofW, ipmi);
+                % imageschcit(x,y,squeeze(imag(dE_m(iwv,:,:)))); %colorbar
+                % title(['Model: imag{\DeltaE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 
             end            
 
-            % xlim, ylim
-            set(ha,'xlim',xlim,'ylim',ylim)
+            % % xlim, ylim
+            % set(ha,'xlim',xlim,'ylim',ylim)
 
             % clim
             if isempty(clim),
@@ -2378,8 +2403,8 @@ classdef CRunData < handle & CConstants
             set(ha,'clim',clim)
 
             % put colorbars on the right-most axes
-            for ii = 1:4,
-                colorbar('peer',ha(ii,end))
+            for ii = 1:length(ha)
+                colorbar(ha(ii));
             end
             
             % make a title at the top
@@ -2389,15 +2414,7 @@ classdef CRunData < handle & CConstants
                hantmp.delete; 
             end
             % new annotation
-            han = annotation('textbox', [0.5 0.8 0.2 0.2], 'String', sRI, ...
-                'FitBoxToText', 'on', 'LineStyle', 'none', ...
-                'FontSize', 24, 'Color', 'r', 'FontWeight', 'bold');
-            set(han,'HorizontalAlignment','center')
-            % center horizontally
-            ppp = get(han,'Position');
-            set(han,'Position',[0.5 - 0.5*ppp(3) ppp(2:end)])
-            % so it can be found and deleted later
-            set(get(han,'parent'),'HandleVisibility','on')
+            FigureTitle(sRI);
 
         end % DisplayDEfields
 
@@ -2797,21 +2814,23 @@ classdef CRunData < handle & CConstants
                 title(strDM{idm})
                 set(gca, 'ydir', cYdir{idm}, 'xdir', cXdir{idm})
                 
-                % if Ref defined:
-                if ~isempty(refDMv),
-                    hax(idm+S.Ndm) = subplot(Nr, S.Ndm, idm+S.Ndm);
-                
-                    dDMv = DMv{idm} - refDMv{idm};
-                    rmsdDMv(idm) = rms(dDMv(abs(dDMv)>0));
-
-                    imageschcit(0, 0, dDMv)
-                    colorbartitle('Vmu')
-                    title(['\Delta ' strRefDM{idm} ', ' num2str(rmsdDMv(idm),'%.4f') 'V rms'])
-                    set(gca, 'ydir', cYdir{idm}, 'xdir', cXdir{idm})
-
-                    % save
-                    cdDMv{idm} = dDMv;
+                % if Ref not defined:
+                if isempty(refDMv) || isempty(refDMv{idm})
+                    refDMv{idm} = zeros(size(DMv{idm}));
                 end
+
+                hax(idm+S.Ndm) = subplot(Nr, S.Ndm, idm+S.Ndm);
+
+                dDMv = DMv{idm} - refDMv{idm};
+                rmsdDMv(idm) = rms(dDMv(abs(dDMv)>0));
+
+                imageschcit(0, 0, dDMv)
+                colorbartitle('Vmu')
+                title(['\Delta ' strRefDM{idm} ', ' num2str(rmsdDMv(idm),'%.4f') 'V rms'])
+                set(gca, 'ydir', cYdir{idm}, 'xdir', cXdir{idm})
+
+                % save
+                cdDMv{idm} = dDMv;
                 
             end % for idm
             
