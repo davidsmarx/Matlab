@@ -16,6 +16,9 @@ classdef CGS < handle
     %                     case 'mcb_twolens'
     %                     case 'piaacmc'
     %                     case 'omc_mswc'
+    %                     case 'cgi_fft'
+    %                     case 'cgi_tvac'
+    %                     case 'omc_epic'
     %
     % read reduced results from gs phase retrieval
     %
@@ -243,7 +246,7 @@ classdef CGS < handle
                     
                     wavelength_kwd = 'lam';
                     
-                case 'omc_mswc'
+                case {'omc_mswc', 'omc_epic'}
                     trialname = CheckOption('trialname', '', varargin{:});
                     
                     bn = ['/home/hcit/OMC/phaseretrieval/reduced/prout_' trialname num2str(gsnum,'%03d')];
@@ -273,6 +276,23 @@ classdef CGS < handle
                     
                     wavelength_kwd = 'lam';
                     
+                case 'omc_epic'
+                    trialname = CheckOption('trialname', '', varargin{:});
+                  
+                    DIR_PR      = getenv("DIR_PR");
+                    DATA_ROOT   = getenv("DATA_ROOT");
+                    
+                    bn = [DIR_PR '/prout_' trialname num2str(gsnum,'%03d')];
+                    
+                    % get dir listing of raw camera images
+                    S.listPupImDir = dir(PathTranslator(...
+                        [DATA_ROOT '/excam/data/*/pr_gs_' num2str(gsnum,'%04d') '/emccd.*.fits']...
+                        ));
+                    S.listSrcImDir = dir(PathTranslator(...
+                        [DATA_ROOT '/excam/data/*/pr_par_' num2str(gsnum,'%04d') '/emccd.*.fits']...
+                        ));
+                    
+                    wavelength_kwd = 'lam';
                 case 'cgi_fft'
                     
                     % Note: add check to see if data already exists

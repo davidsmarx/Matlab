@@ -1,5 +1,5 @@
 function [rplot, Ar, ha, hl] = plotradial(xi, yi, A, varargin)
-% [hfig, ha, hl, rplot, IntRad] = plotradial(x, y, A, varargin)
+% [rplot, Ar, ha, hl] = plotradial(x, y, A, varargin)
 %
 % generic routine for plotting azimuthal average of A vs radius
 %
@@ -9,6 +9,7 @@ function [rplot, Ar, ha, hl] = plotradial(xi, yi, A, varargin)
 %
 %             Nr = CheckOption('nr', ceil(min([128 length(R)/4])), varargin{:}); % # of radial sample pts
 %             dispRadlim = CheckOption('dispradlim', [0 S.XYlimDefault], varargin{:});
+%             scale = CheckOption('scale', 'linear', varargin{:}); % or 'log'
 %             drawRadii = CheckOption('drawradii', S.DrawradiiDefault, varargin{:});
 %             bMaskUse = CheckOption('bMask', S.bMask, varargin{:});
 %             strYlabel = CheckOption('ylabel', 'Average Normalized Intensity', varargin{:});
@@ -27,7 +28,7 @@ if isempty(xi) || isempty(yi),
 end
 if isscalar(xi), x = xi + (0:(nc-1)).'; end
 if isscalar(yi), y = yi + (0:(nr-1)).'; end
-if length(xi) ~= nc || length(yi) ~= nr
+if length(x) ~= nc || length(y) ~= nr
     error('size mismatch');
 end
 [X, Y] = meshgrid(x, y); R = hypot(X, Y);
