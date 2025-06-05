@@ -101,6 +101,7 @@ saveas_pn = ['./' run_pn num2str(S(1).runnum) '/data/' S(1).runLabel '/figures']
 % plot graphs of metrics v itnum on the first slide
 if ~isempty(Sppt), slide = Sppt.NewSlide(1); end
 hfig = figure_mxn(2,2);
+set(hfig, 'position', [322 263 1800 1000]);
 hax(1,1) = subplot(2,2,1); [~, ~, ~, itnum_min] = PlotNormIntensity(S, 'hfig', hfig, 'hax', hax(1,1));
 hax(1,2) = subplot(2,2,2); PlotBeta(S, 'hfig', hfig, 'hax', hax(1,2));
 hax(2,1) = subplot(2,2,3); probeh = PlotProbeh(S, 'hfig', hfig, 'hax', hax(2,1));
@@ -188,9 +189,16 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
     
     hfig = [];
     switch sDisplayFun,
-        case listDiff
+        case 'DisplayDEfields'
             %if any(strcmp(sDisplayFun, listDiff)),
             for ii = 1:N-1,
+                % each iteration, create a new DisplayDEfields
+                
+                % % delete the old befor creating new
+                % if isgraphics(hfig),
+                %     hfig.delete;
+                % end
+
                 [hfig, hax, sMtmp] = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
                 if ~isempty(sMtmp)
                     sCmetrics(ii) = sMtmp;
@@ -199,16 +207,34 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                 if ~isempty(hfig)
                     figscale = CalcFigscale(hfig, figheight);
                     set(hfig, 'Position', figscale*get(hfig,'position'));
-                    if ispc,
-                        htmp = Sppt.CopyFigNewSlide(hfig);
-                        %set(htmp,'Height',figheight);
+
+                    % if using ImageCube to toggle model/measure, make the gif
+                    if ~isempty(get(hfig, 'KeyPressFcn'))
+                        % send the 'G' keystroke to create the gif
+                        fungif = get(hfig, 'KeyPressFcn');
+                        
+                        gif_fn = fullfile(save_pn, sDisplayFun, ['it_' num2str(S(ii).iter) '.gif']);
+                        pn = fileparts(gif_fn);
+                        if ~exist(pn, 'dir'), mkdir(pn); end
+                        
+                        thisevent = struct('Modifier', 'shift', 'Key', 'g', 'gif_fn', gif_fn);
+                        fungif(hfig, thisevent);
+                        
+                        % check and insert gif to PowerPoint
+                        if exist(gif_fn, "file") && ispc
+                            hh = Sppt.AddPictureNewSlide(fullfile(pwd, gif_fn));
+                        end % if copy to PowerPoint
+
                     else
                         fSaveas(hfig, save_pn, sDisplayFun, 'it', S(ii).iter);
-                    end
+
+                    end % if ImageCube
+
                 end % if hfig
                 
             end % for ii iter
         
+            % plot a summary rms dE vs iteration
             if any(strcmp({sCmetrics.type}, 'dEfields')),
                 nw = S(1).NofW; % for convenience
                 hfig_de = figure;
@@ -237,7 +263,28 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                     fSaveas(hfig_de, save_pn, 'summary', ['magdE_it' num2str(S(1).iter) '_it' num2str(S(end).iter)], []);
                 end
             end
-            
+
+        case 'DisplayDMv'
+            %if any(strcmp(sDisplayFun, listDiff)),
+            for ii = 1:N-1,
+                [hfig, hax, sMtmp] = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
+                if ~isempty(sMtmp)
+                    sCmetrics(ii) = sMtmp;
+                end
+                
+                if ~isempty(hfig)
+                    figscale = CalcFigscale(hfig, figheight);
+                    set(hfig, 'Position', figscale*get(hfig,'position'));
+                    if ispc,
+                        htmp = Sppt.CopyFigNewSlide(hfig);
+                        %set(htmp,'Height',figheight);
+                    else
+                        fSaveas(hfig, save_pn, sDisplayFun, 'it', S(ii).iter);
+                    end
+                end % if hfig
+                
+            end % for ii iter
+        
         case 'DisplayCEfields'
 
             for ii = 1:N-1,

@@ -2290,7 +2290,7 @@ classdef CRunData < handle & CConstants
             end
 
             %sRI = ['run #' num2str(S.runnum) ', iter #' num2str(S.iter) '--' num2str(Sref.iter)];
-            sRI = ['\DeltaE Iter #' num2str(S.iter) ' - ' num2str(Sref.iter)];
+            sRI = ['\DeltaE Iter #' num2str(S.iter) ' - #' num2str(Sref.iter)];
             %sRI = '';
                         
             %
@@ -2332,6 +2332,9 @@ classdef CRunData < handle & CConstants
             %Nplr = 4;
             if isa(hfig,'matlab.ui.Figure'),
                 figure(hfig)
+                % clear any userdata
+                set(hfig, 'UserData', []);
+                set(get(hfig, 'children'), 'userdata', []);
             else,
                 hfig = figure_mxn(1,S.NofW);
             end
@@ -2364,7 +2367,7 @@ classdef CRunData < handle & CConstants
 
                 xlabel('X (\lambda/D)')
                 ylabel('Y (\lambda/D)')
-                
+
                 % % change in unprobed image intensity
                 % ha(1,iwv) = subplot(Nplr, S.NofW, iptr);
                 % imageschcit(x,y,squeeze(real(dE_t(iwv,:,:)))); %colorbar

@@ -4,6 +4,7 @@ classdef CfalcoRunData < CRunData
         % seriesNum = CRunData.runnum
         trialNum
         % iter = CRunData.iter
+        listValidIter % list of valid iterations from this trialNum
         
         % falco data
         runLabel;
@@ -51,6 +52,11 @@ classdef CfalcoRunData < CRunData
                     S.Rundir_pn = PathTranslator(['/proj/mcb/data/EPIC/' run_pn num2str(seriesNum) '/data/' S.runLabel]); % for snippet file
                     S.Reduced_pn = [S.Rundir_pn '/' S.runLabel];
 
+                case 251 % OMC_EPIC model
+                    S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
+                    S.Rundir_pn = PathTranslator(['/home/dmarx/links/HCIT/OMC_EPIC_MODEL_DATA/' run_pn num2str(seriesNum) '/data/' S.runLabel]); % for snippet file
+                    S.Reduced_pn = [S.Rundir_pn '/' S.runLabel];
+                    
                 otherwise
                     error(['unknown seriesNum ' num2str(S.runnum)]);
             end
@@ -105,29 +111,22 @@ classdef CfalcoRunData < CRunData
             if isempty(mp),
                 % Load the configuration file => mp
                 %config_fn = [S.Rundir_pn '/' S.runLabel '_config.m'];
-                config_fn = [S.Rundir_pn '/falco_omc_config_' S.runLabel '.m'];
+                %%%% change this to read from .mat
+                config_fn = [S.Rundir_pn '/falco_omc_config_' S.runLabel '.mat'];
                 config_fn = PathTranslator(config_fn);
                 if ~exist(config_fn, 'file'),
                     error(['cannot find config file, using default values, ' config_fn]);
-                    %                     S.ppl0 = 5.54*520/575;
-                    %                     S.Nppair = 3;
-                    %                     S.NofW = 1;
-                    %                     S.Nlamcorr = 1;
-                    %                     S.RminSc = 3; % = Fend.score.Rin
-                    %                     S.RmaxSc = 9; % = Fend.score.Rout
-                    %                     S.ThminSc = []; % derive from Fend.score.ang & Fend.sides
-                    %                     S.ThmaxSc = []; % derive from Fend.score.ang & Fend.sides
-                    %                     S.YminSc = -inf;
-                    %                     S.YmaxSc = inf;
-                    %                     S.XminSc = -inf;
-                    %                     S.XmaxSc = inf;
                 end
 
-                % create mp
-                copyfile(config_fn, './config_tmp.m');
-                eval('config_tmp');
-                mp = falco_flesh_out_workspace(mp);
-                                
+                % % create mp
+                % copyfile(config_fn, './config_tmp.m');
+                % eval('config_tmp');
+                % mp = falco_flesh_out_workspace(mp);
+
+                % load mp, copy local then load is many times faster than load from s383 server
+                copyfile(config_fn, './config_tmp.mat');
+                mp = load('./config_tmp.mat');
+
             end % if isempty(mp)
             
             %S.Nppair = mp.est.probe.Npairs;
@@ -179,6 +178,7 @@ classdef CfalcoRunData < CRunData
             S.Rundir_fn = PathTranslator(snippet_fn);
             load(PathTranslator(snippet_fn), 'out'); % out
             S.falcoData = out;
+            S.listValidIter = find(out.InormHist > 0);
             % struct:
             %                  Nitr: 150
             %           log10regHist: [150×1 double]

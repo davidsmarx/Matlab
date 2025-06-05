@@ -74,10 +74,17 @@ colormap(cmap);
 htitle = title(fTitleStr(islinit));
 
 % store the image cube, etc., with the figure and axes objects
-hfig_sUserData = struct(...
-    'hfig', hfig ...
-    ,'multi_key_seq', [] ...
-    );
+% if hfig already exists and has UserData, update
+hfig_sUserData = get(hfig, 'UserData');
+hfig_sUserData.hfig = hfig;
+hfig_sUserData.multi_key_seq = [];
+if isfield(hfig_sUserData, 'list_hax')
+    if ~any(hax == hfig_sUserData.list_hax) % check if this hax already exists
+        hfig_sUserData.list_hax(end+1) = hax;
+    end
+else
+    hfig_sUserData.list_hax = hax;
+end
 
 hax_sUserData = struct( ...
     'imgCube', imgCube ...
@@ -118,21 +125,50 @@ if any(strcmp(event.Modifier,'shift'))
     switch event.Key
         case 'g'
             % export to GIF, requires ver 2022a ?
-            [fn, pn] = uiputfile({'*.gif'});
-            if isequal(fn, 0)
-                % user pressed Cancel
-                return
-            end
+
+            if isfield(event, 'gif_fn')
+                gif_fn = event.gif_fn;
+            else
+                [fn, pn] = uiputfile({'*.gif'});
+                if isequal(fn, 0)
+                    % user pressed Cancel
+                    return
+                end
+                gif_fn = fullfile(pn, fn);
+            end % if event.gif_fn
             
-            % loop through frames
-            loops = Sax.Nsl;
-            for isl = 1:loops,
-                Img = squeeze(Sax.imgCube(isl,:,:));
-                Sax.himage.CData = Img;
-                Sax.htitle.String = Sax.fTitleStr(isl);
-                drawnow;
-                exportgraphics(gcf, fullfile(pn, fn), 'Append', true);
-            end
+            % loop through frames for each axes
+            imloop = {};
+            Nax = length(S.list_hax);
+            for iax = 1:Nax,
+                Saxtmp = get(S.list_hax(iax), 'UserData');
+
+                loops = Saxtmp.Nsl;
+                for isl = 1:loops,
+                    Img = squeeze(Saxtmp.imgCube(isl,:,:));
+                    Saxtmp.himage.CData = Img;
+                    Saxtmp.htitle.String = Saxtmp.fTitleStr(isl);
+                    drawnow;
+                    %exportgraphics(gcf, fullfile(pn, fn), 'DelayTime', 1, 'Append', true);
+                    frame = getframe(hSrc);
+                    imloop{end+1} = frame2im(frame);
+                end % each slice
+                
+                clear Saxtmp;
+
+            end % each axes
+
+            % now write the gif
+            % first create, then append
+            for iframe = 1:length(imloop)
+                [A, map] = rgb2ind(imloop{iframe}, 256);
+                if iframe == 1
+                    imwrite(A, map, gif_fn, "gif", "LoopCount", Inf, 'DelayTime', 1);
+                else
+                    imwrite(A, map, gif_fn, "gif", "WriteMode", "append", 'DelayTime', 1);
+                end % if first
+            end % save frame
+
         otherwise
             
     end % switch 'shift' event.Key
