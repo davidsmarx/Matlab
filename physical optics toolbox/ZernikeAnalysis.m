@@ -17,10 +17,17 @@ function [ZZ, phaimg, phares, sOptions] = ZernikeAnalysis(field, varargin)
 % CheckOption('do_phaseunwrap', true
 %
 % return:
-% ZZ = Zernike coeffs, (rad normalized rms), ZZ(1:3) == 0
-% phaimg = phase with ZZ(1:3) = 0, (rad), phaimg(~bMask) = 0
-% phares = residual phase = phaimg - zernikeval(ZZ)
-% sOptions = struct('bMask', bMask, 'Rnorm', Rnorm, 'Nz', Nz, 'xim', xim, 'yim', yim, 'phafit', phafit, 'phafit_ptt', phafit_ptt, 'xim', xim, 'yim', yim);
+% ZZ = Zernike coeffs, (rad normalized rms)
+% phaimg = phaimg(bMask) is input to zernikeval and then ptt removed
+% phares = residual phase = bMask .* (phaimg - zernikeval(ZZ))
+% sOptions = struct(
+%    'bMask', bMask,
+%    'phaimg_input', phaimg_input, = the unadulterated phase map for Zernike fitting
+%    'Rnorm', Rnorm,
+%    'Nz', Nz,
+%    'xim', xim, 'yim', yim,
+%    'phafit', phafit, = Zernike fit including ptt, no bMask
+%    'phafit_ptt', phafit_ptt, = Zernike fit without ptt, no bMask
 
 
 % options
@@ -61,11 +68,14 @@ else
     phaimg = angle(field);
 end
 
+phaimg_input = phaimg; % save the input phase as it was input
+
 if do_phaseunwrap
     phaimg = unwrap_HCIT(phaimg, bMask, 'selem', []); % don't alter the bMask
 end
 
-% remove piston (no mod2pi() because it is unwrapped phase)
+% remove piston (no mod2pi() because it is unwrapped phase) and apply bMask
+phaimg(~bMask) = 0;
 phaimg(bMask) = phaimg(bMask) - mean(phaimg(bMask));
 
 % norm radius for zernikefit
@@ -74,23 +84,26 @@ if isempty(Rnorm),
 end
 
 ZZ = zernikefit(Xim(bMask), Yim(bMask), phaimg(bMask), Nz, Rnorm, polyorder);
+ZZ_ptt = ZZ; ZZ_ptt(1:3) = 0;
 
 % the fit:
 phafit = zernikeval(ZZ, Xim, Yim, Rnorm, polyorder);
-phafit_ptt = zernikeval([zeros(3,1); ZZ(4:end)], Xim, Yim, Rnorm, polyorder);
+phafit_ptt = zernikeval(ZZ_ptt, Xim, Yim, Rnorm, polyorder);
+
+% residuals of the Zernike fit
+phares = zeros(size(phaimg));
+phares(bMask) = phaimg(bMask) - zernikeval(ZZ, Xim(bMask), Yim(bMask), Rnorm, polyorder);
 
 % remove ptt from phaimg
 phaimg(bMask) = phaimg(bMask) - zernikeval(ZZ(1:3), Xim(bMask), Yim(bMask), Rnorm, polyorder);
-phaimg(~bMask) = 0;
-
-% residual of the rest of the moes
-phares = zeros(size(phaimg));
-phares(bMask) = phaimg(bMask) - zernikeval([zeros(3,1); ZZ(4:end)], Xim(bMask), Yim(bMask), Rnorm, polyorder);
+phaimg(~bMask) = 0; % redundant
 
 % return values:
 % ZZ, phaimg, phares, sOptions
-sOptions = struct('bMask', bMask, 'Rnorm', Rnorm, 'Nz', Nz,...
-    'xim', xim, 'yim', yim, 'phafit', phafit, 'phafit_ptt', phafit_ptt);
+sOptions = struct('bMask', bMask, 'phaimg_input', phaimg_input, ...
+    'Rnorm', Rnorm, 'Nz', Nz,...
+    'xim', xim, 'yim', yim, ...
+    'phafit', phafit, 'phafit_ptt', phafit_ptt);
 
 end % main
 

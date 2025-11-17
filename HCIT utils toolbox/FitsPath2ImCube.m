@@ -59,8 +59,8 @@ hfig = CheckOption('hfig', [], varargin{:}); % if empty, and plottype ~= 'none',
 hax = [];
  
 switch class(pn)
-    case 'char'
-        listfn = dir(PathTranslator([pn '/' fn_filter '*.fits']));
+    case {'char', 'string'}
+        listfn = dir(PathTranslator(fullfile(pn, fn_filter, '*.fits')));
     case 'struct'
         listfn = pn; % assumes pn is return value from dir()
         pn = listfn(1).folder;
@@ -71,7 +71,7 @@ end
 Nf = length(listfn);
 
 % read one image to get image size and extension
-finfo = fitsinfo(PathTranslator([pn '/' listfn(1).name]));
+finfo = fitsinfo(PathTranslator(fullfile(pn, listfn(1).name)));
 if isempty(finfo.PrimaryData.Size),
     sExtension = 'image';
     n_hdu = 1;
@@ -98,8 +98,8 @@ img_ii = cell(Nf,1);
 list_ii_skip = [];
 for ii = 1:Nf
 
-    img_tmp = fitsread(PathTranslator([pn '/' listfn(ii).name]), sExtension, n_hdu);
-    finfo = fitsinfo(PathTranslator([pn '/' listfn(ii).name]));
+    img_tmp = fitsread(PathTranslator(fullfile(pn, listfn(ii).name)), sExtension, n_hdu);
+    finfo = fitsinfo(PathTranslator(fullfile(pn, listfn(ii).name)));
     
     % can only handle 2-d images
     if ~isequal(ndims(img_tmp), 2)
@@ -120,10 +120,16 @@ for ii = 1:Nf
     hdrkwdval(ii,:) = [ctmp{:}];
     %hdrkwdval(ii,:) = 1;
     
+    % always get exposure time
     texptmp = FitsGetKeywordVal(finfo.PrimaryData.Keywords, 'EXPTIME');
     if ~isempty(texptmp)
         texp(ii) = texptmp;
     end
+    
+    % always get timestamp
+    datetmp = FitsGetKeywordVal(finfo.PrimaryData.Keywords, 'DATE');
+    dateval(ii) = datetime(datetmp, 'TimeZone', 'local', 'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss');
+    
     
 end
 % remove skipped
@@ -211,7 +217,8 @@ switch lower(scale),
         %ImCube = log10(ImCube);
         % scale to 0..1
         colormap(logColormap)
-        
+        clim = get(gca,'clim');
+        set(gca,'clim', [2010 clim(2)]); % hard-coded for OMC excam
     otherwise,
         error(['unknown scale: ' scale]);
 end
@@ -226,6 +233,7 @@ else
         ,'hax', hax ...
         ,'listfn', listfn ...
         ,'texp', texp ...
+        ,'date', dateval ...
         );
     for ikwd = 1:length(hdrkwd) % hdrkwd is a cell array
         sParms.(hdrkwd{ikwd}) = hdrkwdval(:,ikwd);
