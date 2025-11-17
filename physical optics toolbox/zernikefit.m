@@ -1,5 +1,5 @@
 function [Z, fRes, rmsresidual, R] = zernikefit(varargin)
-% [Z, residual, rmsresidual, R] = zernikefit(x,y,f,n,R,poly_order)
+% [Z, residual, rmsresidual, R] = zernikefit(x,y,f,n,R,poly_order,obs_ratio)
 %
 % x, y, f are matrices of identical size
 % or if x,y are vectors, f is matrix size(length(y),length(x))
@@ -23,21 +23,25 @@ function [Z, fRes, rmsresidual, R] = zernikefit(varargin)
 
 %persistent P;
  
-[x, y, f, n, R, fRes, nuse, poly_order] = ValidateInputs(varargin{:});
+[x, y, f, n, R, fRes, nuse, poly_order, obs_ratio] = ValidateInputs(varargin{:});
 
 %if isempty(P),
     P = zernikepolynomials(poly_order);
 %end
 
-r = sqrt(x.^2 + y.^2);
-t = atan2(y,x);
+r = hypot(x(:), y(:)); %sqrt(x(:).^2 + y(:).^2);
+t = atan2(y(:), x(:));
 
 M = length(x(:));
 
 A = zeros(M,length(n));
-rp = r(:)./R;
+rp = r./R;
 for ii = 1:length(n),
-    A(:,ii) = P{n(ii)}(rp,t(:));
+    if isequal(lower(poly_order), 'annulus')
+        A(:,ii) = P{n(ii)}(rp, t, obs_ratio);
+    else
+        A(:,ii) = P{n(ii)}(rp, t);
+    end
 end
 
 Z = A \ f(:);
@@ -54,7 +58,7 @@ clear A;
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [x,y,f,n,R,fRes,nuse,poly_order] = ValidateInputs(varargin)
+function [x,y,f,n,R,fRes,nuse,poly_order, obs_ratio] = ValidateInputs(varargin)
 % [Z, residual, rmsresidual, R] = zernikefit(x,y,f,n,R,poly_order)
 % validate inputs
 
@@ -110,7 +114,8 @@ rp = sqrt(xp(:).^2 + yp(:).^2);
 n = [1:MAXN];
 R = max(rp);
 nuse = rp >= 0; % in other words, all the points
-poly_order = 'polar';
+poly_order = 'Noll'; % default
+obs_ratio = 0;
 
 if length(varargin) >= 4, n = CheckN; end
 if length(varargin) >= 5,
@@ -122,6 +127,15 @@ if length(varargin) >= 5,
     end
 end
 if length(varargin) >= 6, poly_order = varargin{6}; end
+if length(varargin) >= 7, 
+    obs_ratio = varargin{7};
+    if obs_ratio < 0 || obs_ratio > 1
+        error(['obscuration ratio must be between 0 and 1']);
+    end
+    if obs_ratio > 0 && ~isequal(lower(poly_order), 'annulus')
+        error('if obscuration ratio > 0, must choose annulus poly_order');
+    end
+end
 
 x = xp(nuse);
 y = yp(nuse);
