@@ -422,9 +422,9 @@ classdef CGS < handle
 
             % unwrap phase using better unwrap routine, but requires mask
             %phw = S.phw;
-            phw = S.phw_ptt + 1 - 1;
-            phw(~S.bMask) = NaN;
-            S.phunwrap = unwrap_phase(phw);
+            phwtmp = S.phw_ptt + 1 - 1;
+            phwtmp(~S.bMask) = NaN;
+            S.phunwrap = unwrap_phase(phwtmp);
             S.phunwrap(~S.bMask) = 0;
             S.phw_ptt = RemovePTTZ(S.phw_ptt, S.bMask); % fine-tune using Zernike
 
@@ -911,7 +911,7 @@ classdef CGS < handle
             % zernike fit using bMask pixels
             % nz = array of zernike modes to fit (default = 1:11)
             %
-            % CheckOption('phase', 'ph', varargin{:});
+            % CheckOption('phase', 'phw_ptt', varargin{:});
             % CheckOption('bmask', S.bMask, varargin{:});
             % CheckOption('display', true, varargin{:});
             % CheckOption('hfig', [], varargin{:});
@@ -932,7 +932,7 @@ classdef CGS < handle
                 nz = 1:11;
             end
             
-            phasefieldname = CheckOption('phase', 'ph', varargin{:});
+            phasefieldname = CheckOption('phase', 'phw_ptt', varargin{:});
             bmask = CheckOption('bmask', S.bMask, varargin{:});
             bDisplay = CheckOption('display', true, varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
