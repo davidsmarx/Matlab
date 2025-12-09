@@ -246,53 +246,36 @@ classdef CGS < handle
                     
                     wavelength_kwd = 'lam';
                     
-                case {'omc_mswc', 'omc_epic'}
+                case 'omc_mswc'
                     trialname = CheckOption('trialname', '', varargin{:});
                     
                     bn = ['/home/hcit/OMC/phaseretrieval/reduced/prout_' trialname num2str(gsnum,'%03d')];
                     
                     % get dir listing of raw camera images
                     S.listPupImDir = dir(PathTranslator(...
-                        ['/proj/mcb/data/excam/*/pr_gs_' num2str(gsnum,'%04d') '/emccd.*.fits']...
+                        ['/proj/mcb/data/MSWC/excam/*/pr_gs_' num2str(gsnum,'%04d') '/emccd.*.fits']...
                         ));
                     S.listSrcImDir = dir(PathTranslator(...
-                        ['/proj/mcb/data/excam/*/pr_par_' num2str(gsnum,'%04d') '/emccd.*.fits']...
+                        ['/proj/mcb/data/MSWC/excam/*/pr_par_' num2str(gsnum,'%04d') '/emccd.*.fits']...
                         ));
                     
                     wavelength_kwd = 'lam';
 
                 case 'omc_epic'
                     trialname = CheckOption('trialname', '', varargin{:});
-                    
+
                     bn = ['/home/hcit/OMC/phaseretrieval/reduced/prout_' trialname num2str(gsnum,'%03d')];
-                    
+
                     % get dir listing of raw camera images
                     S.listPupImDir = dir(PathTranslator(...
-                        ['/proj/mcb/data/excam/*/pr_gs_' num2str(gsnum,'%04d') '/emccd.*.fits']...
+                        ['/proj/mcb/data/EPIC/excam/*/pr_gs_' num2str(gsnum,'%04d') '/emccd.*.fits']...
                         ));
                     S.listSrcImDir = dir(PathTranslator(...
-                        ['/proj/mcb/data/excam/*/pr_par_' num2str(gsnum,'%04d') '/emccd.*.fits']...
+                        ['/proj/mcb/data/EPIC/excam/*/pr_par_' num2str(gsnum,'%04d') '/emccd.*.fits']...
                         ));
-                    
+
                     wavelength_kwd = 'lam';
-                    
-                case 'omc_epic'
-                    trialname = CheckOption('trialname', '', varargin{:});
-                  
-                    DIR_PR      = getenv("DIR_PR");
-                    DATA_ROOT   = getenv("DATA_ROOT");
-                    
-                    bn = [DIR_PR '/prout_' trialname num2str(gsnum,'%03d')];
-                    
-                    % get dir listing of raw camera images
-                    S.listPupImDir = dir(PathTranslator(...
-                        [DATA_ROOT '/excam/data/*/pr_gs_' num2str(gsnum,'%04d') '/emccd.*.fits']...
-                        ));
-                    S.listSrcImDir = dir(PathTranslator(...
-                        [DATA_ROOT '/excam/data/*/pr_par_' num2str(gsnum,'%04d') '/emccd.*.fits']...
-                        ));
-                    
-                    wavelength_kwd = 'lam';
+
                 case 'cgi_fft'
                     
                     % Note: add check to see if data already exists
@@ -360,7 +343,7 @@ classdef CGS < handle
             S.gsnum = gsnum;
             S.bn = bn;
             S.amp = rot90( fitsread(PathTranslator([bn 'amp.fits'])), S.nRot90);
-            S.ph = rot90( fitsread(PathTranslator([bn 'ph.fits'])), S.nRot90);  % unwrapped phase
+            S.ph = rot90( fitsread(PathTranslator([bn 'ph.fits'])), S.nRot90);  % unwrapped phase returned by phase retrieval
             S.phw = rot90( fitsread(PathTranslator([bn 'phwrap.fits'])), S.nRot90); % = angle(eref), wrapped phase
             S.amp_keys = ampinfo.PrimaryData.Keywords;
             S.wavelength = FitsGetKeywordVal(S.amp_keys, wavelength_kwd)*wavelength_units;
@@ -416,7 +399,7 @@ classdef CGS < handle
             % use FFT to remove large amounts of PTT (integer pixels in FFT space
             % then use zernikes to remove remaining PTT
             [S.x, S.y, S.X, S.Y, S.R, S.T] = CreateGrid(S.amp);
-            S.RemovePTTfft; % creates first estimate of S.phw_ptt using FFT
+            S.RemovePTTfft; % creates S.phw_ptt, first estimate of S.phw_ptt using FFT
             %             S.phunwrap = RemovePTTZ(S.phunwrap, S.bMask);
             %             S.phw_ptt  = mod2pi(S.phunwrap);
 
@@ -857,7 +840,7 @@ classdef CGS < handle
             % remove large scale piston, tip, tilt by translating the fft
             % s.t. the fft peak is at the center
             
-            Es = S.amp.*exp(1i*S.phw);
+            Es = S.amp.*exp(1i*S.phw); % phw = angle(eref)
 
             %             % to focus
             %             Ef = fftshift(fft2(fftshift(Es)));

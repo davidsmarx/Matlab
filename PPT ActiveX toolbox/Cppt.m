@@ -21,19 +21,28 @@ classdef Cppt
         end % Cppt
         
         function new_slide = NewSlide(S, slide_num)
+            % new_slide = NewSlide(S)
+            % new_slide = NewSlide(S, slide_num)
+            %
+            % if slide_num = [] or no input, add new slide at end
 
             layout = S.AppPpt.ActivePresentation.SlideMaster.CustomLayouts.Item(5); % was 10
+            if ~exist('slide_num', 'var') || isempty(slide_num)
+                slide_count = get(S.Presentation.Slides,'Count');
+                slide_num = int32(double(slide_count)+1);
+            end % if isempty(slide_num)
+
             new_slide=S.AppPpt.ActivePresentation.Slides.AddSlide(slide_num, layout);
 
         end % NewSlide
         
         function [hPic, new_slide] = CopyFigNewSlide(S, hfig)
-            % Add a new slide (with title object):
-            slide_count = get(S.Presentation.Slides,'Count');
-            slide_count = int32(double(slide_count)+1);
+            % [hPic, new_slide] = CopyFigNewSlide(S, hfig)
+            %
+            % add a new slide at end and copy fig to it
 
-            layout = S.AppPpt.ActivePresentation.SlideMaster.CustomLayouts.Item(5); % was 10
-            new_slide=S.AppPpt.ActivePresentation.Slides.AddSlide(slide_count, layout);
+            % Add a new slide (with title object):
+            new_slide = S.NewSlide([]);
 
             % Get height and width of slide:
             slide_H = S.Presentation.PageSetup.SlideHeight;
@@ -125,6 +134,42 @@ classdef Cppt
             hPic.Left = 0;
 
         end % CopyFigSlide
+
+        function hPic = AddPictureNewSlide(S, fn)
+            % hPic = AddPictureNewSlide(S, fn)
+            %
+            % fn must be full path
+
+            slide = S.NewSlide([]); % add new slide at end
+            % Get height and width of slide:
+            slide_H = S.Presentation.PageSetup.SlideHeight;
+            slide_W = S.Presentation.PageSetup.SlideWidth;
+
+            hPic = invoke(slide.Shapes, 'AddPicture', fn, true, true, 100, 100);
+            % bring to front
+            hPic.ZOrder(0);
+
+            % scale the pic
+            scale_w = slide_W / hPic.Width;
+            scale_h = slide_H / hPic.Height;
+
+            if scale_w < scale_h
+                % width is the limit
+                % apparently, scaling width also scales height
+                hPic.Width = scale_w * hPic.Width;
+                hPic.Left = 0;
+                % center vertical
+                hPic.Top = 0.5*(slide_H - hPic.Height);
+            else
+                % height is the limit
+                % apparently, scaling width also scales height
+                hPic.Width = scale_h * hPic.Width;
+                hPic.Top = 0; % puts top of pic at top of slide
+                % center horizontal
+                hPic.Left = 0.5*(slide_W - hPic.Width);
+            end
+
+        end % AddPicture
 
     end % methods
     
