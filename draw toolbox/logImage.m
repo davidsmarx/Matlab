@@ -1,5 +1,6 @@
 function imgout = logImage(img, varargin)
-% log image ds9 style
+% imgout = logImage(img, varargin)
+% imgout is log(img) ds9 style
 %
 % from http://ds9.si.edu/doc/ref/how.html
 %
