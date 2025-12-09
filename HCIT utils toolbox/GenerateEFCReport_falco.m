@@ -35,8 +35,8 @@ more off
 % options
 ppt_fn = CheckOption('pptfn', '', varargin{:});
 Sppt = CheckOption('Sppt', [], varargin{:});
-max_empties = CheckOption('max_empties', 3, varargin{:});
 run_pn = CheckOption('run_pn', 'falco_testbed_run', varargin{:});
+listSin = CheckOption('listS', [], varargin{:}); % if listS of CfalcoRunData for iterations already exists
 
 % % check if PowerPoint Presentation already exists and still there
 % try
@@ -53,45 +53,16 @@ end
 % initial mp is empty, gets read by first iteration
 mp = [];
 
-% get the CfalcoRunData objects
-% if 3 successive iterations have no data, stop
-cnt_empty = 0;
-N = length(listItnum);
-if isnumeric(listItnum),
-    %if isscalar(listItnum)
-    %ii = 1;
-    %while true,
-    for ii = 1:N;
-        fprintf('reading itnum %d\n', listItnum(ii));
-        S(ii) = CfalcoRunData(runnum, TrialNum, listItnum(ii), 'mp', mp, 'run_pn', run_pn);
-
-        if isempty(S(ii).ImCube)
-            cnt_empty = cnt_empty + 1;
-        else
-            % reset, only count successive empties
-            cnt_empty = 0;
-        end
-        
-        if cnt_empty >= max_empties
-            S = S(1:end-max_empties);
-            break
-        end
-        
-        % update mp, so it is used for next iteration and avoid reading
-        % config every iteration
-        mp = S(ii).mp;
-        
-        % check if this is the last iteration
-        % out.Itr from "_snippet.mat" is last iteration
-        if listItnum(ii) >= S(ii).falcoData.Itr, 
-            break;
-        end
-        
-    end
-elseif isa(listItnum, 'CfalcoRunData')
-    S = listItnum;
+% load all the falco data for the iterations, if not input
+if isempty(listSin)
+    S = LoadIterations(runnum, TrialNum, listItnum, mp, varargin{:});
 else
-    error(['listItnum type error: ' class(listItnum)]);
+    % check that S contains the requested iterations
+    [listItnum, i_S_list_iter] = intersect([listSin.iter], listItnum);
+    if isempty(listItnum)
+        error('requested listItnum not in provided iterations');
+    end
+    S = listSin(i_S_list_iter);
 end
 
 %
@@ -156,6 +127,61 @@ end
 more on
 
 end % main
+
+function S = LoadIterations(runnum, TrialNum, listItnum, mp, varargin)
+%
+
+% options
+max_empties = CheckOption('max_empties', 3, varargin{:});
+
+% get the CfalcoRunData objects
+% if 3 successive iterations have no data, stop
+cnt_empty = 0;
+N = length(listItnum);
+if isnumeric(listItnum),
+    %if isscalar(listItnum)
+    %ii = 1;
+    %while true,
+    for ii = 1:N;
+        fprintf('reading itnum %d\n', listItnum(ii));
+        S(ii) = CfalcoRunData(runnum, TrialNum, listItnum(ii), 'mp', mp, varargin{:});
+
+        if isempty(S(ii).ImCube)
+            cnt_empty = cnt_empty + 1;
+        else
+            % reset, only count successive empties
+            cnt_empty = 0;
+        end
+        
+        if cnt_empty >= max_empties
+            S = S(1:end-max_empties);
+            break
+        end
+        
+        % update mp, so it is used for next iteration and avoid reading
+        % config every iteration
+        mp = S(ii).mp;
+        
+        % check if this is the last iteration
+        % out.Itr from "_snippet.mat" is last iteration
+        if listItnum(ii) >= S(ii).falcoData.Itr, 
+            break;
+        end
+        
+    end
+
+    % if last iteration is empty, remove it
+    if isempty(S(end).ImCube)
+        S = S(1:end-1);
+    end
+    
+elseif isa(listItnum, 'CfalcoRunData')
+    S = listItnum;
+else
+    error(['listItnum type error: ' class(listItnum)]);
+end
+
+end % function LoadIterations
 
 function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
     % create the plots
@@ -293,7 +319,9 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                 catch ME
                     hfig = [];                    
                     disp(ME.message);
-                    disp(ME.stack);
+                    for ii = 1:length(ME.stack),
+                        disp(ME.stack(ii));
+                    end
                 end
 
                 if ~isempty(sCtmp),
