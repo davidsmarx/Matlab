@@ -4,6 +4,7 @@ classdef CfalcoRunData < CRunData
         % seriesNum = CRunData.runnum
         trialNum
         % iter = CRunData.iter
+        listValidIter % list of valid iterations from this trialNum
         
         % falco data
         runLabel;
@@ -11,6 +12,9 @@ classdef CfalcoRunData < CRunData
         % falco data from snippet:
         falcoData
         
+        % raw image data
+        ImRaw_pn
+
         % mp
         mp
 
@@ -43,14 +47,20 @@ classdef CfalcoRunData < CRunData
             switch S.runnum
                 case {200, 201, 202}
                     S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
-                    S.Rundir_pn = ['/home/hcit/OMC/OMC_MSWC/' run_pn num2str(seriesNum) '/data/' S.runLabel]; % for snippet file
+                    S.Rundir_pn = ['/proj/mcb/data/MSWC/' run_pn num2str(seriesNum) '/data/' S.runLabel]; % for snippet file
                     S.Reduced_pn = [S.Rundir_pn '/' S.runLabel];
                 
                 case 250
                     S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
                     S.Rundir_pn = PathTranslator(['/proj/mcb/data/EPIC/' run_pn num2str(seriesNum) '/data/' S.runLabel]); % for snippet file
                     S.Reduced_pn = [S.Rundir_pn '/' S.runLabel];
+                    S.ImRaw_pn = PathTranslator(['/proj/mcb/data/EPIC/excam/data']);
 
+                case 251 % OMC_EPIC model
+                    S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
+                    S.Rundir_pn = PathTranslator(['/home/dmarx/links/HCIT/OMC_EPIC_MODEL_DATA/' run_pn num2str(seriesNum) '/data/' S.runLabel]); % for snippet file
+                    S.Reduced_pn = [S.Rundir_pn '/' S.runLabel];
+                    
                 otherwise
                     error(['unknown seriesNum ' num2str(S.runnum)]);
             end
@@ -104,30 +114,21 @@ classdef CfalcoRunData < CRunData
             
             if isempty(mp),
                 % Load the configuration file => mp
-                %config_fn = [S.Rundir_pn '/' S.runLabel '_config.m'];
-                config_fn = [S.Rundir_pn '/falco_omc_config_' S.runLabel '.m'];
+                config_fn = fullfile(S.Rundir_pn, ['falco_omc_config_' S.runLabel '.mat']);
                 config_fn = PathTranslator(config_fn);
                 if ~exist(config_fn, 'file'),
                     error(['cannot find config file, using default values, ' config_fn]);
-                    %                     S.ppl0 = 5.54*520/575;
-                    %                     S.Nppair = 3;
-                    %                     S.NofW = 1;
-                    %                     S.Nlamcorr = 1;
-                    %                     S.RminSc = 3; % = Fend.score.Rin
-                    %                     S.RmaxSc = 9; % = Fend.score.Rout
-                    %                     S.ThminSc = []; % derive from Fend.score.ang & Fend.sides
-                    %                     S.ThmaxSc = []; % derive from Fend.score.ang & Fend.sides
-                    %                     S.YminSc = -inf;
-                    %                     S.YmaxSc = inf;
-                    %                     S.XminSc = -inf;
-                    %                     S.XmaxSc = inf;
                 end
 
-                % create mp
-                copyfile(config_fn, './config_tmp.m');
-                eval('config_tmp');
-                mp = falco_flesh_out_workspace(mp);
-                                
+                % % create mp
+                % copyfile(config_fn, './config_tmp.m');
+                % eval('config_tmp');
+                % mp = falco_flesh_out_workspace(mp);
+
+                % load mp, copy local then load is many times faster than load from s383 server
+                copyfile(config_fn, './config_tmp.mat');
+                mp = load('./config_tmp.mat');
+
             end % if isempty(mp)
             
             %S.Nppair = mp.est.probe.Npairs;
@@ -179,6 +180,7 @@ classdef CfalcoRunData < CRunData
             S.Rundir_fn = PathTranslator(snippet_fn);
             load(PathTranslator(snippet_fn), 'out'); % out
             S.falcoData = out;
+            S.listValidIter = find(out.InormHist > 0);
             % struct:
             %                  Nitr: 150
             %           log10regHist: [150×1 double]
@@ -371,6 +373,35 @@ classdef CfalcoRunData < CRunData
 
         end % ReadImageCube
         
+        function pn = GetImRawPath(S)
+            % return the full path to the excam subdir with raw images
+            %S.ImRaw_pn = PathTranslator(['/proj/mcb/data/EPIC/excam/data']);
+
+            dtstr = datestr(S.falcoData.serialDateVec(S.iter), 'yyyy-mm-dd');
+            % S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
+
+            pn = fullfile(S.ImRaw_pn, dtstr, ['Series_',num2str(S.runnum,'%d'),'_Trial_',num2str(S.trialNum,'%d') '_It_' num2str(S.iter)]);
+
+            %
+            % 'Y:\links\ln_mcb_data\EPIC\excam\data\2025-07-16'
+            %
+            % ls(PathTranslator(['/proj/mcb/data/EPIC/excam/data/' datestr(sOut.listS(1).falcoData.serialDateVec(1), 'yyyy-mm-dd') '/']))
+            %
+            % .                                    Series_250_Trial_47_It_24
+            %
+
+
+        end % GetImRawPath
+
+        function kwds = getImKeys(S, imgnum)
+            % read fitsinfo Keywords from raw excam image
+            % emccd.<imgnum>.fits
+
+            finfo = fitsinfo(fullfile(S.GetImRawPath, ['emccd.' num2str(imgnum, '%06d') '.fits']));
+            kwds = finfo.PrimaryData.Keywords;
+
+        end % get ImKeys
+
         function ReadDMvCube(S, whichdm)
             % ReadDMvCube(S, whichdm)
             % whichdm = 'dm1', or 'dm2'

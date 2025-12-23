@@ -5,6 +5,8 @@ function P = zernikepolynomials(coords)
 %   'rect'angular
 %   'noll', 'zemax'
 %   'codevfringe'
+%   'annulus' -- Noll order up to Z22, returns functions of (r, t, bc)
+%        where bc = obscuration ratio = inner_radius/outer_radius ( = norm radius)
 %
 % for Noll (Zemax) ordering
 %
@@ -148,6 +150,101 @@ switch lower(coords),
            @(r,t) 924*r.^12 - 2772*r.^10 + 3150*r.^8 - 1680*r.^6 + 420*r.^4 - 42*r.^2 + 1 %Spherical Aberration, Quinternary 37
            };
 
+    case {'annulus'},
+        % for circular pupil with central obscuration
+        % taken from proper/prop_fit_zernikes.m
+        % 'obscuration_ratio' = Obscuration ratio of the central obscuration
+        %                       radius to the aperture radius.  Specifying this
+        %                       value will cause Zernike polynomials normalized
+        %                       for an obscured aperture to be fit rather than
+        %                       unobscured Zernikes, which is the default.
+        sr02 = sqrt( 2);
+        sr03 = sqrt( 3);
+        sr05 = sqrt( 5);
+        sr06 = sqrt( 6);
+        sr07 = sqrt( 7);
+        sr10 = sqrt(10);
+        %         r2   = r .* r;
+        %         r3   = r .* r2;
+        %         r4   = r .* r3;
+        %         r5   = r .* r4;
+        %         r6   = r .* r5;
+        P = {
+            @(r,t,bc) 1.0
+            @(r,t,bc) 2        * cos(  t) .* r / sqrt(bc^2 + 1)
+            @(r,t,bc) 2        * sin(  t) .* r / sqrt(bc^2 + 1)
+            @(r,t,bc) sr03 * (1 + bc^2 - 2*r.^2)/ (bc^2 - 1)
+            @(r,t,bc) sr06 * sin(2*t) .* r.^2 / sqrt(bc^4 + bc^2 + 1)
+            @(r,t,bc) sr06 * cos(2*t) .* r.^2 / sqrt(bc^4 + bc^2 + 1)
+
+        @(r,t,bc) 2 * sr02 * sin(  t) .* r  ...
+            .* (2 + 2*bc^4 - 3*r.^2 + (2 - 3*r.^2) * bc^2) ...
+            / (bc^2 - 1)   / sqrt(bc^6 + 5*bc^4 + 5*bc^2 + 1)
+
+        @(r,t,bc) 2 * sr02 * cos(  t) .* r  ...
+                 .* (2 + 2*bc^4 - 3*r.^2 + (2 - 3*r.^2) * bc^2) ...
+                 / (bc^2 - 1)   / sqrt(bc^6 + 5*bc^4 + 5*bc^2 + 1)
+
+        @(r,t,bc) 2 * sr02 * sin(3*t) .* r.^3 ...
+                                / sqrt(bc^6 + bc^4 + bc^2 + 1)
+
+        @(r,t,bc) 2 * sr02 * cos(3*t) .* r.^3 ...
+                                / sqrt(bc^6 + bc^4 + bc^2 + 1)
+
+        @(r,t,bc) sr05 * (1 + bc^4 - 6*r.^2 + 6*r.^4 + (4 - 6*r.^2)*bc^2) ...
+                 / (bc^2 - 1)^2
+
+        @(r,t,bc) sr10 * cos(2*t) .* r.^2 .* (3 + 3*bc^6 - 4*r.^2 ...
+                 + (3 - 4*r.^2) * (bc^4 + bc^2)) ...
+                 / (bc^2 - 1)   / sqrt(bc^4 + bc^2 + 1) ...
+                 / sqrt(bc^8 + 4*bc^6 + 10*bc^4 + 4*bc^2 + 1)
+
+        @(r,t,bc) sr10 * sin(2*t) .* r.^2 .* (3 + 3*bc^6 - 4*r.^2 ...
+                 + (3 - 4*r.^2) * (bc^4 + bc^2)) ...
+                 / (bc^2 - 1)   / sqrt(bc^4 + bc^2 + 1) ...
+                 / sqrt(bc^8 + 4*bc^6 + 10*bc^4 + 4*bc^2 + 1)
+
+        @(r,t,bc) sr10 * cos(4*t) .* r.^4 ...
+                                / sqrt(bc^8 + bc^6 + bc^4 + bc^2 + 1)
+
+        @(r,t,bc) sr10 * sin(4*t) .* r.^4 ...
+                                / sqrt(bc^8 + bc^6 + bc^4 + bc^2 + 1)
+
+        @(r,t,bc) 2 * sr03 * cos(  t) .* r  .* (3 + 3*bc^8 - 12*r.^2 ...
+                 + 10*r.^4 - 12*(r.^2 - 1)*bc^6 + 2*(15 - 24*r.^2 + 5*r.^4)*bc^4 ...
+                 + 4*(3 - 12*r.^2 + 10*r.^4)*bc^2) ...
+                 / (bc^2 - 1)^2 / sqrt(bc^4 + 4*bc^2 + 1) ...
+                 / sqrt(bc^6 + 9*bc^4 + 9*bc^2 + 1)
+
+        @(r,t,bc) 2 * sr03 * sin(  t) .* r  .* (3 + 3*bc^8 - 12*r.^2 ...
+                 + 10*r.^4 - 12*(r.^2 - 1)*bc^6 + 2*(15 - 24*r.^2 + 5*r.^4)*bc^4 ...
+                 + 4*(3 - 12*r.^2 + 10*r.^4)*bc^2) ...
+                 / (bc^2 - 1)^2 / sqrt(bc^4 + 4*bc^2 + 1) ...
+                 / sqrt(bc^6 + 9*bc^4 + 9*bc^2 + 1)
+
+        @(r,t,bc) 2 * sr03 * cos(3*t) .* r.^3 .* (4 + 4*bc^8 - 5*r.^2 ...
+                 + (4 - 5*r.^2) * (bc^6 + bc^4  + bc^2))...
+                 / (bc^2 - 1)   / sqrt(bc^6 + bc^4 + bc^2 + 1) ...
+                 / sqrt(bc^12+4*bc^10+10*bc^8+20*bc^6+10*bc^4+4*bc^2+1)
+
+        @(r,t,bc) 2 * sr03 * sin(3*t) .* r.^3 .* (4 + 4*bc^8 - 5*r.^2 ...
+                 + (4 - 5*r.^2) * (bc^6 + bc^4  + bc^2))...
+                 / (bc^2 - 1)   / sqrt(bc^6 + bc^4 + bc^2 + 1) ...
+                 / sqrt(bc^12+4*bc^10+10*bc^8+20*bc^6+10*bc^4+4*bc^2+1)
+
+        @(r,t,bc) 2 * sr03 * cos(5*t) .* r.^5 ...
+                                / sqrt(bc^10 + bc^8 + bc^6 + bc^4 + bc^2 + 1)
+
+        @(r,t,bc) 2 * sr03 * sin(5*t) .* r.^5 ...
+                                / sqrt(bc^10 + bc^8 + bc^6 + bc^4 + bc^2 + 1)
+
+        @(r,t,bc) sr07 * (1 + bc^6 - 12*r.^2 + 30*r.^4 - 20*r.^6 ...
+                 + (9 - 36*r.^2 + 30*r.^4) * bc^2 + (9 - 12*r.^2) * bc^4) ...
+                 / (bc^2 - 1)^3
+
+                 };
+
+        
     case {'rect','rectangular','r'},
         P = {
             @(x,y) 1

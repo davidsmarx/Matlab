@@ -2290,7 +2290,7 @@ classdef CRunData < handle & CConstants
             end
 
             %sRI = ['run #' num2str(S.runnum) ', iter #' num2str(S.iter) '--' num2str(Sref.iter)];
-            sRI = ['\DeltaE Iter #' num2str(S.iter) ' - ' num2str(Sref.iter)];
+            sRI = ['\DeltaE Iter #' num2str(S.iter) ' - #' num2str(Sref.iter)];
             %sRI = '';
                         
             %
@@ -2332,6 +2332,9 @@ classdef CRunData < handle & CConstants
             %Nplr = 4;
             if isa(hfig,'matlab.ui.Figure'),
                 figure(hfig)
+                % clear any userdata
+                set(hfig, 'UserData', []);
+                set(get(hfig, 'children'), 'userdata', []);
             else,
                 hfig = figure_mxn(1,S.NofW);
             end
@@ -2364,7 +2367,7 @@ classdef CRunData < handle & CConstants
 
                 xlabel('X (\lambda/D)')
                 ylabel('Y (\lambda/D)')
-                
+
                 % % change in unprobed image intensity
                 % ha(1,iwv) = subplot(Nplr, S.NofW, iptr);
                 % imageschcit(x,y,squeeze(real(dE_t(iwv,:,:)))); %colorbar
@@ -2481,7 +2484,7 @@ classdef CRunData < handle & CConstants
             end
             
             % title string
-            sRI = ['iter #' num2str(S.iter) '--' num2str(Sref.iter)];
+            sRI = ['Iter #' num2str(S.iter) '--' num2str(Sref.iter)];
             
             % calculate correlation metrics
             dE_t = S.E_t - Sref.E_t;
@@ -2525,8 +2528,12 @@ classdef CRunData < handle & CConstants
             if isa(hfig,'matlab.ui.Figure'),
                 figure(hfig)
             else
-                hfig = figure_mxn(Nplr,S.NofW);
+                hfig = figure;
+                dx = 500; dy = 500;
+                newpos = get(hfig,'position').*[1 1 0 0] + [0 0 dx*S.NofW dy*Nplr];
+                set(hfig,'position',newpos);
             end
+            htiles = tiledlayout(hfig, Nplr, S.NofW);
             [x, y] = CreateGrid([nr nc], 1./S.ppl0);
             ha = zeros(Nplr,S.NofW);
 
@@ -2571,21 +2578,28 @@ classdef CRunData < handle & CConstants
                 
                 % amplitude of projection
                 
-                ha(1,iwv) = subplot(Nplr, S.NofW, iamppl);
-                imageschcit(x,y, CEampiwvlog); colorbar
-                title([sRI ', CE = |dE_m''dE_t|/\surd{<dE_t.dE_t><dE_m.dE_m>}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                %ha(1,iwv) = subplot(Nplr, S.NofW, iamppl);
+                ha(1, iwv) = nexttile(iamppl);
+                imageschcit(x,y, CEampiwvlog); %colorbar
+                %title([sRI ', CE = |dE_m''dE_t|/\surd{<dE_t.dE_t><dE_m.dE_m>}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                title([num2str(S.NKTcenter(iwv)/S.NM, '%.1f') 'nm'])
                 
-                ha(2,iwv) = subplot(Nplr, S.NofW, iphapl);
+                %ha(2,iwv) = subplot(Nplr, S.NofW, iphapl);
+                ha(2,iwv) = nexttile(iphapl);
                 him_pha = imageschcit(x,y,CEphaiwv/pi);                 
+                xlabel('X (\lambda/D)')
                 %mesh(x, y, CEphaiwv/pi, 'linestyle','none'); view(2); % doesn't plot NaN
-                title([sRI ', \angle{CE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
-                colorbartitle('Phase (\pi rad)')
+                %title([sRI ', \angle{CE}, ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
+                %title([sRI ', ' num2str(S.NKTcenter(iwv)/S.NM) 'nm'])
                 % circular colormap for phase plots
-                set(ha(2,iwv),'clim',[-1 1]) % pi radians
-                colormap(ha(2,iwv), hsv) %phasemap) % hsv also works
+                set(ha(2,iwv),'clim',[-1 1]) % pi radians                
                 set(him_pha, 'AlphaData', ~isnan(CEphaiwv))
-                %axis(ha(2,iwv), 'image')
+
+
             end
+
+            ylabel(ha(1,1), 'Y (\lambda/D)')
+            ylabel(ha(2,1), 'Y (\lambda/D)')
 
             % xlim, ylim
             set(ha,'xlim',xlim,'ylim',ylim)
@@ -2601,6 +2615,26 @@ classdef CRunData < handle & CConstants
             end
             set(ha(1,:),'clim',clim)
             
+            % title top 
+            FigureTitle([sRI ', CE = |dE_m''dE_t|/\surd{<dE_t.dE_t><dE_m.dE_m>}'], 'FontSize', 18);
+
+            % colormap of phase plots
+            cb_amp = colorbar(ha(1,3));
+            colorbartitle(cb_amp, 'log Amp')
+            for iwv= 1:S.NofW
+                colormap(ha(2,iwv), hsv);
+            end
+            
+            % % title bottom
+            % htitle_pha = annotation('textbox', [0.5 0.5 0.2 0.2], 'String', [sRI ', \angle{CE}'], 'FitBoxToText', 'on', 'LineStyle', 'none', 'FontSize', 18, 'Color', 'r', 'FontWeight', 'bold');
+            % ptmp = htitle_pha.Position;
+            % ptmp(2) = 0.5;
+            % htitle_pha.Position = ptmp;
+            % htitle_pha.HorizontalAlignment = 'center';
+
+            cb_pha = colorbar(ha(2,3));
+            colorbartitle(cb_pha, 'Phase (\pi rad)')
+
         end % DisplayCEfields
 
         function [hfig, objHist] = DisplayIntHistogram(S, varargin)
@@ -2879,9 +2913,9 @@ classdef CRunData < handle & CConstants
             if ~isprop(S, 'Nstar') || S.Nstar == 1,
                 [nacty, nactx, nsli] = size(DMv);
                 npr = S.Nppair;
-                if ~isequal(nsli, 2*npr+1), error('size of DM probe not consistent'); end
+                if ~isequal(nsli, S.Nlamcorr*(2*npr+1)), error('size of DM probe not consistent'); end
                 DMv0 = DMv(:,:,1);
-                DMv = DMv(:,:,2:end);
+                DMv = DMv(:,:,2:2*npr+1);
             else
                 [nacty, nactx, nsli, nstartmp] = size(DMv); % = (48, 48, 5, 2)
                 npr = nstartmp*S.Nppair; % total # of probe pairs
