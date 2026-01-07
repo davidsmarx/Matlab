@@ -405,9 +405,9 @@ classdef CGS < handle
 
             % unwrap phase using better unwrap routine, but requires mask
             %phw = S.phw;
-            phw = S.phw_ptt + 1 - 1;
-            phw(~S.bMask) = NaN;
-            S.phunwrap = unwrap_phase(phw);
+            phwtmp = S.phw_ptt + 1 - 1;
+            phwtmp(~S.bMask) = NaN;
+            S.phunwrap = unwrap_phase(phwtmp);
             S.phunwrap(~S.bMask) = 0;
             S.phw_ptt = RemovePTTZ(S.phw_ptt, S.bMask); % fine-tune using Zernike
 
