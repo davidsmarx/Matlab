@@ -50,6 +50,11 @@ classdef CfalcoRunData < CRunData
                     S.Rundir_pn = ['/proj/mcb/data/MSWC/' run_pn num2str(seriesNum) '/data/' S.runLabel]; % for snippet file
                     S.Reduced_pn = [S.Rundir_pn '/' S.runLabel];
                 
+                case 203
+                    S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
+                    S.Rundir_pn = PathTranslator(fullfile(getenv("DATA_ROOT"), [run_pn num2str(seriesNum)], 'data', S.runLabel));
+                    S.Reduced_pn = PathTranslator(fullfile(S.Rundir_pn, S.runLabel));
+                    
                 case 250
                     S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
                     S.Rundir_pn = PathTranslator(['/proj/mcb/data/EPIC/' run_pn num2str(seriesNum) '/data/' S.runLabel]); % for snippet file
