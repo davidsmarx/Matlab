@@ -35,7 +35,7 @@ more off
 % options
 ppt_fn = CheckOption('pptfn', '', varargin{:});
 Sppt = CheckOption('Sppt', [], varargin{:});
-run_pn = CheckOption('run_pn', 'falco_testbed_run', varargin{:});
+run_bn = CheckOption('run_bn', ['falco_testbed_run' num2str(runnum)], varargin{:});
 listSin = CheckOption('listS', [], varargin{:}); % if listS of CfalcoRunData for iterations already exists
 
 % % check if PowerPoint Presentation already exists and still there
@@ -45,7 +45,7 @@ listSin = CheckOption('listS', [], varargin{:}); % if listS of CfalcoRunData for
 %     clear Sppt; Sppt = [];
 % end
 
-% open PowerPoint if necessary, and plots are requested
+% open PowerPoint if necessary, and plots are requested (Windows pc only)
 if isempty(Sppt) && ispc && ~isempty(varargin),
     Sppt = Cppt(ppt_fn);
 end
@@ -65,9 +65,8 @@ else
     S = listSin(i_S_list_iter);
 end
 
-%
-%saveas_pn = ['./falco_testbed_run' num2str(S(1).runnum) '/data/' S(1).runLabel '/figures'];
-saveas_pn = ['./' run_pn num2str(S(1).runnum) '/data/' S(1).runLabel '/figures'];
+% some path definitions
+report_pn = PathTranslator(fullfile(getenv("DATA_ROOT"), run_bn, 'reports', S(1).runLabel));
 
 % plot graphs of metrics v itnum on the first slide
 if ~isempty(Sppt), slide = Sppt.NewSlide(1); end
@@ -80,7 +79,7 @@ hax(2,2) = subplot(2,2,4); rmsdDMv = PlotRMSdDMv(S, 'hfig', hfig, 'hax', hax(2,2
 if ~isempty(Sppt),
     hPic = Sppt.CopyFigSlide(slide, hfig);
 else
-    fSaveas(hfig, saveas_pn, 'summary', ['summary_it' num2str(S(1).iter) '_it' num2str(S(end).iter)], []);
+    fSaveas(hfig, report_pn, 'summary', ['summary_it' num2str(S(1).iter) '_it' num2str(S(end).iter)], []);
 end
 
 % add saved falco figures
@@ -105,8 +104,13 @@ end
 listHfig = {};
 for iplot = 1:length(varargin),
     if iscell(varargin{iplot}),
-        listHfig{end+1} = CreatePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end}, 'save_pn', saveas_pn);        
+        listHfig{end+1} = CreatePlots(S, varargin{iplot}{1}, Sppt, varargin{iplot}{2:end}, 'save_pn', report_pn);        
     end
+end
+
+% save Sppt
+if ~isempty(Sppt)
+    Sppt.saveas(fullfile(report_pn, [S(1).runLabel '_it' num2str(S(1).iter) '_' num2str(S(end).iter) '.pptx']));
 end
 
 if nargout >= 1,
@@ -385,6 +389,9 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
 end % CreatePlots
 
 function fSaveas(hfig, save_pn, sDisplayFun, bn, iter)
+    % fSaveas(hfig, save_pn, sDisplayFun, bn, iter)
+    %
+    % save figure to specified location as .jpg and .fig
 
     fn = fullfile(save_pn, sDisplayFun, [bn '_' num2str(iter) '.jpg']);
     fnfig = fullfile(save_pn, sDisplayFun, [bn '_' num2str(iter) '.fig']);
