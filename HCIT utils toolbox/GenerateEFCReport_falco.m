@@ -110,6 +110,8 @@ end
 
 % save Sppt
 if ~isempty(Sppt)
+    fn = PathTranslator(fullfile(getenv("DATA_ROOT"), run_bn, 'reports', [S(1).runLabel '_it' num2str(S(1).iter) '_' num2str(S(end).iter) '.pptx']));
+    Sppt.Presentation.SaveAs(fn);
     Sppt.saveas(fullfile(report_pn, [S(1).runLabel '_it' num2str(S(1).iter) '_' num2str(S(end).iter) '.pptx']));
 end
 
@@ -192,13 +194,18 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
     % some plots are differential
     % some plots we also plot metrics v itnum
 
-    save_pn = CheckOption('save_pn', ['./' sDisplayFun '/'], varargin{:}); % if ~ispc
+    save_pn = CheckOption('save_pn', pwd, varargin{:}); % if ~ispc, must be absolute path
     figheight = CheckOption('figheight', 700, varargin{:}); % for ppt display
     trialname = CheckOption('trialname', '', varargin{:});
 
     % create path to put plots, if necessary
     if ~ispc && ~exist(save_pn)
         mkdir(save_pn)
+        if isunix
+            % set permission
+            command = ['chmod 775 ' save_pn];
+            system(command)
+        end
     end
 
     % list of CfalcoRunData methods where the first argument is a reference
@@ -224,11 +231,6 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
             for ii = 1:N-1,
                 % each iteration, create a new DisplayDEfields
                 
-                % % delete the old befor creating new
-                % if isgraphics(hfig),
-                %     hfig.delete;
-                % end
-
                 [hfig, hax, sMtmp] = S(ii+1).(sDisplayFun)(S(ii), varargin{:},'hfig',hfig);
                 if ~isempty(sMtmp)
                     sCmetrics(ii) = sMtmp;
@@ -243,16 +245,26 @@ function [hfig, hax, sCmetrics] = CreatePlots(S, sDisplayFun, Sppt, varargin)
                         % send the 'G' keystroke to create the gif
                         fungif = get(hfig, 'KeyPressFcn');
                         
+                        % save_pn must be full path
                         gif_fn = fullfile(save_pn, sDisplayFun, ['it_' num2str(S(ii).iter) '.gif']);
                         pn = fileparts(gif_fn);
-                        if ~exist(pn, 'dir'), mkdir(pn); end
+                        if ~exist(pn, 'dir'),
+                            mkdir(pn);
+                            if isunix
+                                % set permission
+                                command = ['chmod 775 ' pn];
+                                system(command)
+                            end
+
+                        end
                         
+                        % this sends an event to hfig to create the gif
                         thisevent = struct('Modifier', 'shift', 'Key', 'g', 'gif_fn', gif_fn);
                         fungif(hfig, thisevent);
                         
                         % check and insert gif to PowerPoint
                         if exist(gif_fn, "file") && ispc
-                            hh = Sppt.AddPictureNewSlide(fullfile(pwd, gif_fn));
+                            hh = Sppt.AddPictureNewSlide(gif_fn);
                         end % if copy to PowerPoint
 
                     else
@@ -397,7 +409,14 @@ function fSaveas(hfig, save_pn, sDisplayFun, bn, iter)
     fnfig = fullfile(save_pn, sDisplayFun, [bn '_' num2str(iter) '.fig']);
 
     pn = fileparts(fn);
-    if ~exist(pn, 'dir'), mkdir(pn); end
+    if ~exist(pn, 'dir'),
+        mkdir(pn);
+        if isunix
+            % set permission
+            command = ['chmod 775 ' pn];
+            system(command)
+        end
+    end
     saveas(hfig, fn);
     saveas(hfig, fnfig);
 

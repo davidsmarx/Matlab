@@ -54,7 +54,7 @@ classdef CfalcoRunData < CRunData
                     S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
                     S.Rundir_pn = PathTranslator(fullfile(getenv("DATA_ROOT"), [run_pn num2str(seriesNum)], 'data', S.runLabel));
                     S.Reduced_pn = PathTranslator(fullfile(S.Rundir_pn, S.runLabel));
-                    
+
                 case 250
                     S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
                     S.Rundir_pn = PathTranslator(['/proj/mcb/data/EPIC/' run_pn num2str(seriesNum) '/data/' S.runLabel]); % for snippet file
@@ -99,8 +99,13 @@ classdef CfalcoRunData < CRunData
 
             % fits headers only contain NKT values at the time the fits is
             % created, get subband centers from mp
-            for iwv = 1:S.NofW                
-                S.NKTcenter(iwv) = S.mp.sbp_centers(iwv);
+
+            %S.NofW = S.Nstar * S.Nlamcorr; % use NofW as all to fool CRunData
+            for istar = 1:S.Nstar
+                for iwv = 1: S.Nlamcorr
+                    imode = (istar-1)*S.Nlamcorr + iwv;
+                    S.NKTcenter(imode) = S.mp.sbp_centers(iwv);
+                end
             end
             S.lambda = S.NKTcenter;
 
@@ -114,7 +119,8 @@ classdef CfalcoRunData < CRunData
             %   revising to use CRunData
             
             mp = CheckOption('mp', S.mp, varargin{:});
-            
+            %nstar = CheckOption('nstar', 2, varargin{:});
+
             % fullfile('Y:\ln_hcit_omc\OMC_MSWC\falco_testbed_run200\data', bn, bn, ['normI_Esens_it' num2str(S.iter) '.fits']));
             
             if isempty(mp),
@@ -131,13 +137,14 @@ classdef CfalcoRunData < CRunData
                 % mp = falco_flesh_out_workspace(mp);
 
                 % load mp, copy local then load is many times faster than load from s383 server
+                tic
                 copyfile(config_fn, './config_tmp.mat');
                 mp = load('./config_tmp.mat');
-
+                fprintf('time to copy and load config mat file: %.1f seconds\n', toc)
             end % if isempty(mp)
             
             %S.Nppair = mp.est.probe.Npairs;
-            S.Nstar = 1; %2; % hard code for now
+            S.Nstar = mp.star.count; %2; % hard code for now
             S.Nlamcorr = mp.Nsbp; % 
             S.NofW = S.Nstar * S.Nlamcorr; % use NofW as all to fool CRunData
             

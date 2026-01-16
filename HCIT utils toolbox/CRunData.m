@@ -2527,6 +2527,7 @@ classdef CRunData < handle & CConstants
             Nplr = 2;
             if isa(hfig,'matlab.ui.Figure'),
                 figure(hfig)
+                delete(hfig.Children);
             else
                 hfig = figure;
                 dx = 500; dy = 500;
@@ -2619,7 +2620,7 @@ classdef CRunData < handle & CConstants
             FigureTitle([sRI ', CE = |dE_m''dE_t|/\surd{<dE_t.dE_t><dE_m.dE_m>}'], 'FontSize', 18);
 
             % colormap of phase plots
-            cb_amp = colorbar(ha(1,3));
+            cb_amp = colorbar(ha(1,end));
             colorbartitle(cb_amp, 'log Amp')
             for iwv= 1:S.NofW
                 colormap(ha(2,iwv), hsv);
@@ -2632,7 +2633,7 @@ classdef CRunData < handle & CConstants
             % htitle_pha.Position = ptmp;
             % htitle_pha.HorizontalAlignment = 'center';
 
-            cb_pha = colorbar(ha(2,3));
+            cb_pha = colorbar(ha(2,end));
             colorbartitle(cb_pha, 'Phase (\pi rad)')
 
         end % DisplayCEfields
