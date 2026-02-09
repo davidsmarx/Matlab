@@ -50,7 +50,7 @@ classdef CfalcoRunData < CRunData
                     S.Rundir_pn = ['/proj/mcb/data/MSWC/' run_pn num2str(seriesNum) '/data/' S.runLabel]; % for snippet file
                     S.Reduced_pn = [S.Rundir_pn '/' S.runLabel];
                 
-                case 203
+                case {203, 204} % 203 is MSWC testbed, 204 is model
                     S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
                     S.Rundir_pn = PathTranslator(fullfile(getenv("DATA_ROOT"), [run_pn num2str(seriesNum)], 'data', S.runLabel));
                     S.Reduced_pn = PathTranslator(fullfile(S.Rundir_pn, S.runLabel));
@@ -310,7 +310,16 @@ classdef CfalcoRunData < CRunData
             if ~isequal(ev.maskBool, S.bMask),
                 warning('ev.maskBool is not same as corr maskBool');
             end
-            
+
+            % check that ev.InormProbe has value for each ev.ampNorm
+            sztmpamp = size(ev.ampNorm);
+            sztmpI = size(ev.InormProbe);
+            if ~isequal(sztmpI(2:end), sztmpamp(2:end))
+                if sztmpI(2) == 1,
+                    ev.InormProbe = ev.InormProbe(1)*ones([1 sztmpamp(2:end)]);
+                end
+            end
+
             [Npx_tmp, S.Nppair, S.Nmodes] = size(ev.amp_model);
             % check: Nmodes = S.Nstar * S.Nlamcorr = S.NofW
             for iMode = 1:S.NofW % really Nmodes

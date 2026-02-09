@@ -83,7 +83,7 @@ else
 end
 
 % add saved falco figures
-list_fignum_to_copy = [1 2 51 91 401];
+list_fignum_to_copy = [1 2 51 91 92 401];
 figures_pn = [S(1).Rundir_pn '/figures'];
 if exist(PathTranslator(figures_pn), 'dir')
     %listPng = dir(PathTranslator([figures_pn '/*.png']));
@@ -111,8 +111,7 @@ end
 % save Sppt
 if ~isempty(Sppt)
     fn = PathTranslator(fullfile(getenv("DATA_ROOT"), run_bn, 'reports', [S(1).runLabel '_it' num2str(S(1).iter) '_' num2str(S(end).iter) '.pptx']));
-    Sppt.Presentation.SaveAs(fn);
-    Sppt.saveas(fullfile(report_pn, [S(1).runLabel '_it' num2str(S(1).iter) '_' num2str(S(end).iter) '.pptx']));
+    Sppt.Presentation.SaveAs(fn);    
 end
 
 if nargout >= 1,
