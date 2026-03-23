@@ -34,7 +34,7 @@ more off
 
 % options
 ppt_fn = CheckOption('pptfn', '', varargin{:});
-Sppt = CheckOption('Sppt', [], varargin{:});
+Sppt = CheckOption('Sppt', 'new', varargin{:});
 run_bn = CheckOption('run_bn', ['falco_testbed_run' num2str(runnum)], varargin{:});
 listSin = CheckOption('listS', [], varargin{:}); % if listS of CfalcoRunData for iterations already exists
 
@@ -46,7 +46,7 @@ listSin = CheckOption('listS', [], varargin{:}); % if listS of CfalcoRunData for
 % end
 
 % open PowerPoint if necessary, and plots are requested (Windows pc only)
-if isempty(Sppt) && ispc && ~isempty(varargin),
+if strcmpi(Sppt, 'new') && ispc && ~isempty(varargin),
     Sppt = Cppt(ppt_fn);
 end
 
@@ -532,7 +532,8 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
     hfig = CheckOption('hfig', [], varargin{:});
     hax = CheckOption('hax', [], varargin{:});
     itnum = CheckOption('itnum', [listS.iter], varargin{:}); % use [listS.iter] - listS(1).iter to start with 0
-    
+    ylim = CheckOption('ylim', [], varargin{:})
+
     itnum = itnum(:); % force column vector
     [NInt_co, NInt_inco, NInt_total] = deal(zeros(length(itnum), max([listS.Nlamcorr]) ));
     NInt_mean = zeros(length(itnum),1);
@@ -586,7 +587,13 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
     xlabel('Iteration #')
     ylabel('Normalized Intensity')
     set(hl,'linewidth', 2)
-    
+
+    % auto ylim
+    if isempty(ylim)
+        ylim = [1e-10 0] + [0 1].*get(hax, 'ylim');
+    end
+    set(hax, 'ylim', ylim)
+
     % S.Nlamcorr = mp.Nsbp;
     % S.NofW = S.Nlamcorr * S.Nstar
     strStar = {'On-axis', 'Off-axis'};

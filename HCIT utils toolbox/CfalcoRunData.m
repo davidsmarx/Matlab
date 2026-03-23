@@ -263,7 +263,7 @@ classdef CfalcoRunData < CRunData
             ev = CheckOption('ev', [], varargin{:});
             
             % ev
-            if isempty(ev)
+            if isempty(ev) && ~isequal(S.mp.estimator, 'perfect')
                 fn = [S.Reduced_pn '/probing_data_' num2str(S.iter) '.mat'];
                 if exist(PathTranslator(fn),'file')
                     load(PathTranslator(fn), 'ev');

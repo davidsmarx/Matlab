@@ -128,7 +128,11 @@ for ii = 1:Nf
     
     % always get timestamp
     datetmp = FitsGetKeywordVal(finfo.PrimaryData.Keywords, 'DATE');
-    dateval(ii) = datetime(datetmp, 'TimeZone', 'local', 'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss');
+    if ~isempty(datetmp)
+        dateval(ii) = datetime(datetmp, 'TimeZone', 'local', 'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss');
+    else
+        dateval(ii) = 0;
+    end
     
     
 end
