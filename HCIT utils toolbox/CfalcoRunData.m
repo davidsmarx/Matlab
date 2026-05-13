@@ -138,8 +138,13 @@ classdef CfalcoRunData < CRunData
 
                 % load mp, copy local then load is many times faster than load from s383 server
                 tic
-                copyfile(config_fn, './config_tmp.mat');
-                mp = load('./config_tmp.mat');
+                % temp path to copy large .mat
+                % C:\Users\dmarx\Documents on my windows desktop
+                % /home/dmarx/links/HCIT/OMC_MSWC on aftac5
+                localtmppath = regexp(PathTranslator(getenv("DIR_ROOT")), filesep, 'split');
+                localtmppath = fullfile(localtmppath{1:end-1}); 
+                copyfile(config_fn, fullfile(localtmppath, 'config_tmp.mat'));
+                mp = load(fullfile(localtmppath, 'config_tmp.mat'));
                 fprintf('time to copy and load config mat file: %.1f seconds\n', toc)
             end % if isempty(mp)
             

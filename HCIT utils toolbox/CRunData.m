@@ -1074,6 +1074,91 @@ classdef CRunData < handle & CConstants
             
         end % DisplayImCubeImage
         
+        function [hfig, hax, sHistData] = DisplayImCubeHistogram(S, varargin)
+            % [hfig, him, Im] = DisplayImCubeHistogram(S)
+            % [hfig, him, Im] = DisplayImCubeHistogram(S, imnum)
+            % 
+            % raw camera images, adjusted for photometry and dark
+            % these are the images from rundir/*.fits.gz
+            %
+            % display histograms of all, or list of ImCube(list_imnum)
+            % 
+            % Options:
+            %   CheckOption('list_imnum', [], varargin{:});
+            %   CheckOption('xlim', 1e-9*[-1 1]);
+            %   CheckOption('hfig', []);
+            %
+            % and varargin passed to ImageCube
+            
+            imnumlist = CheckOption('list_imnum', [], varargin{:});
+            xlim = CheckOption('xlim', 1e-9*[-1 1], varargin{:});
+            hfig = CheckOption('hfig', [], varargin{:});
+            
+            if isempty(S.ImCube),
+                S.ReadImageCube;
+                if isempty(S.ImCube),
+                    % no image data?
+                    error('DisplayImCubeHistogram: no image data.');
+                end
+            end
+            
+            % make image cube
+            imcube = shiftdim(S.ImCube,2);
+            [Nsl, nr, nc] = size(imcube);
+            if isempty(imnumlist),
+                imnumlist = 1:Nsl;
+            end
+            imcube = imcube(imnumlist,:,:);
+
+            % display all the histograms as tiles
+            % determine layout dimensions
+            nImages = length(imnumlist);
+            nCols = ceil(sqrt(nImages));
+            nRows = ceil(nImages / nCols);
+
+            % create or clear figure
+            if isempty(hfig)
+                hfig = figure;
+            else
+                figure(hfig);
+                clf(hfig);
+            end
+
+            % create tiled layout with space for super title
+            tlo = tiledlayout(nRows, nCols, 'TileSpacing', 'compact', 'Padding', 'loose');
+
+            % create histogram for each image
+            hax = zeros(nRows, nCols);
+            for ii = 1:nImages
+                hax(ii) = nexttile;
+                Im = squeeze(imcube(ii, :, :));
+                h = histogram(Im(:));
+
+                % calculate histogram centroid
+                binCenters = (h.BinEdges(1:end-1) + h.BinEdges(2:end)) / 2;
+                centroid = sum(binCenters .* h.Values) / sum(h.Values);
+
+                title(sprintf('Im #%d, Cent: %.2e', imnumlist(ii), centroid));
+                xlabel('Intensity');
+                ylabel('Counts');
+                set(gca,'xlim', xlim);
+                grid on;
+
+                % manually extract needed properties into struct
+                histData(ii).BinEdges = h.BinEdges;
+                histData(ii).Values = h.Values;
+                histData(ii).BinCenters = binCenters;
+                histData(ii).Centroid = centroid;
+                histData(ii).ImageNum = imnumlist(ii);
+
+            end
+            
+            % add super title
+            [~, rlabel] = fileparts(S.Rundir_pn);
+            title(tlo, pwd2titlestr(sprintf('%s, Iter %d', rlabel, S.iter)), 'Fontsize', 18, 'Color', 'r', 'FontWeight', 'bold');
+
+        end % DisplayImCubeHistogram
+                
         function [hfig, hax, x, y] = DisplaySingleImage(S, Im, varargin)
             % S.DisplaySingleImage(Im, options)
             %
@@ -1783,6 +1868,7 @@ classdef CRunData < handle & CConstants
             bLog = CheckOption('blog', true, varargin{:});
             xlim = CheckOption('xlim', S.XlimDefault, varargin{:});
             ylim = CheckOption('ylim', S.YlimDefault, varargin{:});
+            clim = CheckOption('clim', 'auto', varargin{:}); % auto or log10([min max]) e.g. [-9 -6]
             
             [x, y] = CreateGrid(S.ProbeModel{1,1}, 1./S.ppl0);                        
             
@@ -1819,10 +1905,11 @@ classdef CRunData < handle & CConstants
             end
             % match clim for all images
             climall = get(ha,'clim');
-            if bLog, climmin = -9; else, climmin = 0; end
-            clim = [climmin max([climall{:}])];
+            if isequal(clim, 'auto')
+                if bLog, climmin = -9; else, climmin = 0; end
+                clim = [climmin max([climall{:}])];
+            end
             set(ha,'clim',clim)
-
             
             % probe model is complex, take abs
             for ip = 1:S.Nppair,
@@ -2964,6 +3051,10 @@ classdef CRunData < handle & CConstants
             
             if isempty(S.ImCube),
                 S.ReadImageCube;
+                % check that DelProbes images exist
+                if isempty(S.ImCubeDelProb)
+                    error('DisplayImCubeDelProbes: ImCueDelProb is emtpy.');
+                end
             end
             
             if ~exist('iwv','var') || isempty(iwv),
