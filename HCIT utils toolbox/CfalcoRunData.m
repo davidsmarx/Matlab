@@ -50,7 +50,7 @@ classdef CfalcoRunData < CRunData
                     S.Rundir_pn = ['/proj/mcb/data/MSWC/' run_pn num2str(seriesNum) '/data/' S.runLabel]; % for snippet file
                     S.Reduced_pn = [S.Rundir_pn '/' S.runLabel];
                 
-                case 203
+                case {203, 204} % 203 is MSWC testbed, 204 is model
                     S.runLabel = ['Series',num2str(seriesNum,'%04d'),'_Trial',num2str(trialNum,'%04d')];
                     S.Rundir_pn = PathTranslator(fullfile(getenv("DATA_ROOT"), [run_pn num2str(seriesNum)], 'data', S.runLabel));
                     S.Reduced_pn = PathTranslator(fullfile(S.Rundir_pn, S.runLabel));
@@ -138,8 +138,13 @@ classdef CfalcoRunData < CRunData
 
                 % load mp, copy local then load is many times faster than load from s383 server
                 tic
-                copyfile(config_fn, './config_tmp.mat');
-                mp = load('./config_tmp.mat');
+                % temp path to copy large .mat
+                % C:\Users\dmarx\Documents on my windows desktop
+                % /home/dmarx/links/HCIT/OMC_MSWC on aftac5
+                localtmppath = regexp(PathTranslator(getenv("DIR_ROOT")), filesep, 'split');
+                localtmppath = fullfile(localtmppath{1:end-1}); 
+                copyfile(config_fn, fullfile(localtmppath, 'config_tmp.mat'));
+                mp = load(fullfile(localtmppath, 'config_tmp.mat'));
                 fprintf('time to copy and load config mat file: %.1f seconds\n', toc)
             end % if isempty(mp)
             
@@ -263,7 +268,7 @@ classdef CfalcoRunData < CRunData
             ev = CheckOption('ev', [], varargin{:});
             
             % ev
-            if isempty(ev)
+            if isempty(ev) && ~isequal(S.mp.estimator, 'perfect')
                 fn = [S.Reduced_pn '/probing_data_' num2str(S.iter) '.mat'];
                 if exist(PathTranslator(fn),'file')
                     load(PathTranslator(fn), 'ev');
@@ -310,7 +315,16 @@ classdef CfalcoRunData < CRunData
             if ~isequal(ev.maskBool, S.bMask),
                 warning('ev.maskBool is not same as corr maskBool');
             end
-            
+
+            % check that ev.InormProbe has value for each ev.ampNorm
+            sztmpamp = size(ev.ampNorm);
+            sztmpI = size(ev.InormProbe);
+            if ~isequal(sztmpI(2:end), sztmpamp(2:end))
+                if sztmpI(2) == 1,
+                    ev.InormProbe = ev.InormProbe(1)*ones([1 sztmpamp(2:end)]);
+                end
+            end
+
             [Npx_tmp, S.Nppair, S.Nmodes] = size(ev.amp_model);
             % check: Nmodes = S.Nstar * S.Nlamcorr = S.NofW
             for iMode = 1:S.NofW % really Nmodes

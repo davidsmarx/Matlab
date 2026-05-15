@@ -34,7 +34,7 @@ more off
 
 % options
 ppt_fn = CheckOption('pptfn', '', varargin{:});
-Sppt = CheckOption('Sppt', [], varargin{:});
+Sppt = CheckOption('Sppt', 'new', varargin{:});
 run_bn = CheckOption('run_bn', ['falco_testbed_run' num2str(runnum)], varargin{:});
 listSin = CheckOption('listS', [], varargin{:}); % if listS of CfalcoRunData for iterations already exists
 
@@ -46,7 +46,7 @@ listSin = CheckOption('listS', [], varargin{:}); % if listS of CfalcoRunData for
 % end
 
 % open PowerPoint if necessary, and plots are requested (Windows pc only)
-if isempty(Sppt) && ispc && ~isempty(varargin),
+if strcmpi(Sppt, 'new') && ispc %&& ~isempty(varargin),
     Sppt = Cppt(ppt_fn);
 end
 
@@ -83,7 +83,7 @@ else
 end
 
 % add saved falco figures
-list_fignum_to_copy = [1 2 51 91 401];
+list_fignum_to_copy = [1 2 51 91 92 401];
 figures_pn = [S(1).Rundir_pn '/figures'];
 if exist(PathTranslator(figures_pn), 'dir')
     %listPng = dir(PathTranslator([figures_pn '/*.png']));
@@ -111,8 +111,7 @@ end
 % save Sppt
 if ~isempty(Sppt)
     fn = PathTranslator(fullfile(getenv("DATA_ROOT"), run_bn, 'reports', [S(1).runLabel '_it' num2str(S(1).iter) '_' num2str(S(end).iter) '.pptx']));
-    Sppt.Presentation.SaveAs(fn);
-    Sppt.saveas(fullfile(report_pn, [S(1).runLabel '_it' num2str(S(1).iter) '_' num2str(S(end).iter) '.pptx']));
+    Sppt.Presentation.SaveAs(fn);    
 end
 
 if nargout >= 1,
@@ -120,8 +119,8 @@ if nargout >= 1,
         'listS', S ...
         ,'listHfig', {listHfig} ... % how to put a cell array in a struct field
         ,'Sppt', Sppt ...
-        ,'probeh', probeh ...
-        ,'rmsdDMv', rmsdDMv ...
+        ,'probeh', {probeh} ...
+        ,'rmsdDMv', {rmsdDMv} ...
         ,'itnum_min', itnum_min ...
         ,'fPlotNormIntensity', @PlotNormIntensity ...
         ,'fPlotBeta', @PlotBeta ...
@@ -445,13 +444,13 @@ function [probeh, hfig, hax] = PlotProbeh(S, varargin)
      end
 
      itnum = zeros(size(S));
-     probeh = zeros(length(S), S(1).NofW);
+     probeh = cell(1, S(1).NofW); % zeros(length(S),
      for ii = 1:length(S)
          for iw = 1:S(ii).NofW
              for ip = 1:S(ii).Nppair
                  Itmp(:,ip) = S(ii).ProbeMeasAmp{iw, ip}(S(ii).bMask).^2;
              end % each probe
-             probeh(ii, iw) = mean(Itmp(:));
+             probeh{iw}(ii) = mean(Itmp(:));
          end % each subband
          itnum(ii) = S(ii).iter;
      end % each iteration
@@ -459,14 +458,31 @@ function [probeh, hfig, hax] = PlotProbeh(S, varargin)
      figure(hfig);
      if ~isempty(hax), axes(hax); else, hax = gca; end
      yyaxis left
-     semilogy(itnum, probeh, '-o'), grid on
+     % S.Nlamcorr = mp.Nsbp;
+     % S.NofW = S.Nlamcorr * S.Nstar
+     % imode = (istar-1)*S.Nlamcorr + iwv;
+     strStar = {'On-axis', 'Off-axis'};
+     symbols = {'o', 's', 'd', '^', 'v', '>', '<', 'p', 'h', '*', '+', 'x'};     
+     for imode = 1:length(probeh)
+         ibnd = rem(imode-1, S(1).Nlamcorr) + 1;
+         istar = floor((imode - ibnd)./S(1).Nlamcorr) + 1;
+         hl(imode) = semilogy(itnum, probeh{imode}, ['-' symbols{imode}]);
+         grid on, hold on
+         legstr{imode} = ['Band ' num2str(ibnd) ', ' strStar{istar} ' Star'];
+     end
+     %set(gca, 'YScale', 'log')
+     hold off
+     legend(legstr{:})
      xlabel('Iteration #')
      ylabel('Mean Probe Intensity')
      
      yyaxis right
      semilogy(itnum_texp, texp, '-x'), grid on
      ylabel('T_{exp} (s)')
-     
+     legstr{end+1} = 'T_{exp}';
+
+     legend(legstr{:})
+      
 end % PlotProbeh
 
 function [hfig, hax, itnum, texp] = PlotTexp(S, varargin)
@@ -509,9 +525,11 @@ function [betaused, betamin, hfig, hax] = PlotBeta(listS, varargin)
     hfig = CheckOption('hfig', [], varargin{:});
     hax = CheckOption('hax', [], varargin{:});
     itnum = CheckOption('itnum', [listS.iter], varargin{:}); % use [listS.iter] - listS(1).iter to start with 0
-    
+
+    % look for falcoData.ctrl.log10regHist and falcoData.ctrl.dmfacHist
     betaused = listS(end).falcoData.log10regHist(itnum);
     betamin = [];
+    dmfac_used = listS(end).falcoData.ctrl.dmfacHist(itnum);
     
     if isempty(hfig),
         hfig = figure;
@@ -519,12 +537,24 @@ function [betaused, betamin, hfig, hax] = PlotBeta(listS, varargin)
         figure(hfig);
     end
     if ~isempty(hax), axes(hax); else, hax = gca; end
-    hll = plot(itnum, betaused, '-or');
+
+    % left axis is beta
+    yyaxis left
+    hll = plot(itnum, betaused, '-o');
     set(hll, 'LineWidth', 2);
     grid on
     xlabel('Iteration #')
     ylabel('Regularization \beta')
-    legend('\beta used') %,'\beta optimal')
+
+    % right axis is ddm gain
+    yyaxis right
+    hrr = plot(itnum, dmfac_used, '-x');
+    set(gca,'YScale','log')
+    set(hrr, 'LineWidth', 2);
+    ylabel('\deltaDM Scale Factor')
+
+    legend('\beta', '\deltaDM Scale')
+
     
 end % PlotBeta
 
@@ -533,7 +563,8 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
     hfig = CheckOption('hfig', [], varargin{:});
     hax = CheckOption('hax', [], varargin{:});
     itnum = CheckOption('itnum', [listS.iter], varargin{:}); % use [listS.iter] - listS(1).iter to start with 0
-    
+    ylim = CheckOption('ylim', [], varargin{:})
+
     itnum = itnum(:); % force column vector
     [NInt_co, NInt_inco, NInt_total] = deal(zeros(length(itnum), max([listS.Nlamcorr]) ));
     NInt_mean = zeros(length(itnum),1);
@@ -587,7 +618,13 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
     xlabel('Iteration #')
     ylabel('Normalized Intensity')
     set(hl,'linewidth', 2)
-    
+
+    % auto ylim
+    if isempty(ylim)
+        ylim = [1e-10 0] + [0 1].*get(hax, 'ylim');
+    end
+    set(hax, 'ylim', ylim)
+
     % S.Nlamcorr = mp.Nsbp;
     % S.NofW = S.Nlamcorr * S.Nstar
     strStar = {'On-axis', 'Off-axis'};

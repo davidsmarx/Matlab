@@ -49,6 +49,7 @@ ylim = CheckOption('ylim', [], varargin{:});
 clim = CheckOption('clim', [], varargin{:});
 cmap = CheckOption('colormap', 'gray', varargin{:});
 fTitleStr = CheckOption('fTitleStr', @(isl) ['#' num2str(listI(isl))], varargin{:});
+titleFontSz = CheckOption('titlefontsz', 14, varargin{:});
 
 
 % validate axis scale
@@ -113,18 +114,31 @@ for isl = 1:Nsl,
 end %
 himg = imageschcit(1:Nsl*nc, 1:nr, img);
 hax = gca;
-hax.XTick = [[1:nc:Nsl*nc] Nsl*nc];
-hax.XTickLabel = cat(2, repmat({'1'}, [1 Nsl]), {num2str(nc)});
 
-% titles
+% Set up X ticks with actual coordinate values
+xTickPositions = [1:nc:Nsl*nc];  % tick at start of each slice
+xTickLabels = cell(1, Nsl);
+for isl = 1:Nsl
+    xTickLabels{isl} = sprintf('%.1f', x(1));  % show first x value for each slice
+end
+hax.XTick = xTickPositions;
+hax.XTickLabel = xTickLabels;
+
+% Set up Y ticks with actual coordinate values
+hax.YTick = [1 nr];
+hax.YTickLabel = {sprintf('%.1f', y(1)), sprintf('%.1f', y(end))};
+
+% titles - position above each image slice with more vertical spacing
 htitle(1) = title(fTitleStr(1));
 posTitle = htitle(1).Position;
-htitle(1).Position = [0.5*nc posTitle(2:3)];
+% Move titles higher up to prevent crowding
+htitle(1).Position = [0.5*nc posTitle(2)+0.05*nr posTitle(3)];
+htitle(1).FontSize = titleFontSz;  % Reduce font size for better fit
 for isl = 2:Nsl,
     htitle(isl) = copy(htitle(1));
     htitle(isl).Parent = hax;
     htitle(isl).String = fTitleStr(isl);
-    htitle(isl).Position = [(isl-1)*nc+0.5*nc posTitle(2:3)];
+    htitle(isl).Position = [(isl-1)*nc+0.5*nc posTitle(2)+0.05*nr posTitle(3)];
 end
 
 % resize figure
@@ -134,6 +148,10 @@ if hfig.Position(3) > screensize(3)
     a = 0.95*screensize(3)/hfig.Position(3);
     hfig.Position(3:4) = a*hfig.Position(3:4);    
 end
+
+% Expand axes to use more of the figure space
+set(hax, 'Units', 'normalized');
+set(hax, 'Position', [0.05 0.1 0.9 0.8]);  % [left bottom width height]
 
 % clim and cmap
 if ~isempty(clim), set(gca,'clim',clim), end
