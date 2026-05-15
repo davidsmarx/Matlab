@@ -114,9 +114,9 @@ classdef CGS < handle
             if ~exist('bn','var') || isempty(bn),
                 %bn = '/home/dmarx/HCIT/DST/phaseretrieval_20180605/reduced/gsdst_';
                 %bn = '/proj/dst/data/dB_PR/gsdst_';
-                %bn = 'omc_mswc';
+                bn = 'omc_mswc';
                 %bn = 'cgi_tvac';
-                bn = 'omc_epic';
+                %bn = 'omc_epic';
             end
             
             switch lower(bn),
@@ -249,7 +249,7 @@ classdef CGS < handle
                 case 'omc_mswc'
                     trialname = CheckOption('trialname', '', varargin{:});
                     
-                    bn = ['/home/hcit/OMC/phaseretrieval/reduced/prout_' trialname num2str(gsnum,'%03d')];
+                    bn = ['/proj/mcb/data/dB_PR_OMC/reduced/prout_' trialname num2str(gsnum,'%03d')];
                     
                     % get dir listing of raw camera images
                     S.listPupImDir = dir(PathTranslator(...
@@ -264,7 +264,7 @@ classdef CGS < handle
                 case 'omc_epic'
                     trialname = CheckOption('trialname', '', varargin{:});
 
-                    bn = ['/home/hcit/OMC/phaseretrieval/reduced/prout_' trialname num2str(gsnum,'%03d')];
+                    bn = ['/proj/mcb/data/dB_PR_OMC/reduced/prout_' trialname num2str(gsnum,'%03d')];
 
                     % get dir listing of raw camera images
                     S.listPupImDir = dir(PathTranslator(...

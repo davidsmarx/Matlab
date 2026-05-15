@@ -1,4 +1,6 @@
 function cmap_log = logColormap(varargin)
+% cmap_log = logColormap(cmap, varargin)
+%
 % log image ds9 style by mapping the colormap
 %
 % from http://ds9.si.edu/doc/ref/how.html
@@ -6,7 +8,15 @@ function cmap_log = logColormap(varargin)
 % CheckOption('alpha', 1000, varargin{:});
 % CheckOption('cmap', colormap('gray'), varargin{:}); % can be array or string
 
-cmap = CheckOption('cmap', colormap('gray'), varargin{:}); % can be array or string
+% default value
+cmap = colormap('gray');
+
+% 
+if length(varargin) == 1
+    cmap = varargin{1};
+end
+
+cmap = CheckOption('cmap', cmap, varargin{:}); % can be array or string
 alpha = CheckOption('alpha', 1000, varargin{:});
 
 if ischar(cmap)

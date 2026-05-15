@@ -26,8 +26,8 @@ if isunix %&& strcmp(char(java.lang.System.getProperty('user.name')), 'dmarx')
         else
             PYENV = pyenv('Version', '/usr/local/bin/python3.11')
             py_path = py.sys.path;
-            py_path.append('/home/dmarx/HCIT/hcim_mkland3/hcim')
-            py_path.append('/home/dmarx/HCIT/hcim_mkland3/hcim/extern')
+            %             py_path.append('/home/dmarx/links/HCIT/hcim_mkland3/hcim')
+            %             py_path.append('/home/dmarx/links/HCIT/hcim_mkland3/hcim/extern')
             ds9 = @py.ly.util.ds9bdk.ds9fits;
         end
 
