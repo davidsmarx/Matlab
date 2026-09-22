@@ -26,13 +26,13 @@ classdef Cppt
             %
             % if slide_num = [] or no input, add new slide at end
 
-            layout = S.AppPpt.ActivePresentation.SlideMaster.CustomLayouts.Item(5); % was 10
+            layout = S.Presentation.SlideMaster.CustomLayouts.Item(5); % was 10
             if ~exist('slide_num', 'var') || isempty(slide_num)
                 slide_count = get(S.Presentation.Slides,'Count');
                 slide_num = int32(double(slide_count)+1);
             end % if isempty(slide_num)
 
-            new_slide=S.AppPpt.ActivePresentation.Slides.AddSlide(slide_num, layout);
+            new_slide=S.Presentation.Slides.AddSlide(slide_num, layout);
 
         end % NewSlide
         
@@ -116,9 +116,15 @@ classdef Cppt
             % Copy figure(s) as bitmap(-dbitmap) (use '-dmeta' to copy as meta file instead)
             figure(hfig); drawnow;
             set(hfig,'invertHardcopy','off')
-            
-            options.Format = 'jpg';
-            hgexport(hfig,'-clipboard', options);
+
+            % Use copygraphics (R2020a+) to avoid deprecated hgexport style sheet warning
+            % Falls back to print for older MATLAB versions
+            if exist('copygraphics', 'file')
+                copygraphics(hfig, 'ContentType', 'image', 'Resolution', 300);
+            else
+                % Fallback for older MATLAB versions
+                print(hfig, '-clipboard', '-dbitmap', '-r300');
+            end
             hPic = invoke(slide.Shapes,'Paste');
 
             % Get height and width of slide:

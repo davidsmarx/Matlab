@@ -1264,6 +1264,7 @@ classdef CGS < handle
             plMeasOrCalc = CheckOption('image', 'meas', varargin{:});
             plAmpOrInt = CheckOption('value', 'amp', varargin{:});
             bLog = CheckOption('blog', false, varargin{:});
+            bShowTitle = CheckOption('showaxestitle', true, varargin{:});
 
             % choose measured or calculated
             if strcmp(plMeasOrCalc, 'meas'),
@@ -1308,8 +1309,10 @@ classdef CGS < handle
                 else
                     imageschcit(Im)
                 end
-                
-                title(['Z = ' num2str(S.zAmpPlanes(ii)/U.MM,'%.1f')])
+
+                if bShowTitle
+                    title(['Z = ' num2str(S.zAmpPlanes(ii)/U.MM,'%.1f')])
+                end
 
                 Imgs{ii} = Im;
                 

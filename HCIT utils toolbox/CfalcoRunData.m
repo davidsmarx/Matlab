@@ -443,7 +443,7 @@ classdef CfalcoRunData < CRunData
             % if this dm was used for probes, get dmv cube from probe
             if num2str(S.mp.est.probe.whichDM) == whichdm(end)
                 
-                % ev
+                % ev.(whichdm).Vall(1:Nact, 1:Nact, 1:(1+2*Npairs), 1:Nstarbands)
                 fn = [S.Reduced_pn '/probing_data_' num2str(S.iter) '.mat'];
                 load(PathTranslator(fn), 'ev');
                 dmV_total = dmVbias + ev.(whichdm).Vall;
@@ -477,6 +477,11 @@ classdef CfalcoRunData < CRunData
         end % ReadDMvCube
         
         function [hfig, hax, sMetrics] = DisplayDMv(S, dmvref, varargin)
+
+            if ~exist('dmvref', 'var')
+                dmvref = [];
+            end
+
             cOrientation = cell([1 S.Ndm]);
             for idm = 1:S.Ndm
                 whichdm = ['dm' num2str(S.mp.dm_ind(idm))];

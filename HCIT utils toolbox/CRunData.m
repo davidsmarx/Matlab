@@ -2829,6 +2829,7 @@ classdef CRunData < handle & CConstants
             %
             % CheckOption('climdelta', [], varargin{:});
             % CheckOption('hfig', [], varargin{:});
+            % CheckOption('supertitle', '', varargin{:}); % overall title for the tiled figure
             
             if nargin < 2, dmvref = []; end
             
@@ -2853,9 +2854,10 @@ classdef CRunData < handle & CConstants
             climDelta = CheckOption('climdelta', [], varargin{:});
             hfig = CheckOption('hfig', [], varargin{:});
             applyorientation = CheckOption('applyorientation', {}, varargin{:}); % {string per DMvcube}
+            supertitle_str = CheckOption('supertitle', '', varargin{:}); % overall title for the figure
             
             
-            % extract the DV v to plot
+            % extract the DM v to plot
             for idm = 1:S.Ndm,
                 DMvtmp = squeeze(S.DMvCube{idm}(:,:,1));
                 rmsDMv(idm) = rms(DMvtmp(DMvtmp>0));
@@ -2918,41 +2920,49 @@ classdef CRunData < handle & CConstants
                 end % if isa(dmvref
                 
             end % if ~isempty(dmvref)
-                    
+
+            % Determine figure layout:
+            % Nr = 1 if no reference (single row of DM voltage maps)
+            % Nr = 2 if reference provided (two rows: DMv maps, then difference maps)
             Nr = 1 + ~isempty(refDMv);
             if isempty(hfig),
                 hfig = figure_mxn(Nr,S.Ndm);
             else
                 figure(hfig);
             end
-            
+
+            % Initialize outputs
             rmsdDMv = zeros(1,S.Ndm);
+            cdDMv = cell(1,S.Ndm);
+
             for idm = 1:S.Ndm,
 
-                % plot S DMv
+                % First row: plot DM voltage maps (always created)
+                % Subplot indices 1:S.Ndm (e.g., for 2 DMs: subplots 1, 2)
                 hax(idm) = subplot(Nr, S.Ndm, idm);
                 imageschcit(0, 0, DMv{idm}),
                 colorbartitle('Vmu')
                 title(strDM{idm})
                 set(gca, 'ydir', cYdir{idm}, 'xdir', cXdir{idm})
-                
-                % if Ref not defined:
-                if isempty(refDMv) || isempty(refDMv{idm})
-                    refDMv{idm} = zeros(size(DMv{idm}));
+
+                % Second row: plot difference maps (only if reference provided)
+                % Subplot indices (S.Ndm+1):2*S.Ndm (e.g., for 2 DMs: subplots 3, 4)
+                if Nr > 1 && ~isempty(refDMv) && ~isempty(refDMv{idm})
+                    hax(idm+S.Ndm) = subplot(Nr, S.Ndm, idm+S.Ndm);
+
+                    % Calculate difference: current DMv - reference DMv
+                    dDMv = DMv{idm} - refDMv{idm};
+                    rmsdDMv(idm) = rms(dDMv(abs(dDMv)>0));
+
+                    % Display difference map
+                    imageschcit(0, 0, dDMv)
+                    colorbartitle('Vmu')
+                    title(['\Delta ' strRefDM{idm} ', ' num2str(rmsdDMv(idm),'%.4f') 'V rms'])
+                    set(gca, 'ydir', cYdir{idm}, 'xdir', cXdir{idm})
+
+                    % Save for output metrics
+                    cdDMv{idm} = dDMv;
                 end
-
-                hax(idm+S.Ndm) = subplot(Nr, S.Ndm, idm+S.Ndm);
-
-                dDMv = DMv{idm} - refDMv{idm};
-                rmsdDMv(idm) = rms(dDMv(abs(dDMv)>0));
-
-                imageschcit(0, 0, dDMv)
-                colorbartitle('Vmu')
-                title(['\Delta ' strRefDM{idm} ', ' num2str(rmsdDMv(idm),'%.4f') 'V rms'])
-                set(gca, 'ydir', cYdir{idm}, 'xdir', cXdir{idm})
-
-                % save
-                cdDMv{idm} = dDMv;
                 
             end % for idm
             
@@ -2970,18 +2980,20 @@ classdef CRunData < handle & CConstants
                 elseif range(reshape([cdDMv{:}],[],1)) > 0,
                     aclim = AutoClim([cdDMv{:}],'symmetric',true);
                     set(hax(S.Ndm+1:end),'clim',aclim);
-                end                
+                end
             end % refDMv
-            
+
+            % Add supertitle if provided
+            if ~isempty(supertitle_str)
+                sgtitle(supertitle_str);
+            end
+
             sMetrics = struct(...
                 'type', 'DMv' ...
                 ,'rmsdDMv', rmsdDMv ...
                 ,'dDMv', {cdDMv} ... % {} so that the cell array is assigned to one struct
                 );
-            
-            %             fprintf('rms dDMv1 = %.3f Vmu\n',rmsdDMv1);
-            %             fprintf('rms dDMv2 = %.3f Vmu\n',rmsdDMv2);
-            %
+           
         end % DisplayDMv
         
         function [hfig, hax] = DisplayDMvProbe(S, varargin)

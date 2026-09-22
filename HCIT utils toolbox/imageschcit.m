@@ -109,10 +109,10 @@ else
     set(gca,'ydir','normal')
     switch lower(scale)
         case 'linear'
-            colormap(cmap)
+            colormap(gca, cmap)
         case 'log'
-            cmap = logColormap('cmap', colormap(cmap));
-            colormap(cmap)
+            cmap = logColormap('cmap', colormap(gca, cmap));
+            colormap(gca, cmap)
         otherwise
             error(['unknown scale: ' scale]);
     end
@@ -136,13 +136,13 @@ function [hax, hh] = ImageReIm(x, y, Im)
 
     hax(1) = subplot(1,2,1);
     hh(1) = imagesc(x, y, real(Im));
-    colormap(jet)
+    colormap(gca, jet)
     axis image
     title('Real')
     
     hax(2) = subplot(1,2,2);
     hh(2) = imagesc(x, y, imag(Im));
-    colormap(jet)
+    colormap(gca, jet)
     axis image
     title('Imag')
     

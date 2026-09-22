@@ -35,6 +35,7 @@ more off
 % options
 ppt_fn = CheckOption('pptfn', '', varargin{:});
 Sppt = CheckOption('Sppt', 'new', varargin{:});
+bSpptIsNew = ischar(Sppt) && strcmpi(Sppt, 'new'); % Sppt gets overwritten below, save this before that happens
 run_bn = CheckOption('run_bn', ['falco_testbed_run' num2str(runnum)], varargin{:});
 listSin = CheckOption('listS', [], varargin{:}); % if listS of CfalcoRunData for iterations already exists
 
@@ -46,7 +47,7 @@ listSin = CheckOption('listS', [], varargin{:}); % if listS of CfalcoRunData for
 % end
 
 % open PowerPoint if necessary, and plots are requested (Windows pc only)
-if strcmpi(Sppt, 'new') && ispc %&& ~isempty(varargin),
+if bSpptIsNew && ispc %&& ~isempty(varargin),
     Sppt = Cppt(ppt_fn);
 end
 
@@ -82,21 +83,30 @@ else
     fSaveas(hfig, report_pn, 'summary', ['summary_it' num2str(S(1).iter) '_it' num2str(S(end).iter)], []);
 end
 
+% compare full-band (mean over subbands/modes) normalized intensity images
+% -- Total (unprobed), Modulated, Unmodulated -- side by side between two
+% iterations (default: first and last iteration of this report)
+itnum_compare1 = CheckOption('itnum_compare1', S(end).iter-8, varargin{:});
+itnum_compare2 = CheckOption('itnum_compare2', S(end).iter-4, varargin{:});
+[hfig_cmp, ~, sImageCompareData] = PlotCompareNormInt(S, itnum_compare1, itnum_compare2);
+if ~isempty(Sppt)
+    newslide = Sppt.NewSlide([]); % append at end
+    Sppt.CopyFigSlide(newslide, hfig_cmp);
+end
+if ~exist(report_pn, 'dir'), mkdir(report_pn); end
+save(fullfile(report_pn, ['compare_normint_it' num2str(itnum_compare1) '_it' num2str(itnum_compare2) '.mat']), '-struct', 'sImageCompareData');
+
 % add saved falco figures
-list_fignum_to_copy = [1 2 51 91 92 401];
+% only when starting a new PowerPoint (option 'Sppt' == 'new');
+% skip if continuing/appending to an already-open presentation passed in by the caller
 figures_pn = [S(1).Rundir_pn '/figures'];
-if exist(PathTranslator(figures_pn), 'dir')
-    %listPng = dir(PathTranslator([figures_pn '/*.png']));
-    for ii = 1:length(list_fignum_to_copy) %length(listPng)
-        if ~isempty(Sppt), slide = Sppt.NewSlide(1+ii); end
-        fn = fullfile(PathTranslator(figures_pn), ['figure_' num2str(list_fignum_to_copy(ii)) '.png']);
-        if ~exist(fn, 'file')
-            continue
-        end
-        if ~isempty(Sppt)
-            hh = invoke(slide.Shapes, 'AddPicture', fn, true, true, 100, 100);
-            % hh.Left, hh.Top, hh.Width
-        end
+if bSpptIsNew && ~isempty(Sppt) && exist(PathTranslator(figures_pn), 'dir')
+    listPng = dir(fullfile(PathTranslator(figures_pn), '*.png'));
+    for ii = 1:length(listPng)
+        slide = Sppt.NewSlide(1+ii);
+        fn = fullfile(listPng(ii).folder, listPng(ii).name);
+        hh = invoke(slide.Shapes, 'AddPicture', fn, true, true, 100, 100);
+        % hh.Left, hh.Top, hh.Width
     end
 end
 
@@ -111,7 +121,42 @@ end
 % save Sppt
 if ~isempty(Sppt)
     fn = PathTranslator(fullfile(getenv("DATA_ROOT"), run_bn, 'reports', [S(1).runLabel '_it' num2str(S(1).iter) '_' num2str(S(end).iter) '.pptx']));
-    Sppt.Presentation.SaveAs(fn);    
+
+    % Check if file already exists
+    if exist(fn, 'file')
+        % Prompt user for action
+        choice = questdlg(['File already exists: ' fn], ...
+            'File Exists', ...
+            'Replace', 'Save with new name', 'Cancel', 'Cancel');
+
+        switch choice
+            case 'Replace'
+                % Delete existing file and proceed with save
+                delete(fn);
+                Sppt.Presentation.SaveAs(fn);
+                fprintf('Replaced existing file: %s\n', fn);
+
+            case 'Save with new name'
+                % Generate new filename with datetime
+                [fpath, fname, fext] = fileparts(fn);
+                datetime_str = datestr(now, 'yyyymmdd_HHMMSS');
+                fn_new = fullfile(fpath, [fname '_' datetime_str fext]);
+                Sppt.Presentation.SaveAs(fn_new);
+                fprintf('Saved as: %s\n', fn_new);
+
+            case 'Cancel'
+                % Do nothing
+                fprintf('Save cancelled. File not saved.\n');
+
+            otherwise
+                % User closed dialog - do nothing
+                fprintf('Save cancelled. File not saved.\n');
+        end
+    else
+        % File doesn't exist, save normally
+        Sppt.Presentation.SaveAs(fn);
+        fprintf('Saved: %s\n', fn);
+    end
 end
 
 if nargout >= 1,
@@ -126,6 +171,7 @@ if nargout >= 1,
         ,'fPlotBeta', @PlotBeta ...
         ,'fPlotProbeh', @PlotProbeh ...
         ,'fPlotRMSdDMv', @PlotRMSdDMv ...
+        ,'fPlotCompareNormInt', @PlotCompareNormInt ...
         );
 end
 
@@ -559,11 +605,16 @@ function [betaused, betamin, hfig, hax] = PlotBeta(listS, varargin)
 end % PlotBeta
 
 function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
+    % [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
+    % CheckOption('hfig', [], varargin{:});
+    % CheckOption('hax', [], varargin{:});
+    % CheckOption('itnum', [listS.iter], varargin{:}); % use [listS.iter] - listS(1).iter to start with 0
+    % CheckOption('ylim', [], varargin{:});
 
     hfig = CheckOption('hfig', [], varargin{:});
     hax = CheckOption('hax', [], varargin{:});
     itnum = CheckOption('itnum', [listS.iter], varargin{:}); % use [listS.iter] - listS(1).iter to start with 0
-    ylim = CheckOption('ylim', [], varargin{:})
+    ylim = CheckOption('ylim', [], varargin{:});
 
     itnum = itnum(:); % force column vector
     [NInt_co, NInt_inco, NInt_total] = deal(zeros(length(itnum), max([listS.Nlamcorr]) ));
@@ -606,7 +657,11 @@ function [hfig, hax, han, itnum_min] = PlotNormIntensity(listS, varargin)
     NInt_co = listS(1).falcoData.normIntModScore(itnum, :); % column per band*star = listS(1).NofW
     NInt_inco = listS(1).falcoData.normIntUnmodScore(itnum, :); % column per band*star = listS(1).NofW
     NInt_total = listS(1).falcoData.normIntMeasScore(itnum, :); % column per band*star
-    NInt_mean = mean(NInt_total, 2); % mean across the band ???
+    if isfield(listS(1).mp, 'toggledMSWC') && listS(1).mp.toggledMSWC
+        NInt_mean = sum(NInt_total, 2); % mean of subbands and stars. Not correct for toggled
+    else
+        NInt_mean = mean(NInt_total, 2); % mean of subbands and stars. Not correct for toggled
+    end
     
     if isempty(hfig),
         hfig = figure;
@@ -702,5 +757,142 @@ function [rmsdDMv, hfig, hax] = PlotRMSdDMv(listS, varargin)
     end
     legend(legstr{:}, 'Mean')
     hax = gca;
-    
+
 end % PlotRMSdDMv
+
+function [hfig, hax, sImageData] = PlotCompareNormInt(S, itnum1, itnum2, varargin)
+    % [hfig, hax, sImageData] = PlotCompareNormInt(S, itnum1, itnum2, varargin)
+    %
+    % compare full-band (mean over subbands/modes) normalized intensity
+    % images between two iterations: 3 rows x 2 cols
+    %    row 1 = Total (unprobed)
+    %    row 2 = Modulated
+    %    row 3 = Unmodulated
+    %    col 1 = itnum1, col 2 = itnum2
+    %
+    % S = array of CfalcoRunData objects (already loaded)
+    % sImageData = struct with the images used in the plot, for saving to .mat
+    %
+    % Options:
+    %
+    %     CheckOption('bLog', true, varargin{:});
+    %     CheckOption('clim', [-9 -6.5], varargin{:});
+    %     CheckOption('xlim', S(1).XlimDefault, varargin{:});
+    %     CheckOption('ylim', S(1).YlimDefault, varargin{:});
+    %     CheckOption('title_left', ['Iter #' num2str(itnum1)])
+    %     CheckOption('title_right', ['Iter #' num2str(itnum2)])
+    %     CheckOption('save_fn', [], varargin{:});
+
+    bLog = CheckOption('bLog', true, varargin{:});
+    climopt = CheckOption('clim', [-9 -6.5], varargin{:});
+    xlim = CheckOption('xlim', S(1).XlimDefault, varargin{:});
+    ylim = CheckOption('ylim', S(1).YlimDefault, varargin{:});
+    title1 = CheckOption('title_left', ['Iter #' num2str(itnum1)], varargin{:});
+    title2 = CheckOption('title_right', ['Iter #' num2str(itnum2)], varargin{:});
+    save_fn = CheckOption('save_fn', [], varargin{:});
+
+    i1 = find([S.iter] == itnum1, 1);
+    i2 = find([S.iter] == itnum2, 1);
+    if isempty(i1) || isempty(i2)
+        error('PlotCompareNormInt: itnum1 (%d) or itnum2 (%d) not found in S', itnum1, itnum2);
+    end
+    Scol = [S(i1) S(i2)];
+    itnumcol = [itnum1 itnum2];
+    Ncols = length(itnumcol);
+    titlecol = {title1, title2};
+
+    [x, y] = CreateGrid(Scol(1).ImCubeUnProbFullBand, 1./Scol(1).ppl0);
+
+    rowprop  = {'ImCubeUnProbFullBand', 'CohIntFullBand', 'IncIntFullBand'};
+    rowlabel = {'Total (UnProbed)', 'Modulated', 'Unmodulated'};
+    rowtitle = {'Total Norm Intensity', 'Modulated', 'Unmodulated'};
+
+    hfig = figure_mxn(3, Ncols);
+    hax = zeros(3, Ncols);
+    %sImageData = struct('itnum1', itnum1, 'itnum2', itnum2, 'x', x, 'y', y);
+    sImageData = struct;
+
+    % explicit layout so rows are packed tightly, with extra room at the
+    % top of each column reserved for a bold supertitle (e.g. 'On-Axis Star')
+    left_margin   = 0.08;
+    right_margin  = 0.13;
+    hgap          = 0.05;
+    top_margin    = 0.075;
+    bottom_margin = 0.09;
+    vgap          = 0.05;
+
+    col_width  = (1 - left_margin - right_margin - (Ncols-1)*hgap) / Ncols;
+    row_height = (1 - top_margin - bottom_margin - 2*vgap) / 3;
+
+    for icol = 1:Ncols
+        sImageData(icol).itnum = itnumcol(icol);
+        sImageData(icol).x = x;
+        sImageData(icol).y = y;
+
+        left = left_margin + (icol-1)*(col_width + hgap);
+
+        for irow = 1:3
+            bottom = 1 - top_margin - irow*row_height - (irow-1)*vgap;
+            hax(irow,icol) = subplot('Position', [left bottom col_width row_height]);
+            im = Scol(icol).(rowprop{irow});
+            sImageData(icol).(rowprop{irow}) = im;
+
+            if bLog
+                imageschcit(x, y, log10(abs(im))); axis image
+            else
+                imageschcit(x, y, im); axis image
+            end
+            if ~isempty(climopt), set(gca,'clim',climopt); end
+            if ~isempty(xlim), set(gca,'xlim',xlim); end
+            if ~isempty(ylim), set(gca,'ylim',ylim); end
+
+            if icol == 1
+                ylabel('\lambda/D')
+            end
+            if irow == 3
+                xlabel('\lambda/D')
+            end
+
+            title(rowtitle{irow})
+
+            % only the last column shows a colorbar; add it without
+            % shrinking that column's axes so all columns stay the same size
+            axpos = get(gca, 'Position');
+            if icol == Ncols
+                hcb = colorbar;
+                colorbartitle(hcb, 'log_{10} Norm Intensity');
+                set(gca, 'Position', axpos);
+                set(hcb, 'Position', [axpos(1)+axpos(3)+0.015, axpos(2), 0.02, axpos(4)]);
+            end
+
+        end % for each column (iteration)
+
+        % bold, obvious supertitle for this column, e.g. 'On-Axis Star'
+        annotation(hfig, 'textbox', [left, 1-0.06, col_width, 0.05] ...
+            , 'String', titlecol{icol} ...
+            , 'FontSize', 24 ...
+            , 'FontWeight', 'bold' ...
+            , 'Color', 'r' ...
+            , 'HorizontalAlignment', 'center' ...
+            , 'VerticalAlignment', 'middle' ...
+            , 'EdgeColor', 'none' ...
+            );
+
+        % row label
+        ylpos = get(get(hax(irow,1),'YLabel'),'Position');
+        text(hax(irow,1), ylpos(1) - 2, ylpos(2), rowlabel{irow} ...
+            , 'Rotation', 90 ...
+            , 'HorizontalAlignment', 'center' ...
+            , 'VerticalAlignment', 'bottom' ...
+            , 'FontSize', 14 ...
+            , 'Color', 'b' ...
+            , 'FontWeight', 'bold' ...
+            );
+    end % for each row (norm intensity type)
+
+    if ~isempty(save_fn)
+        fprintf('Saving image data to %s...', save_fn);
+        save(save_fn, "sImageData");
+    end
+    
+end % PlotCompareNormInt
