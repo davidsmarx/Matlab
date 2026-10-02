@@ -9,6 +9,11 @@ classdef CEFCReport < handle
     % slide, archived figures, requested display plots). Each step is also
     % independently callable afterward via the public methods below.
     %
+    % While EFC is still running on the testbed, call R.Update(...) later
+    % to pull in whatever new iterations have appeared since the object
+    % was created (or since the last Update() call) and extend the report
+    % -- without reloading or re-plotting anything already done.
+    %
     % Options (varargin, via CheckOption):
     %   'pptfn'         (default '')              passed to Cppt() when opening a new PowerPoint
     %   'Sppt'          (default 'new')           'new' | [] | existing Cppt object
@@ -27,6 +32,8 @@ classdef CEFCReport < handle
     %   R.AddDisplayPlots(110:116, 'DisplayAllInt', 'DisplayDEfields', 'DisplayCEfields');
     %   R.AddCompareSlide(124, 128);
     %   R.Save();
+    %   % ...testbed runs more iterations later...
+    %   R.Update('DisplayAllInt', 'DisplayDEfields', 'DisplayCEfields');
     %
     % See also: GenerateEFCReport_falco (backward-compatible wrapper), CRunData, CfalcoRunData, Cppt
 
@@ -117,24 +124,43 @@ classdef CEFCReport < handle
 
         end % constructor
 
-        function AutoLoadIterations(R, varargin)
-            % AutoLoadIterations(R, varargin)
+        function Stmp = LoadIterations(R, itnum_start, itnum_stop, varargin)
+            % Stmp = LoadIterations(R, itnum_start, itnum_stop, varargin)
             %
-            % probe itnum = 1:MaxIterGuess, constructing R.RunDataClass
-            % objects via feval(), guarded by try/catch (a nonexistent
-            % iteration may throw outright rather than just returning an
-            % empty ImCube). Stops after max_empties successive
+            % probe and load itnum_start:itnum_stop, constructing
+            % R.RunDataClass objects via feval(), guarded by try/catch
+            % (a nonexistent iteration may throw outright rather than
+            % just returning an empty ImCube). If itnum_stop = [], probe
+            % up to 'MaxIterGuess' iterations past itnum_start instead.
+            % Either way, stops early after 'max_empties' successive
             % failed/empty iterations, or once the constructed object
             % reports the run's last iteration (falcoData.Itr).
+            %
+            % mp (falco config, reused to avoid re-reading it every
+            % iteration) seeds from R.S(end).mp if R.S is already
+            % loaded, else starts empty.
+            %
+            % Does not modify R.S -- a pure loader. Returns [] (not an
+            % error) if no valid iterations are found in the requested
+            % range. See AutoLoadIterations/AppendNewIterations.
 
             max_empties = CheckOption('max_empties', 3, varargin{:});
-            MaxIterGuess = CheckOption('MaxIterGuess', 1000, varargin{:});
 
-            mp = [];
+            if isempty(itnum_stop)
+                MaxIterGuess = CheckOption('MaxIterGuess', 1000, varargin{:});
+                itnum_stop = itnum_start + MaxIterGuess - 1;
+            end
+
+            if ~isempty(R.S)
+                mp = R.S(end).mp;
+            else
+                mp = [];
+            end
+
             cnt_empty = 0;
             n_trailing_appended_empty = 0;
             Stmp = [];
-            for itnum = 1:MaxIterGuess
+            for itnum = itnum_start:itnum_stop
                 fprintf('reading itnum %d\n', itnum);
                 try
                     Sii = feval(R.RunDataClass, R.runnum, R.TrialNum, itnum, 'mp', mp, varargin{:});
@@ -179,19 +205,106 @@ classdef CEFCReport < handle
                 end
             end % for itnum
 
+            % if last iteration is empty, remove it
+            if ~isempty(Stmp) && isempty(Stmp(end).ImCube)
+                Stmp = Stmp(1:end-1);
+            end
+
+        end % LoadIterations
+
+        function AutoLoadIterations(R, varargin)
+            % AutoLoadIterations(R, varargin)
+            %
+            % load every valid iteration from itnum 1 via LoadIterations()
+            % and set R.S. Errors if none are found at all (unlike
+            % LoadIterations itself).
+
+            Stmp = R.LoadIterations(1, [], varargin{:});
+
             if isempty(Stmp)
                 error('CEFCReport:AutoLoadIterations', ...
                     'no valid iterations found for run %d trial %d', R.runnum, R.TrialNum);
             end
 
-            % if last iteration is empty, remove it
-            if isempty(Stmp(end).ImCube)
-                Stmp = Stmp(1:end-1);
-            end
-
             R.S = Stmp;
 
         end % AutoLoadIterations
+
+        function listitnum = AppendNewIterations(R, varargin)
+            % listitnum = AppendNewIterations(R, varargin)
+            %
+            % probe for and load any iterations past R.S(end).iter via
+            % LoadIterations(), appending them to R.S. listitnum = itnum
+            % of newly-appended iterations ([] if none found yet).
+
+            Stmp = R.LoadIterations(R.S(end).iter + 1, [], varargin{:});
+
+            if isempty(Stmp)
+                listitnum = [];
+                return
+            end
+
+            R.S = [R.S, Stmp];
+            listitnum = [Stmp.iter];
+
+        end % AppendNewIterations
+
+        function listitnum = Update(R, varargin)
+            % listitnum = Update(R, varargin)
+            %
+            % call this after the testbed has produced more iterations,
+            % to extend an already-built report with just the new data
+            % -- without reloading or re-plotting anything already done.
+            % listitnum = itnum of newly-appended iterations ([] if none
+            % found yet, in which case Update is a no-op).
+            %
+            % Appends the new iterations to R.S (AppendNewIterations),
+            % then:
+            %   - AddSummarySlide() / AddCompareSlide(): re-run against
+            %     the full updated R.S, each appending a new slide/figure
+            %     reflecting the latest progress (not a replacement of
+            %     the previous summary/compare slide).
+            %   - AddDisplayPlots(): run only across the newly-appended
+            %     iterations, using the last iteration from before this
+            %     call as a differential reference, so plots like
+            %     DisplayDEfields/DisplayDMv pick up exactly where the
+            %     previous call left off.
+            %   - the PowerPoint (if any) is saved in place via
+            %     Presentation.Save() -- not Save()'s SaveAs/
+            %     overwrite-confirmation behavior, since the file was
+            %     already named and created by the first Save() call.
+            %
+            % varargin: same display-plot specs/options as
+            % AddDisplayPlots/the constructor, plus LoadIterations's
+            % 'MaxIterGuess'/'max_empties'.
+            %
+            % Example:
+            %   R = CEFCReport(203, 132);
+            %   % ...testbed runs more iterations...
+            %   R.Update('DisplayAllInt', 'DisplayDEfields', 'DisplayCEfields');
+
+            itnum_last = R.S(end).iter;
+
+            listitnum = R.AppendNewIterations(varargin{:});
+
+            if isempty(listitnum)
+                fprintf('CEFCReport.Update: no new iterations found past itnum %d\n', itnum_last);
+                return
+            end
+
+            R.AddSummarySlide();
+            R.AddCompareSlide();
+
+            % include the last previously-loaded iteration as a
+            % differential reference point for the newly-added ones
+            R.AddDisplayPlots([itnum_last listitnum], varargin{:});
+
+            if ~isempty(R.Sppt)
+                R.Sppt.Presentation.Save();
+                fprintf('Updated PowerPoint saved: %s\n', R.Sppt.Presentation.FullName);
+            end
+
+        end % Update
 
         function Sout = SelectIterations(R, itnumRange)
             % Sout = SelectIterations(R, itnumRange)
@@ -513,9 +626,9 @@ classdef CEFCReport < handle
 
             itnum = itnum(:); % force column vector
 
-            NInt_co = listS(1).falcoData.normIntModScore(itnum, :); % column per band*star = listS(1).NofW
-            NInt_inco = listS(1).falcoData.normIntUnmodScore(itnum, :); % column per band*star = listS(1).NofW
-            NInt_total = listS(1).falcoData.normIntMeasScore(itnum, :); % column per band*star
+            NInt_co = listS(end).falcoData.normIntModScore(itnum, :); % column per band*star = listS(1).NofW
+            NInt_inco = listS(end).falcoData.normIntUnmodScore(itnum, :); % column per band*star = listS(1).NofW
+            NInt_total = listS(end).falcoData.normIntMeasScore(itnum, :); % column per band*star
             if isfield(listS(1).mp, 'toggledMSWC') && listS(1).mp.toggledMSWC
                 NInt_mean = sum(NInt_total, 2); % mean of subbands and stars. Not correct for toggled
             else
@@ -665,11 +778,12 @@ classdef CEFCReport < handle
 
             rowprop  = {'ImCubeUnProbFullBand', 'CohIntFullBand', 'IncIntFullBand'};
             rowlabel = {'Total (UnProbed)', 'Modulated', 'Unmodulated'};
-            rowtitle = {'Total Norm Intensity', 'Modulated', 'Unmodulated'};
+            rowtitle = {'Total: %.2e', 'Modulated: %.2e', 'Unmodulated: %.2e'};
 
             hfig = figure_mxn(3, Ncols);
             hax = zeros(3, Ncols);
             sImageData = struct;
+            meanNormI = zeros(3, Ncols);
 
             % explicit layout so rows are packed tightly, with extra room at the
             % top of each column reserved for a bold supertitle (e.g. 'On-Axis Star')
@@ -696,6 +810,8 @@ classdef CEFCReport < handle
                     im = Scol(icol).(rowprop{irow});
                     sImageData(icol).(rowprop{irow}) = im;
 
+                    meanNormI(irow, icol) = mean(Scol(icol).(rowprop{irow})(Scol(icol).bMaskSc));
+
                     if bLog
                         imageschcit(x, y, log10(abs(im))); axis image
                     else
@@ -712,7 +828,7 @@ classdef CEFCReport < handle
                         xlabel('\lambda/D')
                     end
 
-                    title(rowtitle{irow})
+                    title(sprintf(rowtitle{irow}, meanNormI(irow, icol)));
 
                     % only the last column shows a colorbar; add it without
                     % shrinking that column's axes so all columns stay the same size
@@ -772,13 +888,57 @@ classdef CEFCReport < handle
             if isempty(hfig)
                 return
             end
+
             if ~isempty(R.Sppt)
-                R.Sppt.CopyFigNewSlide(hfig);
-            else
-                R.fSaveas(hfig, category, basename);
+                try
+                    R.Sppt.CopyFigNewSlide(hfig);
+                    return
+                catch ME
+                    warning('PowerPoint threw an error.');
+                    disp(ME.message);
+                    R.Sppt = [];
+
+                    if R.TryReopenSppt()
+                        try
+                            R.Sppt.CopyFigNewSlide(hfig);
+                            return
+                        catch ME2
+                            warning('Still failed after reopening PowerPoint. Setting Sppt handle = []');
+                            disp(ME2.message);
+                            R.Sppt = [];
+                        end
+                    end
+                end
             end
 
+            R.fSaveas(hfig, category, basename);
+
         end % AddFigureToReport
+
+        function bOK = TryReopenSppt(R)
+            % the PowerPoint connection died (e.g. the user closed the
+            % presentation). Prompt, via the standard file-open dialog, for
+            % the .pptx to reopen so R.Sppt can keep appending to the
+            % existing report. Returns false (R.Sppt stays []) if
+            % cancelled or reopen fails.
+
+            bOK = false;
+            pptx_pn = fileparts(R.report_pn); % pptx lives in reports/, report_pn is reports/<runLabel>/
+            [fname, fpath] = uigetfile(fullfile(pptx_pn, '*.pptx'), ...
+                'PowerPoint connection lost -- select file to reopen (Cancel to save as image files instead)');
+            if isequal(fname, 0)
+                return
+            end
+
+            try
+                R.Sppt = Cppt(fullfile(fpath, fname), 'open', true);
+                bOK = true;
+            catch ME
+                warning('failed to reopen %s', fullfile(fpath, fname));
+                disp(ME.message);
+                R.Sppt = [];
+            end
+        end % TryReopenSppt
 
         function fSaveas(R, hfig, category, basename)
             % fSaveas(R, hfig, category, basename)

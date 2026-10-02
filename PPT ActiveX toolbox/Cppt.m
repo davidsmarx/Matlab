@@ -11,13 +11,18 @@ classdef Cppt
     
     methods
         function S = Cppt(fn, varargin)
+            bOpen = CheckOption('open', false, varargin{:});
+
             S.AppPpt = actxserver('PowerPoint.Application');
             S.AppPpt.Visible = 1;
             S.Presentations = S.AppPpt.Presentations;
-            % invoke(S.Presentations)
-            S.Presentation = S.Presentations.Add;
-            % or open(S.Presentations, fn)
-            
+
+            if bOpen
+                S.Presentation = invoke(S.Presentations, 'Open', fn);
+            else
+                S.Presentation = S.Presentations.Add;
+            end
+
         end % Cppt
         
         function new_slide = NewSlide(S, slide_num)
